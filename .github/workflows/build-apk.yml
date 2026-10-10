@@ -61,17 +61,16 @@ jobs:
           echo "Restoring any missing Gradle wrapper and project template files from @capacitor/cli..."
           tar -xzf node_modules/@capacitor/cli/assets/android-template.tar.gz -C android --skip-old-files || true
 
-          # 3. Ensure strings.xml has correct WeatherApp config if generated from template
+          # 3. Ensure strings.xml has correct WeatherApp config
           mkdir -p android/app/src/main/res/values
-          cat << 'STRINGS_EOF' > android/app/src/main/res/values/strings.xml
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">WeatherApp</string>
-    <string name="title_activity_main">WeatherApp</string>
-    <string name="package_name">com.liveweather.app</string>
-    <string name="custom_url_scheme">com.liveweather.app</string>
-</resources>
-STRINGS_EOF
+          printf '%s\n' \
+            "<?xml version='1.0' encoding='utf-8'?>" \
+            "<resources>" \
+            "    <string name=\"app_name\">WeatherApp</string>" \
+            "    <string name=\"title_activity_main\">WeatherApp</string>" \
+            "    <string name=\"package_name\">com.liveweather.app</string>" \
+            "    <string name=\"custom_url_scheme\">com.liveweather.app</string>" \
+            "</resources>" > android/app/src/main/res/values/strings.xml
 
           # 4. Synchronize compiled web assets and plugins into the Android project
           echo "Running Capacitor sync..."
