@@ -60,6 +60,43 @@
   scrollbar-width: none;
 }
 
+/* Apple Liquid Glass Navigation Dock Concept */
+.liquid-glass-dock {
+  background: rgba(14, 18, 28, 0.72);
+  backdrop-filter: blur(32px) saturate(210%);
+  -webkit-backdrop-filter: blur(32px) saturate(210%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 
+    0 20px 48px -8px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 1px 2px 0 rgba(255, 255, 255, 0.35) inset;
+}
+
+.liquid-glass-dock-light {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(32px) saturate(210%);
+  -webkit-backdrop-filter: blur(32px) saturate(210%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 
+    0 20px 40px -10px rgba(15, 23, 42, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.85) inset,
+    0 1px 2px 0 rgba(255, 255, 255, 0.95) inset;
+}
+
+/* Specular Light Sheen Reflection on Apple Liquid Glass */
+.liquid-glass-dock::before,
+.liquid-glass-dock-light::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
 /* Ultra Smooth Spring Animations */
 @keyframes cardSlideFade {
   0% {

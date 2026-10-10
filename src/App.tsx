@@ -22,6 +22,7 @@ import { LiveRadarScreen } from './components/LiveRadarScreen';
 import { AirAndSunScreen } from './components/AirAndSunScreen';
 import { WeatherWidgetsScreen } from './components/WeatherWidgetsScreen';
 import { LocationsManagerScreen } from './components/LocationsManagerScreen';
+import { RatingFeedbackSection } from './components/RatingFeedbackSection';
 import { 
   DEFAULT_LOCATIONS, 
   fetchLiveWeather, 
@@ -289,7 +290,7 @@ function MainWeatherApp() {
       </header>
 
       {/* ACTIVE SCREEN CONTENT */}
-      <div className="flex-1 w-full overflow-y-auto no-scrollbar relative flex flex-col">
+      <div className="flex-1 w-full overflow-y-auto no-scrollbar relative flex flex-col pb-28">
         {/* TAB 0: HOME WEATHER (The iconic animated landscape house + live forecast) */}
         {activeTab === 0 && (
           <div className="w-full flex-col flex pb-4">
@@ -370,53 +371,64 @@ function MainWeatherApp() {
               hourly={hourlyForecast}
               currentTemp={metrics.temperature}
             />
+
+            {/* Community Rating & Feedback Section (Auto-dispatches to mmmmahe46@gmail.com) */}
+            <RatingFeedbackSection location={activeLocation} />
           </div>
         )}
 
         {/* TAB 1: LIVE RADAR & WEATHER MAPS */}
         {activeTab === 1 && (
-          <LiveRadarScreen location={activeLocation} />
+          <div className="w-full flex-col flex pb-4">
+            <LiveRadarScreen location={activeLocation} />
+          </div>
         )}
 
         {/* TAB 2: AIR QUALITY & SUN ASTRONOMY */}
         {activeTab === 2 && (
-          <AirAndSunScreen
-            airQuality={metrics.airQuality}
-            astronomy={metrics.astronomy}
-            location={activeLocation}
-          />
+          <div className="w-full flex-col flex pb-4">
+            <AirAndSunScreen
+              airQuality={metrics.airQuality}
+              astronomy={metrics.astronomy}
+              location={activeLocation}
+            />
+          </div>
         )}
 
         {/* TAB 3: ADAPTABLE ANDROID HOME SCREEN WIDGETS */}
         {activeTab === 3 && (
-          <WeatherWidgetsScreen
-            metrics={metrics}
-            hourly={hourlyForecast}
-            location={activeLocation}
-          />
+          <div className="w-full flex-col flex pb-4">
+            <WeatherWidgetsScreen
+              metrics={metrics}
+              hourly={hourlyForecast}
+              location={activeLocation}
+            />
+          </div>
         )}
 
         {/* TAB 4: LOCATIONS & PREFERENCES */}
         {activeTab === 4 && (
-          <LocationsManagerScreen
-            locations={savedLocations}
-            activeLocation={activeLocation}
-            onSelectLocation={handleSelectLocation}
-            onAddLocation={handleAddLocation}
-            onDeleteLocation={handleDeleteLocation}
-            onRefreshData={() => handleFetchWeather(activeLocation)}
-            lastUpdated={metrics.lastUpdated}
-          />
+          <div className="w-full flex-col flex pb-4">
+            <LocationsManagerScreen
+              locations={savedLocations}
+              activeLocation={activeLocation}
+              onSelectLocation={handleSelectLocation}
+              onAddLocation={handleAddLocation}
+              onDeleteLocation={handleDeleteLocation}
+              onRefreshData={() => handleFetchWeather(activeLocation)}
+              lastUpdated={metrics.lastUpdated}
+            />
+          </div>
         )}
       </div>
 
-      {/* ANDROID BOTTOM NAVIGATION BAR (Material 3 Style Navigation Bar) */}
+      {/* APPLE LIQUID GLASS FLOATING NAVIGATION DOCK (Remains fixed in place when scrolling) */}
       <nav 
-        aria-label="Bottom Navigation"
-        className={`w-full h-16 px-2 flex items-center justify-around border-t select-none shrink-0 z-30 transition-colors ${
+        aria-label="Liquid Glass Dock"
+        className={`absolute bottom-4 sm:bottom-5 inset-x-0 mx-auto w-[92%] max-w-[390px] h-16 px-2 flex items-center justify-around select-none z-40 rounded-full transition-all duration-300 shadow-2xl ${
           isDarkMode
-            ? 'bg-[#000000] border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.8)]'
-            : 'bg-[#F2F5FA] border-slate-200 shadow-md'
+            ? 'liquid-glass-dock text-white'
+            : 'liquid-glass-dock-light text-slate-800'
         }`}
       >
         {[
@@ -431,22 +443,25 @@ function MainWeatherApp() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex flex-col items-center justify-center py-1 px-3 rounded-2xl transition-all ${
+              onClick={() => {
+                setActiveTab(tab.id);
+                try { navigator.vibrate?.(12); } catch {}
+              }}
+              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-full transition-all duration-200 cursor-pointer ${
                 isActive
-                  ? 'font-black scale-102'
+                  ? 'font-black scale-105'
                   : isDarkMode
-                    ? 'text-zinc-500 hover:text-zinc-300 font-medium'
-                    : 'text-slate-500 hover:text-slate-800 font-medium'
+                    ? 'text-zinc-400 hover:text-white font-medium hover:scale-102'
+                    : 'text-slate-500 hover:text-slate-900 font-medium hover:scale-102'
               }`}
               style={{
                 color: isActive ? customAccentColor : undefined,
               }}
             >
               <div 
-                className={`px-4 py-1 rounded-full transition-all ${
+                className={`px-3.5 py-1 rounded-full transition-all duration-200 ${
                   isActive 
-                    ? 'shadow-xs border border-white/20' 
+                    ? 'shadow-md border border-white/25 backdrop-blur-md' 
                     : ''
                 }`}
                 style={{
@@ -454,9 +469,9 @@ function MainWeatherApp() {
                   borderColor: isActive ? `${customAccentColor}60` : undefined,
                 }}
               >
-                <Icon size={19} strokeWidth={isActive ? 2.5 : 2} />
+                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
               </div>
-              <span className="text-[11px] tracking-tight mt-0.5 font-bold">
+              <span className="text-[10px] tracking-tight mt-0.5 font-bold">
                 {tab.label}
               </span>
             </button>
