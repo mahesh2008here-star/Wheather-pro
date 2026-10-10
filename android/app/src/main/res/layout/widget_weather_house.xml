@@ -3,19 +3,53 @@
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/splash"
+    android:background="@drawable/widget_house_landscape"
     android:padding="12dp">
 
-    <!-- Dark Gradient / Contrast Overlay for Readability -->
+    <!-- Top Badge Row: Iconic Farm Scene & Auto-refresh status -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/widget_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#66000000"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:text="🏡 Farm Weather"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_sync_tag"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:text="● Auto Sync"
+            android:textColor="#00D284"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Bottom Semi-translucent Glass Panel -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="#CC0A0E17"
+        android:background="#D9090D16"
         android:padding="10dp"
         android:orientation="vertical">
 
-        <!-- Top Row: Location & Live Tag -->
+        <!-- Top Row: Location & Weather Condition -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,22 +61,22 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="WeatherApp"
+                android:text="WeatherPro"
                 android:textColor="#FFFFFF"
-                android:textSize="14sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/widget_condition"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Live House Scene"
-                android:textColor="#00F2B4"
-                android:textSize="11sp"
+                android:text="Partly Cloudy"
+                android:textColor="#00D284"
+                android:textSize="12sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Bottom Row: Temperature & High / Low -->
+        <!-- Bottom Row: Temperature & High / Low details -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -56,16 +90,16 @@
                 android:layout_height="wrap_content"
                 android:text="24°"
                 android:textColor="#FFFFFF"
-                android:textSize="22sp"
+                android:textSize="24sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/widget_details"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="Tap to open app"
-                android:textColor="#A0AEC0"
+                android:layout_marginStart="10dp"
+                android:text="Tap to open live scenery"
+                android:textColor="#CBD5E1"
                 android:textSize="11sp" />
         </LinearLayout>
     </LinearLayout>

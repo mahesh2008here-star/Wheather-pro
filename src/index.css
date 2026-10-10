@@ -2,47 +2,51 @@
 
 @layer base {
   :root {
-    --app-accent: #00F2B4;
-    --app-glow: rgba(0, 242, 180, 0.4);
+    --app-accent: #00D284;
+    --app-accent-10: rgba(0, 210, 132, 0.1);
+    --app-accent-20: rgba(0, 210, 132, 0.2);
+    --app-accent-30: rgba(0, 210, 132, 0.3);
+    --app-accent-50: rgba(0, 210, 132, 0.5);
+    --app-accent-glow: rgba(0, 210, 132, 0.45);
   }
 
   body {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: #000000;
-    color: #1e293b;
+    color: #0f172a;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  .font-mono-numbers {
+    font-family: 'Space Grotesk', 'Outfit', monospace;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+  }
 }
 
-/* Sony X-Reality Color Engine for Mobile Boost */
-/* Enhances contrast, micro-texture clarity, dynamic range and rich gamut vibrancy */
-.x-reality-boost {
-  filter: contrast(1.08) saturate(1.22) brightness(1.02);
-  transition: filter 0.4s ease-in-out;
-}
-
-.dark .x-reality-boost {
-  filter: contrast(1.12) saturate(1.28) brightness(1.04);
-}
-
-/* Dynamic Accent Elements */
-.bg-custom-accent {
+/* Global Dynamic Accent Utilities */
+.bg-app-accent {
   background-color: var(--app-accent) !important;
 }
 
-.text-custom-accent {
+.text-app-accent {
   color: var(--app-accent) !important;
 }
 
-.border-custom-accent {
+.border-app-accent {
   border-color: var(--app-accent) !important;
 }
 
-.shadow-custom-glow {
-  box-shadow: 0 0 24px var(--app-glow) !important;
+.shadow-app-accent {
+  box-shadow: 0 4px 20px var(--app-accent-glow) !important;
 }
 
 /* True OLED AMOLED Pure Pitch Black (#000000) */
@@ -62,25 +66,33 @@
 
 /* Apple Liquid Glass Navigation Dock Concept */
 .liquid-glass-dock {
-  background: rgba(14, 18, 28, 0.72);
-  backdrop-filter: blur(32px) saturate(210%);
-  -webkit-backdrop-filter: blur(32px) saturate(210%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(8, 12, 20, 0.55);
+  backdrop-filter: blur(36px) saturate(240%);
+  -webkit-backdrop-filter: blur(36px) saturate(240%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow: 
-    0 20px 48px -8px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-    0 1px 2px 0 rgba(255, 255, 255, 0.35) inset;
+    0 24px 48px -12px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+    0 1.5px 3px 0 rgba(255, 255, 255, 0.4) inset;
 }
 
 .liquid-glass-dock-light {
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(32px) saturate(210%);
-  -webkit-backdrop-filter: blur(32px) saturate(210%);
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: rgba(240, 244, 252, 0.42);
+  backdrop-filter: blur(36px) saturate(240%);
+  -webkit-backdrop-filter: blur(36px) saturate(240%);
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
   box-shadow: 
-    0 20px 40px -10px rgba(15, 23, 42, 0.18),
-    0 0 0 1px rgba(255, 255, 255, 0.85) inset,
-    0 1px 2px 0 rgba(255, 255, 255, 0.95) inset;
+    0 20px 48px -10px rgba(15, 23, 42, 0.16),
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset,
+    0 1.5px 3px 0 rgba(255, 255, 255, 0.95) inset;
+}
+
+/* Snappy Instant Touch Scale Feedback */
+.touch-response {
+  transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, opacity 0.15s ease;
+}
+.touch-response:active {
+  transform: scale(0.94);
 }
 
 /* Specular Light Sheen Reflection on Apple Liquid Glass */

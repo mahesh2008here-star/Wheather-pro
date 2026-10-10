@@ -7,15 +7,35 @@ export interface ColorPreset {
   glow: string;
 }
 
-export const ACCENT_PRESETS: ColorPreset[] = [
-  { id: 'emerald', name: 'Sony Bravia Teal', hex: '#00F2B4', glow: 'rgba(0, 242, 180, 0.35)' },
-  { id: 'cyber_cyan', name: 'X-Reality Cyan', hex: '#00E5FF', glow: 'rgba(0, 229, 255, 0.4)' },
-  { id: 'vivid_amber', name: 'Sunburst Amber', hex: '#FFB800', glow: 'rgba(255, 184, 0, 0.4)' },
-  { id: 'neon_coral', name: 'Ultra Coral', hex: '#FF3366', glow: 'rgba(255, 51, 102, 0.4)' },
-  { id: 'electric_violet', name: 'Bravia Violet', hex: '#A855F7', glow: 'rgba(168, 85, 247, 0.4)' },
-  { id: 'matrix_green', name: 'Hyper Lime', hex: '#39FF14', glow: 'rgba(57, 255, 20, 0.35)' },
-  { id: 'pure_ice', name: 'Pure Glacier', hex: '#38BDF8', glow: 'rgba(56, 189, 248, 0.35)' },
+export const MATERIAL_ACCENT_PRESETS: ColorPreset[] = [
+  { id: 'mint_jade', name: 'Botanical Mint', hex: '#00D284', glow: 'rgba(0, 210, 132, 0.4)' },
+  { id: 'sky_cerulean', name: 'Sky Cerulean', hex: '#0EA5E9', glow: 'rgba(14, 165, 233, 0.4)' },
+  { id: 'electric_violet', name: 'Royal Violet', hex: '#8B5CF6', glow: 'rgba(139, 92, 246, 0.4)' },
+  { id: 'sunset_amber', name: 'Sunset Amber', hex: '#F59E0B', glow: 'rgba(245, 158, 11, 0.4)' },
+  { id: 'coral_rose', name: 'Coral Blossom', hex: '#F43F5E', glow: 'rgba(244, 63, 94, 0.4)' },
+  { id: 'cyber_cyan', name: 'Cyber Turquoise', hex: '#06B6D4', glow: 'rgba(6, 182, 212, 0.4)' },
+  { id: 'soft_iris', name: 'Muted Iris', hex: '#A78BFA', glow: 'rgba(167, 139, 250, 0.4)' },
+  { id: 'tangerine_glow', name: 'Warm Tangerine', hex: '#FB923C', glow: 'rgba(251, 146, 60, 0.4)' },
+  { id: 'hot_fuchsia', name: 'Neon Fuchsia', hex: '#EC4899', glow: 'rgba(236, 72, 153, 0.4)' },
+  { id: 'glacier_ice', name: 'Pure Glacier', hex: '#38BDF8', glow: 'rgba(56, 189, 248, 0.4)' },
+  { id: 'deep_emerald', name: 'Forest Emerald', hex: '#10B981', glow: 'rgba(16, 185, 129, 0.4)' },
+  { id: 'titanium_slate', name: 'Titanium Slate', hex: '#64748B', glow: 'rgba(100, 116, 139, 0.35)' },
 ];
+
+export const ACCENT_PRESETS = MATERIAL_ACCENT_PRESETS;
+
+function hexToRgba(hex: string, alpha: number): string {
+  let c = hex.replace('#', '');
+  if (c.length === 3) {
+    c = c.split('').map(x => x + x).join('');
+  }
+  const num = parseInt(c, 16);
+  if (isNaN(num)) return `rgba(0, 210, 132, ${alpha})`;
+  const r = (num >> 16) & 255;
+  const g = (num >> 8) & 255;
+  const b = num & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 interface ThemeContextType {
   isDarkMode: boolean;
@@ -29,10 +49,7 @@ interface ThemeContextType {
   formatTemp: (celsius: number) => string;
   formatWind: (kmh: number) => string;
   formatPressure: (hpa: number) => string;
-  // Sony X-Reality Color Engine
-  xRealityMode: boolean;
-  toggleXRealityMode: () => void;
-  // Custom UI Accent Color Picker
+  // Custom Material You Accent Color (Implemented globally across all screens)
   customAccentColor: string;
   setCustomAccentColor: (color: string) => void;
 }
@@ -57,15 +74,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return (localStorage.getItem('weather_pressure_unit') as 'hPa' | 'inHg') || 'hPa';
   });
 
-  // Sony X-Reality Color Engine (Vivid contrast, rich saturation, crisp edge definition)
-  const [xRealityMode, setXRealityMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('weather_x_reality');
-    return saved !== null ? JSON.parse(saved) : true;
-  });
-
-  // Custom UI Accent Color Picker
+  // Custom UI Accent Color Picker (defaults to clean Botanical Mint)
   const [customAccentColor, setCustomAccentColor] = useState<string>(() => {
-    return localStorage.getItem('weather_custom_accent') || '#00F2B4';
+    return localStorage.getItem('weather_custom_accent') || '#00D284';
   });
 
   useEffect(() => {
@@ -75,17 +86,20 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       document.body.style.backgroundColor = '#000000';
     } else {
       document.documentElement.classList.remove('dark');
-      document.body.style.backgroundColor = '#F2F5FA';
+      document.body.style.backgroundColor = '#F4F6FA';
     }
   }, [isDarkMode]);
 
-  useEffect(() => {
-    localStorage.setItem('weather_x_reality', JSON.stringify(xRealityMode));
-  }, [xRealityMode]);
-
+  // Apply custom accent color globally across root document
   useEffect(() => {
     localStorage.setItem('weather_custom_accent', customAccentColor);
-    document.documentElement.style.setProperty('--app-accent', customAccentColor);
+    const root = document.documentElement;
+    root.style.setProperty('--app-accent', customAccentColor);
+    root.style.setProperty('--app-accent-10', hexToRgba(customAccentColor, 0.1));
+    root.style.setProperty('--app-accent-20', hexToRgba(customAccentColor, 0.2));
+    root.style.setProperty('--app-accent-30', hexToRgba(customAccentColor, 0.3));
+    root.style.setProperty('--app-accent-50', hexToRgba(customAccentColor, 0.5));
+    root.style.setProperty('--app-accent-glow', hexToRgba(customAccentColor, 0.45));
   }, [customAccentColor]);
 
   useEffect(() => {
@@ -104,7 +118,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const toggleTempUnit = () => setTempUnit(prev => (prev === 'C' ? 'F' : 'C'));
   const toggleWindUnit = () => setWindUnit(prev => (prev === 'kmh' ? 'mph' : 'kmh'));
   const togglePressureUnit = () => setPressureUnit(prev => (prev === 'hPa' ? 'inHg' : 'hPa'));
-  const toggleXRealityMode = () => setXRealityMode(prev => !prev);
 
   const formatTemp = (celsius: number): string => {
     if (tempUnit === 'F') {
@@ -144,8 +157,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         formatTemp,
         formatWind,
         formatPressure,
-        xRealityMode,
-        toggleXRealityMode,
         customAccentColor,
         setCustomAccentColor,
       }}

@@ -169,24 +169,26 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
   };
 
   return (
-    <div className="w-full min-h-full px-4 pt-3 pb-32 select-none">
+    <div className={`w-full min-h-full px-4 pt-3 pb-32 select-none transition-colors ${
+      isDarkMode ? 'text-white' : 'text-slate-900'
+    }`}>
       {/* HEADER */}
       <div className="mb-4">
         <div className="flex items-center space-x-2">
           <div 
-            className="w-8 h-8 rounded-xl flex items-center justify-center font-bold"
+            className="w-9 h-9 rounded-2xl flex items-center justify-center font-black shadow-sm"
             style={{ 
               backgroundColor: `${customAccentColor}25`,
               color: customAccentColor 
             }}
           >
-            <Layers size={18} />
+            <Layers size={19} />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight">
+            <h1 className={`text-xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
               Home Screen Widgets
             </h1>
-            <p className={`text-xs mt-0.5 font-medium ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>
+            <p className={`text-xs mt-0.5 font-bold ${isDarkMode ? 'text-zinc-400' : 'text-slate-600'}`}>
               Aesthetic, working Android widgets — tap to add directly to your home screen
             </p>
           </div>
@@ -195,14 +197,17 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
 
       {/* FEEDBACK ACTION TOAST */}
       {actionNotice && (
-        <div className="mb-4 p-3 rounded-2xl bg-teal-500 text-slate-950 font-bold text-xs flex items-center justify-between shadow-lg shadow-teal-500/25 animate-card-slide-fade">
+        <div 
+          className="mb-4 p-3 rounded-2xl text-slate-950 font-black text-xs flex items-center justify-between shadow-lg animate-card-slide-fade"
+          style={{ backgroundColor: customAccentColor }}
+        >
           <div className="flex items-center space-x-2">
             <CheckCircle2 size={16} className="shrink-0" />
             <span>{actionNotice}</span>
           </div>
           <button 
             onClick={() => setActionNotice(null)} 
-            className="text-[11px] font-black uppercase opacity-75 hover:opacity-100"
+            className="text-[11px] font-black uppercase opacity-75 hover:opacity-100 p-1 cursor-pointer"
           >
             ✕
           </button>
@@ -221,18 +226,21 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
                 setSelectedWidgetId(widget.id);
                 try { navigator.vibrate?.(10); } catch {}
               }}
-              className={`py-2 px-3.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all flex items-center space-x-2 cursor-pointer ${
+              className={`py-2 px-3.5 rounded-2xl text-xs font-black whitespace-nowrap transition-all duration-150 flex items-center space-x-2 cursor-pointer active:scale-95 ${
                 isSelected
-                  ? 'bg-teal-500 text-slate-950 shadow-md scale-102 font-extrabold'
+                  ? 'text-slate-950 shadow-md scale-102 font-extrabold'
                   : isDarkMode
-                  ? 'bg-[#121622] text-zinc-300 hover:bg-[#1A2030] border border-white/10'
-                  : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-xs'
+                  ? 'bg-[#121622] text-zinc-200 hover:bg-[#1A2030] border border-white/10'
+                  : 'bg-white text-slate-900 hover:bg-slate-50 border border-slate-300 shadow-xs'
               }`}
+              style={{
+                backgroundColor: isSelected ? customAccentColor : undefined
+              }}
             >
               <span>{widget.name}</span>
               {isPinned && (
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                  isSelected ? 'bg-slate-950/20 text-slate-950' : 'bg-teal-500/20 text-teal-300'
+                  isSelected ? 'bg-slate-950/20 text-slate-950' : 'bg-teal-500/20 text-teal-400'
                 }`}>
                   Active
                 </span>
@@ -505,7 +513,10 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
 
       {/* ALL WORKING WIDGETS STATUS SUMMARY LIST */}
       <div className="mb-5">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-teal-400 block mb-2 px-1">
+        <span 
+          className="text-[11px] font-black uppercase tracking-wider block mb-2 px-1"
+          style={{ color: customAccentColor }}
+        >
           Installed & Available Widgets ({WIDGETS_LIST.length})
         </span>
 
@@ -517,21 +528,33 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
               <div
                 key={widget.id}
                 onClick={() => setSelectedWidgetId(widget.id)}
-                className={`p-3 rounded-2xl border flex items-center justify-between transition-all cursor-pointer ${
+                className={`p-3.5 rounded-2xl border flex items-center justify-between transition-all duration-150 cursor-pointer active:scale-98 ${
                   isSelected
-                    ? 'border-teal-500/60 bg-teal-500/5'
-                    : isDarkMode ? 'bg-[#10141E] border-white/5 hover:border-white/20' : 'bg-white border-slate-200'
+                    ? isDarkMode ? 'bg-white/10 border-white/20' : 'bg-slate-50 border-slate-400'
+                    : isDarkMode ? 'bg-[#10141E] border-white/10 hover:border-white/20' : 'bg-white border-slate-200/90 shadow-xs'
                 }`}
+                style={{
+                  borderColor: isSelected ? customAccentColor : undefined
+                }}
               >
                 <div className="flex items-center space-x-3">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black ${
-                    isPinned ? 'bg-teal-500/20 text-teal-400' : 'bg-zinc-800 text-zinc-400'
-                  }`}>
+                  <div 
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black ${
+                      isPinned ? 'text-slate-950' : isDarkMode ? 'bg-zinc-800 text-zinc-300' : 'bg-slate-100 text-slate-700'
+                    }`}
+                    style={{
+                      backgroundColor: isPinned ? customAccentColor : undefined
+                    }}
+                  >
                     {isPinned ? '✓' : '+'}
                   </div>
                   <div>
-                    <span className="text-xs font-bold block">{widget.name}</span>
-                    <span className="text-[10px] opacity-60 block">{widget.sizeTag} • {widget.dimensions}</span>
+                    <span className={`text-xs font-black block ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {widget.name}
+                    </span>
+                    <span className={`text-[10px] font-bold block ${isDarkMode ? 'text-zinc-400' : 'text-slate-600'}`}>
+                      {widget.sizeTag} • {widget.dimensions}
+                    </span>
                   </div>
                 </div>
 
@@ -541,11 +564,14 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
                       e.stopPropagation();
                       handleToggleAddToHomeScreen(widget);
                     }}
-                    className={`text-[10px] font-black px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+                    className={`text-[10px] font-black px-3 py-1 rounded-full transition-all cursor-pointer active:scale-90 ${
                       isPinned 
-                        ? 'bg-teal-500 text-slate-950 shadow-xs' 
-                        : isDarkMode ? 'bg-[#181E2C] text-zinc-300 hover:text-white' : 'bg-slate-100 text-slate-700'
+                        ? 'text-slate-950 shadow-xs' 
+                        : isDarkMode ? 'bg-[#181E2C] text-zinc-200 hover:text-white' : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
                     }`}
+                    style={{
+                      backgroundColor: isPinned ? customAccentColor : undefined
+                    }}
                   >
                     {isPinned ? 'Active' : '+ Add'}
                   </button>
@@ -558,24 +584,29 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
 
       {/* QUICK ANDROID LAUNCHER GUIDE */}
       <div className={`p-4 rounded-3xl border ${
-        isDarkMode ? 'bg-[#0E121B] border-white/10' : 'bg-white border-slate-200 shadow-xs'
+        isDarkMode ? 'bg-[#0E121B] border-white/10' : 'bg-white border-slate-200/90 shadow-xs'
       }`}>
-        <h4 className="text-xs font-extrabold uppercase tracking-wider text-teal-400 mb-2 flex items-center space-x-1.5">
+        <h4 
+          className="text-xs font-black uppercase tracking-wider mb-2 flex items-center space-x-1.5"
+          style={{ color: customAccentColor }}
+        >
           <Info size={14} />
           <span>Android Launcher Widget Placement</span>
         </h4>
-        <ol className="space-y-1.5 text-xs opacity-80 leading-relaxed">
+        <ol className={`space-y-2 text-xs font-semibold leading-relaxed ${
+          isDarkMode ? 'text-zinc-200' : 'text-slate-800'
+        }`}>
           <li className="flex items-start space-x-2">
-            <span className="font-bold text-teal-400">1.</span>
-            <span>Tapping <strong>Add to Home Screen</strong> prompts Android to place the widget instantly.</span>
+            <span className="font-black" style={{ color: customAccentColor }}>1.</span>
+            <span>Tapping <strong>Add to Home Screen Now</strong> opens the native system prompt to place the widget directly on your home screen.</span>
           </li>
           <li className="flex items-start space-x-2">
-            <span className="font-bold text-teal-400">2.</span>
-            <span>You can also long-press your home screen wallpaper &gt; select <strong>Widgets</strong> &gt; <strong>WeatherApp</strong>.</span>
+            <span className="font-black" style={{ color: customAccentColor }}>2.</span>
+            <span>You can also long-press any empty space on your phone home screen &gt; select <strong>Widgets</strong> &gt; choose <strong>WeatherApp</strong>.</span>
           </li>
           <li className="flex items-start space-x-2">
-            <span className="font-bold text-teal-400">3.</span>
-            <span>Widgets automatically sync your saved city (<strong>{location.name}</strong>) and live microclimate farm graphics!</span>
+            <span className="font-black" style={{ color: customAccentColor }}>3.</span>
+            <span>All widgets auto-sync your active city (<strong>{location.name}</strong>) and live animated microclimate farm graphics!</span>
           </li>
         </ol>
       </div>

@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
@@ -38,6 +39,40 @@ public class MainActivity extends BridgeActivity {
                 return appWidgetManager != null && appWidgetManager.isRequestPinAppWidgetSupported();
             }
             return false;
+        }
+
+        @JavascriptInterface
+        public void updateWidgetData(String location, String temp, String condition, String details) {
+            try {
+                SharedPreferences prefs = context.getSharedPreferences("WeatherWidgetPrefs", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("location", location);
+                editor.putString("temp", temp);
+                editor.putString("condition", condition);
+                editor.putString("details", details);
+                editor.apply();
+
+                // Trigger widget updates across providers
+                AppWidgetManager manager = AppWidgetManager.getInstance(context);
+
+                int[] houseIds = manager.getAppWidgetIds(new ComponentName(context, WeatherHouseWidgetProvider.class));
+                if (houseIds != null && houseIds.length > 0) {
+                    Intent intent = new Intent(context, WeatherHouseWidgetProvider.class);
+                    intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                    intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, houseIds);
+                    context.sendBroadcast(intent);
+                }
+
+                int[] forecastIds = manager.getAppWidgetIds(new ComponentName(context, WeatherForecastWidgetProvider.class));
+                if (forecastIds != null && forecastIds.length > 0) {
+                    Intent intent = new Intent(context, WeatherForecastWidgetProvider.class);
+                    intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                    intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, forecastIds);
+                    context.sendBroadcast(intent);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         @JavascriptInterface

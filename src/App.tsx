@@ -8,7 +8,12 @@ import {
   ChevronDown, 
   RefreshCw, 
   Moon, 
-  AlertTriangle
+  AlertTriangle,
+  Settings,
+  Plus,
+  Check,
+  Search,
+  X
 } from 'lucide-react';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { PhoneSimulator } from './components/PhoneSimulator';
@@ -21,12 +26,12 @@ import { WeatherAlertBanner } from './components/WeatherAlertBanner';
 import { LiveRadarScreen } from './components/LiveRadarScreen';
 import { AirAndSunScreen } from './components/AirAndSunScreen';
 import { WeatherWidgetsScreen } from './components/WeatherWidgetsScreen';
-import { LocationsManagerScreen } from './components/LocationsManagerScreen';
-import { RatingFeedbackSection } from './components/RatingFeedbackSection';
+import { SettingsScreen } from './components/SettingsScreen';
 import { 
   DEFAULT_LOCATIONS, 
   fetchLiveWeather, 
-  detectSevereWeatherAlerts 
+  detectSevereWeatherAlerts,
+  searchLocations
 } from './services/weatherApi';
 import { 
   CurrentWeatherMetrics, 
@@ -40,10 +45,16 @@ const STORAGE_SAVED_LOCATIONS_KEY = 'weatherapp_saved_locations';
 const STORAGE_ACTIVE_LOCATION_KEY = 'weatherapp_active_location';
 
 function MainWeatherApp() {
-  const { isDarkMode, toggleDarkMode, customAccentColor, xRealityMode } = useTheme();
+  const { isDarkMode, toggleDarkMode, customAccentColor } = useTheme();
 
-  // Active Navigation Tab: 0 = Weather (Home), 1 = Radar, 2 = Air & Sun, 3 = Widgets, 4 = Locations
+  // Active Navigation Tab: 0 = Weather (Home), 1 = Radar, 2 = Air & Sun, 3 = Widgets, 4 = Settings
   const [activeTab, setActiveTab] = useState<number>(0);
+
+  // Quick Location Switcher Modal state (allows changing location directly inside Weather screen)
+  const [isLocationPickerOpen, setIsLocationPickerOpen] = useState<boolean>(false);
+  const [quickSearchQuery, setQuickSearchQuery] = useState<string>('');
+  const [quickSearchResults, setQuickSearchResults] = useState<LocationInfo[]>([]);
+  const [isQuickSearching, setIsQuickSearching] = useState<boolean>(false);
 
   // Manual Preview Override (null = automatic live sync from Open-Meteo)
   const [previewScene, setPreviewScene] = useState<WeatherSceneState | null>(null);
@@ -229,23 +240,39 @@ function MainWeatherApp() {
     });
   };
 
+  // Handle quick search inside Location Picker Modal
+  const handleQuickSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickSearchQuery.trim()) return;
+    setIsQuickSearching(true);
+    try {
+      const results = await searchLocations(quickSearchQuery);
+      setQuickSearchResults(results);
+    } catch {
+      setQuickSearchResults([]);
+    } finally {
+      setIsQuickSearching(false);
+    }
+  };
+
   return (
     <PhoneSimulator>
       {/* ANDROID TOP APP BAR */}
       <header className={`w-full px-4 pt-2 pb-2 flex items-center justify-between shrink-0 select-none z-20 transition-colors ${
         isDarkMode ? 'bg-[#000000] border-b border-white/10' : 'bg-[#F2F5FA] border-b border-slate-200'
       }`}>
-        {/* Center/Left: Location Selector */}
+        {/* Center/Left: Direct Location Switcher */}
         <button
-          onClick={() => setActiveTab(4)}
-          className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all ${
+          onClick={() => setIsLocationPickerOpen(true)}
+          className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
             isDarkMode
               ? 'bg-[#141820] text-white hover:bg-[#1C222E] border border-white/15 shadow-xs'
               : 'bg-white text-slate-800 hover:bg-slate-50 border border-slate-300/80 shadow-xs'
           }`}
+          title="Change active weather location"
         >
           <MapPin size={14} style={{ color: customAccentColor }} className="shrink-0" />
-          <span className="truncate max-w-[150px] text-[13px]">{activeLocation.name}</span>
+          <span className="truncate max-w-[150px] text-[13px] font-extrabold">{activeLocation.name}</span>
           <ChevronDown size={14} className="opacity-60 shrink-0" />
         </button>
 
@@ -263,7 +290,7 @@ function MainWeatherApp() {
 
           <button
             onClick={toggleDarkMode}
-            className={`w-9 h-9 rounded-2xl flex items-center justify-center transition-all ${
+            className={`w-9 h-9 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
               isDarkMode 
                 ? 'bg-[#141820] text-amber-300 hover:bg-[#1C222E] border border-white/10' 
                 : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 shadow-xs'
@@ -275,7 +302,7 @@ function MainWeatherApp() {
 
           <button
             onClick={() => handleFetchWeather(activeLocation)}
-            className={`w-9 h-9 rounded-2xl flex items-center justify-center transition-all ${
+            className={`w-9 h-9 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
               isLoading ? 'animate-spin text-teal-400' : ''
             } ${
               isDarkMode 
@@ -288,6 +315,103 @@ function MainWeatherApp() {
           </button>
         </div>
       </header>
+
+      {/* QUICK LOCATION PICKER OVERLAY MODAL (Choose location directly inside weather view) */}
+      {isLocationPickerOpen && (
+        <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md p-4 flex flex-col justify-end animate-card-slide-fade">
+          <div className={`w-full rounded-3xl p-4 border max-h-[85vh] overflow-y-auto no-scrollbar shadow-2xl ${
+            isDarkMode ? 'bg-[#0E121A] border-white/15 text-white' : 'bg-white border-slate-300 text-slate-900'
+          }`}>
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
+              <div className="flex items-center space-x-2">
+                <MapPin size={18} style={{ color: customAccentColor }} />
+                <h3 className="text-sm font-black">Choose Weather Location</h3>
+              </div>
+              <button
+                onClick={() => setIsLocationPickerOpen(false)}
+                className={`p-1.5 rounded-full cursor-pointer ${isDarkMode ? 'bg-white/10 text-white' : 'bg-slate-200 text-slate-800'}`}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Quick Search Input */}
+            <form onSubmit={handleQuickSearch} className="relative mb-3">
+              <input
+                type="text"
+                placeholder="Search city name (e.g. Tokyo, Berlin)..."
+                value={quickSearchQuery}
+                onChange={e => setQuickSearchQuery(e.target.value)}
+                className={`w-full pl-8 pr-16 py-2 rounded-xl text-xs font-bold border outline-hidden ${
+                  isDarkMode ? 'bg-black border-white/10 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'
+                }`}
+              />
+              <Search size={14} className="absolute left-2.5 top-2.5 text-zinc-400" />
+              <button
+                type="submit"
+                className="absolute right-1 top-1 px-2.5 py-1 rounded-lg text-slate-950 text-[10px] font-black cursor-pointer"
+                style={{ backgroundColor: customAccentColor }}
+              >
+                Search
+              </button>
+            </form>
+
+            {/* Quick Search Results */}
+            {quickSearchResults.length > 0 && (
+              <div className="mb-3 space-y-1">
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block px-1">Search Results</span>
+                {quickSearchResults.map((loc, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      handleAddLocation(loc);
+                      handleSelectLocation(loc);
+                      setIsLocationPickerOpen(false);
+                      setQuickSearchResults([]);
+                      setQuickSearchQuery('');
+                    }}
+                    className={`w-full p-2 rounded-xl text-left text-xs font-bold flex items-center justify-between ${
+                      isDarkMode ? 'bg-white/5 hover:bg-white/10 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-900'
+                    }`}
+                  >
+                    <span>{loc.name}, {loc.country}</span>
+                    <Plus size={14} style={{ color: customAccentColor }} />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Saved Cities Quick Switch */}
+            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1 px-1">Saved Cities</span>
+            <div className="space-y-1.5">
+              {savedLocations.map(loc => {
+                const isSelected = loc.id === activeLocation.id;
+                return (
+                  <button
+                    key={loc.id}
+                    onClick={() => {
+                      handleSelectLocation(loc);
+                      setIsLocationPickerOpen(false);
+                    }}
+                    className={`w-full p-2.5 rounded-xl text-left text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-teal-500/20 border text-white'
+                        : isDarkMode ? 'bg-white/5 hover:bg-white/10 text-zinc-200' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                    }`}
+                    style={{ borderColor: isSelected ? customAccentColor : undefined }}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <MapPin size={14} style={{ color: isSelected ? customAccentColor : undefined }} />
+                      <span>{loc.name}, {loc.country}</span>
+                    </div>
+                    {isSelected && <Check size={14} style={{ color: customAccentColor }} />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ACTIVE SCREEN CONTENT */}
       <div className="flex-1 w-full overflow-y-auto no-scrollbar relative flex flex-col pb-28">
@@ -311,13 +435,14 @@ function MainWeatherApp() {
               <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-1">
                 <button
                   onClick={() => setPreviewScene(null)}
-                  className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all whitespace-nowrap ${
+                  className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
                     previewScene === null
-                      ? 'bg-teal-500 text-slate-950 font-extrabold shadow-sm'
+                      ? 'text-slate-950 font-extrabold shadow-sm'
                       : isDarkMode
                       ? 'bg-[#141820] text-zinc-400 hover:text-white border border-white/10'
                       : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                   }`}
+                  style={{ backgroundColor: previewScene === null ? customAccentColor : undefined }}
                 >
                   ● Auto Live Sync
                 </button>
@@ -333,13 +458,14 @@ function MainWeatherApp() {
                   <button
                     key={item.id}
                     onClick={() => setPreviewScene(item.id)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all whitespace-nowrap ${
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
                       previewScene === item.id
-                        ? 'bg-teal-500 text-slate-950 font-bold shadow-sm'
+                        ? 'text-slate-950 font-bold shadow-sm'
                         : isDarkMode
                         ? 'bg-[#141820] text-zinc-400 hover:text-white border border-white/10'
                         : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                     }`}
+                    style={{ backgroundColor: previewScene === item.id ? customAccentColor : undefined }}
                   >
                     {item.label}
                   </button>
@@ -371,9 +497,6 @@ function MainWeatherApp() {
               hourly={hourlyForecast}
               currentTemp={metrics.temperature}
             />
-
-            {/* Community Rating & Feedback Section (Auto-dispatches to mmmmahe46@gmail.com) */}
-            <RatingFeedbackSection location={activeLocation} />
           </div>
         )}
 
@@ -406,10 +529,10 @@ function MainWeatherApp() {
           </div>
         )}
 
-        {/* TAB 4: LOCATIONS & PREFERENCES */}
+        {/* TAB 4: APP SETTINGS, PREFERENCES & FEEDBACK */}
         {activeTab === 4 && (
           <div className="w-full flex-col flex pb-4">
-            <LocationsManagerScreen
+            <SettingsScreen
               locations={savedLocations}
               activeLocation={activeLocation}
               onSelectLocation={handleSelectLocation}
@@ -425,10 +548,10 @@ function MainWeatherApp() {
       {/* APPLE LIQUID GLASS FLOATING NAVIGATION DOCK (Remains fixed in place when scrolling) */}
       <nav 
         aria-label="Liquid Glass Dock"
-        className={`absolute bottom-4 sm:bottom-5 inset-x-0 mx-auto w-[92%] max-w-[390px] h-16 px-2 flex items-center justify-around select-none z-40 rounded-full transition-all duration-300 shadow-2xl ${
+        className={`absolute bottom-4 sm:bottom-5 inset-x-0 mx-auto w-[92%] max-w-[390px] h-16 px-2 flex items-center justify-around select-none z-40 rounded-full transition-all duration-200 shadow-2xl ${
           isDarkMode
             ? 'liquid-glass-dock text-white'
-            : 'liquid-glass-dock-light text-slate-800'
+            : 'liquid-glass-dock-light text-slate-900'
         }`}
       >
         {[
@@ -436,7 +559,7 @@ function MainWeatherApp() {
           { id: 1, label: 'Radar', icon: Radar },
           { id: 2, label: 'Air & Sun', icon: Flower2 },
           { id: 3, label: 'Widgets', icon: Layers },
-          { id: 4, label: 'Cities', icon: MapPin },
+          { id: 4, label: 'Settings', icon: Settings },
         ].map(tab => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
@@ -447,21 +570,21 @@ function MainWeatherApp() {
                 setActiveTab(tab.id);
                 try { navigator.vibrate?.(12); } catch {}
               }}
-              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-full transition-all duration-200 cursor-pointer ${
+              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-full touch-response cursor-pointer active:scale-90 ${
                 isActive
                   ? 'font-black scale-105'
                   : isDarkMode
-                    ? 'text-zinc-400 hover:text-white font-medium hover:scale-102'
-                    : 'text-slate-500 hover:text-slate-900 font-medium hover:scale-102'
+                    ? 'text-zinc-300 hover:text-white font-bold hover:scale-102'
+                    : 'text-slate-700 hover:text-slate-950 font-bold hover:scale-102'
               }`}
               style={{
                 color: isActive ? customAccentColor : undefined,
               }}
             >
               <div 
-                className={`px-3.5 py-1 rounded-full transition-all duration-200 ${
+                className={`px-3.5 py-1 rounded-full transition-all duration-150 ${
                   isActive 
-                    ? 'shadow-md border border-white/25 backdrop-blur-md' 
+                    ? 'shadow-md border border-white/40 backdrop-blur-md' 
                     : ''
                 }`}
                 style={{
@@ -471,7 +594,7 @@ function MainWeatherApp() {
               >
                 <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
               </div>
-              <span className="text-[10px] tracking-tight mt-0.5 font-bold">
+              <span className="text-[10px] tracking-tight mt-0.5 font-extrabold">
                 {tab.label}
               </span>
             </button>

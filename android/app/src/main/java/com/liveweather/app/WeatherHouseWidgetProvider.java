@@ -5,11 +5,12 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.widget.RemoteViews;
 
 /**
  * Android Home Screen Widget Provider for WeatherApp.
- * Displays the house weather background and opens the app when pressed.
+ * Displays the iconic farm house weather background and automatically refreshes.
  */
 public class WeatherHouseWidgetProvider extends AppWidgetProvider {
 
@@ -20,9 +21,20 @@ public class WeatherHouseWidgetProvider extends AppWidgetProvider {
         }
     }
 
-    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
-        // Construct the RemoteViews object
+    public static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_weather_house);
+
+        // Read saved weather data for this location
+        SharedPreferences prefs = context.getSharedPreferences("WeatherWidgetPrefs", Context.MODE_PRIVATE);
+        String location = prefs.getString("location", "WeatherPro");
+        String temp = prefs.getString("temp", "24°");
+        String condition = prefs.getString("condition", "Partly Cloudy");
+        String details = prefs.getString("details", "Tap for live scenery");
+
+        views.setTextViewText(R.id.widget_location, location);
+        views.setTextViewText(R.id.widget_temperature, temp);
+        views.setTextViewText(R.id.widget_condition, condition);
+        views.setTextViewText(R.id.widget_details, details);
 
         // Create an Intent to launch MainActivity when widget is tapped
         Intent intent = new Intent(context, MainActivity.class);
@@ -36,7 +48,7 @@ public class WeatherHouseWidgetProvider extends AppWidgetProvider {
 
         views.setOnClickPendingIntent(R.id.widget_root, pendingIntent);
 
-        // Instruct the widget manager to update the widget
+        // Instruct widget manager to update
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 }
