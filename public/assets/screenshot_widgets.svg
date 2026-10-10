@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1600" width="800" height="1600">
+  <defs>
+    <!-- Background Gradients -->
+    <linearGradient id="bgSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#020617" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+
+    <!-- Glass Card Gradient -->
+    <linearGradient id="glassCard" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(30, 41, 59, 0.85)" />
+      <stop offset="100%" stop-color="rgba(15, 23, 42, 0.95)" />
+    </linearGradient>
+
+    <linearGradient id="heroGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A" />
+      <stop offset="50%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#15803D" />
+    </linearGradient>
+
+    <!-- Dock Glass Gradient -->
+    <linearGradient id="dockGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(15, 23, 42, 0.72)" />
+      <stop offset="100%" stop-color="rgba(2, 6, 23, 0.82)" />
+    </linearGradient>
+
+    <filter id="mintGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+  </defs>
+
+  <!-- Phone Frame -->
+  <rect x="0" y="0" width="800" height="1600" fill="#000000" />
+  <rect x="20" y="20" width="760" height="1560" rx="48" fill="url(#bgSky)" stroke="#334155" stroke-width="4" />
+
+  <!-- Status Bar -->
+  <circle cx="400" cy="50" r="12" fill="#000000" stroke="#1E293B" stroke-width="2" />
+  <text x="60" y="55" fill="#94A3B8" font-family="'Space Grotesk', sans-serif" font-weight="700" font-size="20">9:41</text>
+  <rect x="693" y="48" width="20" height="7" fill="#00D284" />
+
+  <!-- Screen Header Bar -->
+  <g transform="translate(40, 95)">
+    <rect x="0" y="0" width="52" height="52" rx="20" fill="rgba(0, 210, 132, 0.2)" />
+    <path d="M 18 18 L 34 18 L 34 34 L 18 34 Z" fill="none" stroke="#00D284" stroke-width="3" />
+    <text x="70" y="32" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="900" font-size="26">Home Screen Widgets</text>
+    <text x="70" y="52" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="16">Aesthetic, working Android widgets — tap to add directly</text>
+  </g>
+
+  <!-- Widget Selection Chips (Horizontal Bar) -->
+  <g transform="translate(40, 175)">
+    <!-- Active Chip 1 -->
+    <rect x="0" y="0" width="220" height="46" rx="23" fill="#00D284" />
+    <text x="110" y="29" text-anchor="middle" fill="#020617" font-family="'Outfit', sans-serif" font-weight="900" font-size="16">Iconic Farm House</text>
+
+    <!-- Chip 2 -->
+    <rect x="230" y="0" width="230" height="46" rx="23" fill="#1E293B" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1.5" />
+    <text x="345" y="29" text-anchor="middle" fill="#E2E8F0" font-family="'Outfit', sans-serif" font-weight="700" font-size="16">Apple Liquid Glass</text>
+
+    <!-- Chip 3 -->
+    <rect x="470" y="0" width="230" height="46" rx="23" fill="#1E293B" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1.5" />
+    <text x="585" y="29" text-anchor="middle" fill="#E2E8F0" font-family="'Outfit', sans-serif" font-weight="700" font-size="16">Minimal Glass Pill</text>
+  </g>
+
+  <!-- Live Widget Interactive Preview Card -->
+  <g transform="translate(40, 245)" filter="url(#shadow)">
+    <text x="0" y="0" fill="#00D284" font-family="'Outfit', sans-serif" font-weight="800" font-size="16" letter-spacing="1">LIVE PREVIEW (4×2 WIDE)</text>
+
+    <!-- The 4x2 Iconic Farm House Widget Preview -->
+    <rect x="0" y="20" width="720" height="340" rx="36" fill="url(#heroGradient)" stroke="rgba(255, 255, 255, 0.25)" stroke-width="2" />
+
+    <!-- Farm Microclimate Scene -->
+    <circle cx="600" cy="90" r="45" fill="#FFD000" />
+    <path d="M 0 240 Q 200 190, 400 230 T 720 210 L 720 340 L 0 340 Z" fill="#15803D" />
+    <rect x="100" y="180" width="90" height="60" fill="#DC2626" rx="4" />
+    <polygon points="90,180 145,140 200,180" fill="#991B1B" />
+
+    <text x="40" y="90" fill="#FFFFFF" font-family="'Space Grotesk', sans-serif" font-weight="900" font-size="70">24°</text>
+    <text x="40" y="125" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="800" font-size="22">San Francisco • Partly Cloudy</text>
+
+    <!-- Bottom Glass Strip -->
+    <rect x="0" y="280" width="720" height="60" fill="rgba(2, 6, 23, 0.85)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1" />
+    <circle cx="30" cy="310" r="6" fill="#00D284" />
+    <text x="48" y="316" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="800" font-size="18">San Francisco • H:26° L:18°</text>
+
+    <rect x="540" y="292" width="150" height="36" rx="18" fill="#00D284" />
+    <text x="615" y="315" text-anchor="middle" fill="#020617" font-family="'Outfit', sans-serif" font-weight="900" font-size="15">✓ Active Widget</text>
+  </g>
+
+  <!-- Add to Home Screen Dedicated Working Controls Card -->
+  <g transform="translate(40, 630)" filter="url(#shadow)">
+    <rect x="0" y="0" width="720" height="260" rx="32" fill="url(#glassCard)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1.5" />
+
+    <text x="28" y="44" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="900" font-size="22">Iconic Farm House Scene (4×2 Wide)</text>
+    <text x="28" y="72" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="16">Animated farm landscape reacting dynamically to real-time rain or sun.</text>
+
+    <!-- Add to Home Screen Toggle Bar -->
+    <rect x="28" y="95" width="664" height="68" rx="20" fill="rgba(0, 210, 132, 0.1)" stroke="rgba(0, 210, 132, 0.4)" stroke-width="1.5" />
+    <rect x="48" y="111" width="36" height="36" rx="12" fill="#00D284" />
+    <path d="M 60 123 L 64 133 L 74 121" fill="none" stroke="#020617" stroke-width="3" stroke-linecap="round" />
+
+    <text x="96" y="128" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="800" font-size="18">Add to Home Screen Toggle</text>
+    <text x="96" y="148" fill="#00D284" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="14">✓ Active &amp; syncing live weather</text>
+
+    <!-- Switch Toggle Graphic -->
+    <rect x="610" y="113" width="62" height="32" rx="16" fill="#00D284" />
+    <circle cx="656" cy="129" r="12" fill="#FFFFFF" />
+
+    <!-- Action Button -->
+    <rect x="28" y="180" width="664" height="56" rx="20" fill="#00D284" />
+    <text x="360" y="215" text-anchor="middle" fill="#020617" font-family="'Outfit', sans-serif" font-weight="900" font-size="18">✓ Added to Home Screen</text>
+  </g>
+
+  <!-- Installed & Available Widgets List -->
+  <g transform="translate(40, 920)" filter="url(#shadow)">
+    <text x="0" y="0" fill="#00D284" font-family="'Outfit', sans-serif" font-weight="800" font-size="16" letter-spacing="1">INSTALLED &amp; AVAILABLE WIDGETS (4)</text>
+
+    <!-- Item 1 -->
+    <g transform="translate(0, 20)">
+      <rect x="0" y="0" width="720" height="84" rx="24" fill="url(#glassCard)" stroke="#00D284" stroke-width="2" />
+      <rect x="20" y="20" width="44" height="44" rx="14" fill="#00D284" />
+      <text x="42" y="48" text-anchor="middle" fill="#020617" font-family="'Outfit', sans-serif" font-weight="900" font-size="20">✓</text>
+      <text x="80" y="42" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="800" font-size="18">Iconic Farm House Scene</text>
+      <text x="80" y="64" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="14">4×2 Wide • 4 cols × 2 rows</text>
+      <rect x="600" y="26" width="96" height="32" rx="16" fill="#00D284" />
+      <text x="648" y="47" text-anchor="middle" fill="#020617" font-family="'Outfit', sans-serif" font-weight="900" font-size="14">Active</text>
+    </g>
+
+    <!-- Item 2 -->
+    <g transform="translate(0, 116)">
+      <rect x="0" y="0" width="720" height="84" rx="24" fill="url(#glassCard)" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" />
+      <rect x="20" y="20" width="44" height="44" rx="14" fill="rgba(255, 255, 255, 0.1)" />
+      <text x="42" y="48" text-anchor="middle" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="900" font-size="20">+</text>
+      <text x="80" y="42" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="800" font-size="18">Apple Liquid Glass Forecast</text>
+      <text x="80" y="64" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="14">4×2 Extended • 4 cols × 2 rows</text>
+      <rect x="600" y="26" width="96" height="32" rx="16" fill="rgba(255, 255, 255, 0.1)" />
+      <text x="648" y="47" text-anchor="middle" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="800" font-size="14">+ Add</text>
+    </g>
+
+    <!-- Item 3 -->
+    <g transform="translate(0, 212)">
+      <rect x="0" y="0" width="720" height="84" rx="24" fill="url(#glassCard)" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" />
+      <rect x="20" y="20" width="44" height="44" rx="14" fill="rgba(255, 255, 255, 0.1)" />
+      <text x="42" y="48" text-anchor="middle" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="900" font-size="20">+</text>
+      <text x="80" y="42" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="800" font-size="18">Material Ambient At-A-Glance</text>
+      <text x="80" y="64" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="14">3×2 Compact • 3 cols × 2 rows</text>
+      <rect x="600" y="26" width="96" height="32" rx="16" fill="rgba(255, 255, 255, 0.1)" />
+      <text x="648" y="47" text-anchor="middle" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="800" font-size="14">+ Add</text>
+    </g>
+
+    <!-- Item 4 -->
+    <g transform="translate(0, 308)">
+      <rect x="0" y="0" width="720" height="84" rx="24" fill="url(#glassCard)" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" />
+      <rect x="20" y="20" width="44" height="44" rx="14" fill="rgba(255, 255, 255, 0.1)" />
+      <text x="42" y="48" text-anchor="middle" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="900" font-size="20">+</text>
+      <text x="80" y="42" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="800" font-size="18">Liquid Glass Minimal Pill</text>
+      <text x="80" y="64" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="14">2×1 Glance • 2 cols × 1 row</text>
+      <rect x="600" y="26" width="96" height="32" rx="16" fill="rgba(255, 255, 255, 0.1)" />
+      <text x="648" y="47" text-anchor="middle" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="800" font-size="14">+ Add</text>
+    </g>
+  </g>
+
+  <!-- Floating Dock -->
+  <g transform="translate(60, 1430)" filter="url(#shadow)">
+    <rect x="0" y="0" width="680" height="96" rx="48" fill="url(#dockGlass)" stroke="rgba(255, 255, 255, 0.25)" stroke-width="2" />
+    <g transform="translate(420, 16)">
+      <rect x="0" y="0" width="100" height="64" rx="32" fill="rgba(0, 210, 132, 0.25)" stroke="#00D284" stroke-width="1.5" />
+      <rect x="42" y="16" width="16" height="16" fill="none" stroke="#00D284" stroke-width="2" />
+      <text x="50" y="52" text-anchor="middle" fill="#00D284" font-family="'Outfit', sans-serif" font-weight="900" font-size="15">Widgets</text>
+    </g>
+  </g>
+</svg>

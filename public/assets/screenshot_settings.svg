@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1600" width="800" height="1600">
+  <defs>
+    <linearGradient id="bgSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#020617" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+
+    <linearGradient id="glassCard" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(30, 41, 59, 0.85)" />
+      <stop offset="100%" stop-color="rgba(15, 23, 42, 0.95)" />
+    </linearGradient>
+
+    <linearGradient id="dockGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(15, 23, 42, 0.72)" />
+      <stop offset="100%" stop-color="rgba(2, 6, 23, 0.82)" />
+    </linearGradient>
+
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+  </defs>
+
+  <!-- Phone Frame -->
+  <rect x="0" y="0" width="800" height="1600" fill="#000000" />
+  <rect x="20" y="20" width="760" height="1560" rx="48" fill="url(#bgSky)" stroke="#334155" stroke-width="4" />
+
+  <!-- Status Bar -->
+  <circle cx="400" cy="50" r="12" fill="#000000" stroke="#1E293B" stroke-width="2" />
+  <text x="60" y="55" fill="#94A3B8" font-family="'Space Grotesk', sans-serif" font-weight="700" font-size="20">9:41</text>
+  <rect x="693" y="48" width="20" height="7" fill="#00D284" />
+
+  <!-- Screen Header -->
+  <g transform="translate(40, 95)">
+    <rect x="0" y="0" width="52" height="52" rx="20" fill="rgba(0, 210, 132, 0.2)" />
+    <circle cx="26" cy="26" r="12" fill="none" stroke="#00D284" stroke-width="3" />
+    <text x="70" y="32" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="900" font-size="26">App Settings &amp; Preferences</text>
+    <text x="70" y="52" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="16">Material UI colors, saved cities &amp; user feedback</text>
+  </g>
+
+  <!-- Material Color Palette Picker Card -->
+  <g transform="translate(40, 175)" filter="url(#shadow)">
+    <rect x="0" y="0" width="720" height="250" rx="32" fill="url(#glassCard)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1.5" />
+
+    <text x="28" y="42" fill="#00D284" font-family="'Outfit', sans-serif" font-weight="900" font-size="18">MATERIAL UI COLOR PALETTE &amp; CUSTOM WHEEL</text>
+
+    <!-- Preset Color Circles -->
+    <!-- Mint -->
+    <circle cx="68" cy="100" r="28" fill="#00D284" stroke="#FFFFFF" stroke-width="3" />
+    <text x="68" y="106" text-anchor="middle" fill="#020617" font-family="'Outfit', sans-serif" font-weight="900" font-size="18">✓</text>
+    <text x="68" y="146" text-anchor="middle" fill="#00D284" font-family="'Outfit', sans-serif" font-weight="800" font-size="14">Botanical</text>
+
+    <!-- Sky -->
+    <circle cx="178" cy="100" r="28" fill="#0EA5E9" />
+    <text x="178" y="146" text-anchor="middle" fill="#94A3B8" font-family="'Outfit', sans-serif" font-weight="700" font-size="14">Sky</text>
+
+    <!-- Violet -->
+    <circle cx="288" cy="100" r="28" fill="#8B5CF6" />
+    <text x="288" y="146" text-anchor="middle" fill="#94A3B8" font-family="'Outfit', sans-serif" font-weight="700" font-size="14">Royal</text>
+
+    <!-- Amber -->
+    <circle cx="398" cy="100" r="28" fill="#F59E0B" />
+    <text x="398" y="146" text-anchor="middle" fill="#94A3B8" font-family="'Outfit', sans-serif" font-weight="700" font-size="14">Sunset</text>
+
+    <!-- Rose -->
+    <circle cx="508" cy="100" r="28" fill="#F43F5E" />
+    <text x="508" y="146" text-anchor="middle" fill="#94A3B8" font-family="'Outfit', sans-serif" font-weight="700" font-size="14">Coral</text>
+
+    <!-- Fuchsia -->
+    <circle cx="618" cy="100" r="28" fill="#EC4899" />
+    <text x="618" y="146" text-anchor="middle" fill="#94A3B8" font-family="'Outfit', sans-serif" font-weight="700" font-size="14">Neon</text>
+
+    <!-- Custom Hex Wheel Input Bar -->
+    <rect x="28" y="175" width="664" height="52" rx="18" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1" />
+    <circle cx="58" cy="201" r="14" fill="#00D284" stroke="#FFFFFF" stroke-width="2" />
+    <text x="86" y="207" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="800" font-size="16">Custom Hex Color Wheel</text>
+    <text x="280" y="207" fill="#00D284" font-family="'Space Grotesk', sans-serif" font-weight="700" font-size="16">#00D284</text>
+
+    <rect x="520" y="183" width="156" height="36" rx="14" fill="#00D284" />
+    <text x="598" y="206" text-anchor="middle" fill="#020617" font-family="'Outfit', sans-serif" font-weight="900" font-size="14">Active Accent</text>
+  </g>
+
+  <!-- Saved Cities Card -->
+  <g transform="translate(40, 450)" filter="url(#shadow)">
+    <rect x="0" y="0" width="720" height="230" rx="32" fill="url(#glassCard)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1.5" />
+
+    <text x="28" y="42" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="900" font-size="20">SAVED CITIES &amp; LOCATIONS</text>
+
+    <!-- City 1 (Active) -->
+    <g transform="translate(28, 60)">
+      <rect x="0" y="0" width="664" height="68" rx="20" fill="rgba(0, 210, 132, 0.1)" stroke="#00D284" stroke-width="2" />
+      <circle cx="34" cy="34" r="16" fill="#00D284" />
+      <text x="64" y="32" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="900" font-size="18">San Francisco</text>
+      <text x="64" y="52" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="14">California, United States</text>
+      <rect x="520" y="18" width="120" height="32" rx="16" fill="#00D284" />
+      <text x="580" y="39" text-anchor="middle" fill="#020617" font-family="'Outfit', sans-serif" font-weight="900" font-size="14">Active Home</text>
+    </g>
+
+    <!-- City 2 -->
+    <g transform="translate(28, 140)">
+      <rect x="0" y="0" width="664" height="68" rx="20" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1" />
+      <circle cx="34" cy="34" r="16" fill="rgba(255, 255, 255, 0.1)" />
+      <text x="64" y="32" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-weight="800" font-size="18">London</text>
+      <text x="64" y="52" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="14">Greater London, United Kingdom</text>
+    </g>
+  </g>
+
+  <!-- Rating & Feedback Section Card -->
+  <g transform="translate(40, 710)" filter="url(#shadow)">
+    <rect x="0" y="0" width="720" height="420" rx="32" fill="url(#glassCard)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1.5" />
+
+    <text x="28" y="44" fill="#00D284" font-family="'Outfit', sans-serif" font-weight="900" font-size="20">COMMUNITY RATING &amp; USER FEEDBACK</text>
+    <text x="28" y="70" fill="#94A3B8" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="15">Auto-dispatches to mmmmahe46@gmail.com</text>
+
+    <!-- Star Rating Row -->
+    <g transform="translate(28, 90)">
+      <polygon points="18,0 23,12 36,13 26,22 29,35 18,28 7,35 10,22 0,13 13,12" fill="#FFD000" />
+      <polygon points="68,0 73,12 86,13 76,22 79,35 68,28 57,35 60,22 50,13 63,12" fill="#FFD000" />
+      <polygon points="118,0 123,12 136,13 126,22 129,35 118,28 107,35 110,22 100,13 113,12" fill="#FFD000" />
+      <polygon points="168,0 173,12 186,13 176,22 179,35 168,28 157,35 160,22 150,13 163,12" fill="#FFD000" />
+      <polygon points="218,0 223,12 236,13 226,22 229,35 218,28 207,35 210,22 200,13 213,12" fill="#FFD000" />
+      <text x="260" y="26" fill="#FFD000" font-family="'Outfit', sans-serif" font-weight="900" font-size="22">5.0 / 5.0 Rating</text>
+    </g>
+
+    <!-- Feedback Tags -->
+    <g transform="translate(28, 150)">
+      <rect x="0" y="0" width="200" height="38" rx="19" fill="rgba(0, 210, 132, 0.2)" stroke="#00D284" stroke-width="1" />
+      <text x="100" y="24" text-anchor="middle" fill="#00D284" font-family="'Outfit', sans-serif" font-weight="800" font-size="14">🏡 Live House Scenery</text>
+
+      <rect x="212" y="0" width="210" height="38" rx="19" fill="rgba(0, 210, 132, 0.2)" stroke="#00D284" stroke-width="1" />
+      <text x="317" y="24" text-anchor="middle" fill="#00D284" font-family="'Outfit', sans-serif" font-weight="800" font-size="14">🎨 Liquid Glass Dock</text>
+    </g>
+
+    <!-- Comment Box -->
+    <rect x="28" y="205" width="664" height="120" rx="20" fill="rgba(2, 6, 23, 0.8)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1" />
+    <text x="48" y="240" fill="#F8FAFC" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="16">"The animated farm house reacting to live rain and sun on my home screen widget is unmatched! Liquid glass dock is super fluid."</text>
+    <text x="48" y="280" fill="#94A3B8" font-family="'Outfit', sans-serif" font-weight="700" font-size="15">— Mahesh K. • Verified User</text>
+
+    <!-- Submit Button -->
+    <rect x="28" y="345" width="664" height="52" rx="20" fill="#00D284" />
+    <text x="360" y="378" text-anchor="middle" fill="#020617" font-family="'Outfit', sans-serif" font-weight="900" font-size="18">✉️ Feedback Sent to mmmmahe46@gmail.com</text>
+  </g>
+
+  <!-- Floating Dock -->
+  <g transform="translate(60, 1430)" filter="url(#shadow)">
+    <rect x="0" y="0" width="680" height="96" rx="48" fill="url(#dockGlass)" stroke="rgba(255, 255, 255, 0.25)" stroke-width="2" />
+    <g transform="translate(550, 16)">
+      <rect x="0" y="0" width="100" height="64" rx="32" fill="rgba(0, 210, 132, 0.25)" stroke="#00D284" stroke-width="1.5" />
+      <circle cx="50" cy="24" r="10" fill="none" stroke="#00D284" stroke-width="3" />
+      <text x="50" y="52" text-anchor="middle" fill="#00D284" font-family="'Outfit', sans-serif" font-weight="900" font-size="15">Settings</text>
+    </g>
+  </g>
+</svg>

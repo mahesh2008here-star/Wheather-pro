@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="50%" stop-color="#020617" />
+      <stop offset="100%" stop-color="#000000" />
+    </linearGradient>
+
+    <!-- Squircle Border Gradient -->
+    <linearGradient id="borderGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D284" />
+      <stop offset="50%" stop-color="#0EA5E9" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+
+    <!-- Sun Radial Glow -->
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFD000" stop-opacity="1" />
+      <stop offset="60%" stop-color="#FF8C00" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#FF4500" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Sun Core -->
+    <linearGradient id="sunGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE066" />
+      <stop offset="100%" stop-color="#FF7A00" />
+    </linearGradient>
+
+    <!-- Glass Cloud Gradient -->
+    <linearGradient id="glassCloudGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255, 255, 255, 0.85)" />
+      <stop offset="100%" stop-color="rgba(225, 235, 245, 0.4)" />
+    </linearGradient>
+
+    <!-- Glass Reflection -->
+    <linearGradient id="glassReflection" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255, 255, 255, 0.9)" />
+      <stop offset="30%" stop-color="rgba(255, 255, 255, 0.2)" />
+      <stop offset="100%" stop-color="rgba(255, 255, 255, 0.0)" />
+    </linearGradient>
+
+    <!-- Rain Drop Glow -->
+    <linearGradient id="dropGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00F2FE" />
+      <stop offset="100%" stop-color="#4FACFE" />
+    </linearGradient>
+
+    <!-- Drop Shadow Filter -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+
+    <filter id="glowFilter" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- App Icon Base Squircle -->
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#bgGlow)" />
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="none" stroke="url(#borderGlow)" stroke-width="4" stroke-opacity="0.6" />
+
+  <!-- Ambient Glow Background behind Cloud/Sun -->
+  <circle cx="210" cy="210" r="140" fill="url(#sunGlow)" opacity="0.4" />
+
+  <!-- Sun Rays -->
+  <g transform="translate(210, 200)" filter="url(#glowFilter)">
+    <line x1="0" y1="-95" x2="0" y2="-120" stroke="#FFD000" stroke-width="8" stroke-linecap="round" />
+    <line x1="67" y1="-67" x2="85" y2="-85" stroke="#FFD000" stroke-width="8" stroke-linecap="round" />
+    <line x1="95" y1="0" x2="120" y2="0" stroke="#FFD000" stroke-width="8" stroke-linecap="round" />
+    <line x1="-67" y1="-67" x2="-85" y2="-85" stroke="#FFD000" stroke-width="8" stroke-linecap="round" />
+    <line x1="-95" y1="0" x2="-120" y2="0" stroke="#FFD000" stroke-width="8" stroke-linecap="round" />
+  </g>
+
+  <!-- Glowing Sun Sphere -->
+  <circle cx="210" cy="200" r="75" fill="url(#sunGrad)" filter="url(#shadow)" />
+
+  <!-- 3D Glassmorphic Cloud Overlay -->
+  <g filter="url(#shadow)">
+    <!-- Cloud Path Base -->
+    <path d="M 180 340 
+             L 340 340 
+             A 45 45 0 0 0 385 295 
+             A 40 40 0 0 0 355 230 
+             A 65 65 0 0 0 235 210 
+             A 55 55 0 0 0 145 265 
+             A 45 45 0 0 0 180 340 Z" 
+          fill="url(#glassCloudGrad)" 
+          stroke="rgba(255, 255, 255, 0.7)" 
+          stroke-width="2.5" />
+
+    <!-- Cloud Specular Sheen Reflection -->
+    <path d="M 180 338 
+             L 340 338 
+             A 43 43 0 0 0 383 295 
+             A 38 38 0 0 0 353 232 
+             A 63 63 0 0 0 235 212 
+             A 53 53 0 0 0 147 267 
+             A 43 43 0 0 0 180 338 Z" 
+          fill="url(#glassReflection)" />
+  </g>
+
+  <!-- Glowing Raindrops -->
+  <g filter="url(#glowFilter)">
+    <!-- Drop 1 -->
+    <path d="M 210 365 C 205 380, 200 392, 210 398 C 218 404, 225 398, 220 380 Z" fill="url(#dropGrad)" />
+    <!-- Drop 2 -->
+    <path d="M 270 375 C 265 390, 260 402, 270 408 C 278 414, 285 408, 280 390 Z" fill="url(#dropGrad)" />
+    <!-- Drop 3 -->
+    <path d="M 330 365 C 325 380, 320 392, 330 398 C 338 404, 345 398, 340 380 Z" fill="url(#dropGrad)" />
+  </g>
+
+  <!-- Mint Green Microclimate Sparkle Badge -->
+  <g transform="translate(370, 110)" filter="url(#shadow)">
+    <circle cx="0" cy="0" r="32" fill="#00D284" />
+    <path d="M 0 -16 L 4 -4 L 16 0 L 4 4 L 0 16 L -4 4 L -16 0 L -4 -4 Z" fill="#020617" />
+  </g>
+
+  <!-- App Branding Text at Bottom -->
+  <text x="256" y="458" 
+        text-anchor="middle" 
+        fill="#FFFFFF" 
+        font-family="'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif" 
+        font-weight="900" 
+        font-size="28" 
+        letter-spacing="6">WEATHER PRO</text>
+</svg>

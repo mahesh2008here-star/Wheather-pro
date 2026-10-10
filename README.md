@@ -1,6 +1,41 @@
+<div align="center">
+  <img src="public/assets/weather_app_logo.svg" alt="Weather Pro Logo" width="160" height="160" />
+  <h1>Weather Pro — Liquid Glass & Microclimate</h1>
+  <p><strong>Next-Generation Android Weather App with Material You Custom Palettes, Working Home Screen Widgets & Apple Liquid Glass Dock</strong></p>
+</div>
+
+---
+
+## 📸 High-Quality App Screenshots Showcase
+
+<div align="center">
+  <table border="0">
+    <tr>
+      <td align="center" width="25%">
+        <strong>🏡 Home & Microclimate Hero</strong><br/><br/>
+        <img src="public/assets/screenshot_home.svg" alt="Weather Pro Home Screen" width="230"/>
+      </td>
+      <td align="center" width="25%">
+        <strong>📱 Home Screen Widgets</strong><br/><br/>
+        <img src="public/assets/screenshot_widgets.svg" alt="Home Screen Widgets" width="230"/>
+      </td>
+      <td align="center" width="25%">
+        <strong>🌧️ Live Radar & Doppler Map</strong><br/><br/>
+        <img src="public/assets/screenshot_radar.svg" alt="Live Weather Radar" width="230"/>
+      </td>
+      <td align="center" width="25%">
+        <strong>⚙️ Settings & Customization</strong><br/><br/>
+        <img src="public/assets/screenshot_settings.svg" alt="App Settings" width="230"/>
+      </td>
+    </tr>
+  </table>
+</div>
+
+---
+
 # Farm Weather - Smart Agricultural Microclimate App
 
-A high-fidelity recreation of the mobile farm weather and parcel monitoring application showcased in the reference video (`@DailyFlutterUI_2001`).
+A high-fidelity recreation of the mobile farm weather and parcel monitoring application.
 
 ---
 
