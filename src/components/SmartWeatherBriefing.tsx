@@ -4,11 +4,6 @@ import {
   Volume2, 
   VolumeX, 
   Shirt, 
-  Sun, 
-  Smile, 
-  ShieldAlert,
-  Zap,
-  CheckCircle2,
   Radio
 } from 'lucide-react';
 import { CurrentWeatherMetrics, LocationInfo } from '../types/weather';
@@ -19,22 +14,22 @@ interface SmartWeatherBriefingProps {
   location: LocationInfo;
 }
 
-// Clean up text for natural vocal pronunciation on TTS engines
+// Format weather metrics for crystal clear natural vocal pronunciation on mobile & desktop
 const sanitizeForSpeech = (text: string): string => {
   return text
-    .replace(/(\d+)\s*°C/g, '$1 degrees Celsius')
-    .replace(/(\d+)\s*°F/g, '$1 degrees Fahrenheit')
-    .replace(/(\d+)\s*°/g, '$1 degrees')
-    .replace(/(\d+)\s*%/g, '$1 percent')
-    .replace(/(\d+)\s*km\/h/g, '$1 kilometers per hour')
-    .replace(/(\d+)\s*mph/g, '$1 miles per hour')
+    .replace(/(\d+)\s*°C/gi, '$1 degrees Celsius')
+    .replace(/(\d+)\s*°F/gi, '$1 degrees Fahrenheit')
+    .replace(/(\d+)\s*°/gi, '$1 degrees')
+    .replace(/(\d+)\s*%/gi, '$1 percent')
+    .replace(/(\d+)\s*km\/h/gi, '$1 kilometers per hour')
+    .replace(/(\d+)\s*mph/gi, '$1 miles per hour')
     .replace(/UV Index is elevated at (\d+)/gi, 'U V Index is elevated at $1')
     .replace(/SPF 50\+/gi, 'S P F 50 plus')
-    .replace(/AI/g, 'A I');
+    .replace(/AI/gi, 'A I');
 };
 
-// Split text into chunks under 140 chars for mobile speech synthesis compatibility
-const chunkText = (text: string, maxLen = 140): string[] => {
+// Break briefing text into short sentences for seamless Android & iOS SpeechSynthesis
+const chunkText = (text: string, maxLen = 120): string[] => {
   const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
   const chunks: string[] = [];
   let currentChunk = '';
@@ -57,7 +52,7 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
 }) => {
   const { isDarkMode, formatTemp } = useTheme();
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [speechError, setSpeechError] = useState<string | null>(null);
 
   // Generate dynamic intelligent AI briefing text based on real weather metrics
   const briefing = React.useMemo(() => {
@@ -102,7 +97,19 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
     return { summary, outfit, outdoorScore, badgeText, badgeColor };
   }, [metrics, formatTemp]);
 
-  // Stop all active audio / speech synthesis instances
+  // Pre-warm SpeechSynthesis voices on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          window.speechSynthesis.getVoices();
+        };
+      }
+    }
+  }, []);
+
+  // Stop all active audio / speech synthesis
   const stopAllAudio = () => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       try {
@@ -111,49 +118,20 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
         console.warn('Error cancelling speechSynthesis', e);
       }
     }
-    if (audioRef.current) {
-      try {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        audioRef.current = null;
-      } catch (e) {
-        console.warn('Error stopping HTML5 audio', e);
-      }
-    }
     setIsPlayingAudio(false);
   };
 
-  // HTML5 Web Audio TTS Fallback for Mobile WebView / Android App
-  const playHtml5AudioChunks = (chunks: string[], index = 0) => {
-    if (index >= chunks.length) {
-      setIsPlayingAudio(false);
+  // Toggle speech synthesis directly on user touch event
+  const toggleSpeech = () => {
+    setSpeechError(null);
+
+    if (isPlayingAudio) {
+      stopAllAudio();
       return;
     }
 
-    const cleanChunk = chunks[index];
-    const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(cleanChunk)}`;
-    const audio = new Audio(url);
-    audioRef.current = audio;
-
-    audio.onended = () => {
-      playHtml5AudioChunks(chunks, index + 1);
-    };
-
-    audio.onerror = () => {
-      // If error occurs, try next chunk or stop
-      playHtml5AudioChunks(chunks, index + 1);
-    };
-
-    audio.play().catch(() => {
-      // Browsers or WebViews requiring user gesture fallback gracefully
-      setIsPlayingAudio(false);
-    });
-  };
-
-  // Smart Speech Audio Briefing Controller
-  const toggleSpeech = () => {
-    if (isPlayingAudio) {
-      stopAllAudio();
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      setSpeechError('Text-to-speech is not supported on this browser.');
       return;
     }
 
@@ -161,23 +139,8 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
     const speechText = sanitizeForSpeech(rawText);
     const chunks = chunkText(speechText);
 
-    setIsPlayingAudio(true);
-
-    // Detect if running inside Capacitor Android native app / Webview or desktop browser
-    const isMobileApp = typeof window !== 'undefined' && (
-      !!(window as any).Capacitor || 
-      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-      navigator.userAgent.includes('wv')
-    );
-
-    // If WebSpeech is missing or on Android Native App (where SpeechSynthesis is often disabled in webview), use HTML5 Audio
-    if (!('speechSynthesis' in window) || isMobileApp) {
-      playHtml5AudioChunks(chunks);
-      return;
-    }
-
-    // Standard Desktop / Browser SpeechSynthesis with fallback
     try {
+      // Unfreeze & reset Android / WebSpeech engine
       window.speechSynthesis.cancel();
       window.speechSynthesis.resume();
 
@@ -191,15 +154,28 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
 
         const chunk = chunks[currentChunkIndex];
         const utterance = new SpeechSynthesisUtterance(chunk);
-        utterance.rate = 1.0;
+        utterance.lang = 'en-US';
+        utterance.rate = 0.95;
         utterance.pitch = 1.0;
+        utterance.volume = 1.0;
 
-        // Pick preferred English voice if available
+        // Select best available English voice
         const voices = window.speechSynthesis.getVoices();
         if (voices.length > 0) {
-          const pref = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('Karen'))) || voices.find(v => v.lang.startsWith('en'));
+          const pref = voices.find(v => v.lang.startsWith('en') && (
+            v.name.includes('Google') || 
+            v.name.includes('Natural') || 
+            v.name.includes('Samantha') || 
+            v.name.includes('Android') ||
+            v.name.includes('English')
+          )) || voices.find(v => v.lang.startsWith('en'));
+          
           if (pref) utterance.voice = pref;
         }
+
+        utterance.onstart = () => {
+          setIsPlayingAudio(true);
+        };
 
         utterance.onend = () => {
           currentChunkIndex++;
@@ -207,17 +183,24 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
         };
 
         utterance.onerror = (err) => {
-          console.warn('SpeechSynthesis error, switching to HTML5 Audio fallback', err);
-          playHtml5AudioChunks(chunks, currentChunkIndex);
+          console.warn('SpeechSynthesis chunk error:', err);
+          currentChunkIndex++;
+          if (currentChunkIndex < chunks.length) {
+            speakNextChunk();
+          } else {
+            setIsPlayingAudio(false);
+          }
         };
 
         window.speechSynthesis.speak(utterance);
       };
 
+      setIsPlayingAudio(true);
       speakNextChunk();
     } catch (err) {
-      console.warn('Speech synthesis exception, executing HTML5 Audio fallback', err);
-      playHtml5AudioChunks(chunks);
+      console.error('Speech synthesis exception:', err);
+      setSpeechError('Unable to play audio speech briefing.');
+      setIsPlayingAudio(false);
     }
   };
 
@@ -286,6 +269,12 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
         <p className={`text-xs leading-relaxed font-medium ${isDarkMode ? 'text-zinc-300' : 'text-stone-700'}`}>
           {briefing.summary}
         </p>
+
+        {speechError && (
+          <p className="mt-1 text-[10px] font-bold text-rose-400">
+            {speechError}
+          </p>
+        )}
 
         {/* Key Quick Insights Row */}
         <div className="mt-3 pt-2 border-t border-black/5 dark:border-white/10 flex items-center justify-between text-[11px]">
