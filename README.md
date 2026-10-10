@@ -95,6 +95,52 @@ A high-fidelity recreation of the mobile farm weather and parcel monitoring appl
 
 ---
 
+## 📱 How to Get the Android APK from GitHub
+
+### Why wasn't the APK showing before?
+When you push code to GitHub, GitHub acts as a code repository. It does not automatically compile web or mobile code into a `.apk` file unless an automated **GitHub Actions CI/CD workflow** is configured.
+
+### ✅ Automated GitHub Actions Pipeline is Now Configured!
+We added `.github/workflows/build-apk.yml` and initialized **Capacitor Android** in the repository.
+
+#### Method 1: Download the APK from GitHub Actions
+1. Push this repository to your GitHub.
+2. In your GitHub repository, click on the **Actions** tab at the top.
+3. Select the workflow titled **"Build & Release Android APK"**.
+4. Click on the latest workflow run.
+5. Scroll down to the **Artifacts** section at the bottom of the summary page.
+6. Click **`WeatherApp-Android-APK`** to download your APK!
+
+#### Method 2: Create a GitHub Release (APK Automatically Attached)
+1. On your GitHub repo page, click **Releases** (on the right sidebar).
+2. Click **"Draft a new release"**.
+3. Create a tag (e.g., `v1.0.0`), give it a title, and click **"Publish release"**.
+4. GitHub Actions will automatically compile the APK and attach `WeatherApp-release.apk` directly under the **Assets** section of your Release!
+
+#### Method 3: Build the APK Locally on Your Computer
+If you have Node.js and Java / Android Studio installed:
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Build web bundle and sync to Android project
+npm run build:android
+
+# 3. Build the APK using Gradle
+cd android
+./gradlew assembleDebug
+```
+The compiled APK will be located at:
+`android/app/build/outputs/apk/debug/app-debug.apk`
+
+Or open in Android Studio:
+```bash
+npx cap open android
+```
+Then select **Build > Build Bundle(s) / APK(s) > Build APK(s)**.
+
+---
+
 ## 🚀 Running the Project
 
 ```bash

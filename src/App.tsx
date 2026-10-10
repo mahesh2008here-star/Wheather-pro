@@ -24,6 +24,7 @@ import { LiveRadarScreen } from './components/LiveRadarScreen';
 import { AirAndSunScreen } from './components/AirAndSunScreen';
 import { WeatherWidgetsScreen } from './components/WeatherWidgetsScreen';
 import { LocationsManagerScreen } from './components/LocationsManagerScreen';
+import { ApkReleaseModal } from './components/ApkReleaseModal';
 import { 
   DEFAULT_LOCATIONS, 
   fetchLiveWeather, 
@@ -54,6 +55,7 @@ function MainWeatherApp() {
   const [savedLocations, setSavedLocations] = useState<LocationInfo[]>(DEFAULT_LOCATIONS);
   const [activeLocation, setActiveLocation] = useState<LocationInfo>(DEFAULT_LOCATIONS[0]);
   const [isLocationsModalOpen, setIsLocationsModalOpen] = useState<boolean>(false);
+  const [isApkModalOpen, setIsApkModalOpen] = useState<boolean>(false);
 
   // Loading state
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -381,9 +383,16 @@ function MainWeatherApp() {
             onDeleteLocation={handleDeleteLocation}
             onRefreshData={() => handleFetchWeather(activeLocation)}
             lastUpdated={metrics.lastUpdated}
+            onOpenApkModal={() => setIsApkModalOpen(true)}
           />
         )}
       </div>
+
+      {/* APK RELEASE MODAL */}
+      <ApkReleaseModal
+        isOpen={isApkModalOpen}
+        onClose={() => setIsApkModalOpen(false)}
+      />
 
       {/* BOTTOM NAVIGATION BAR */}
       <nav 

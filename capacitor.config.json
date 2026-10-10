@@ -1,0 +1,9 @@
+{
+  "appId": "com.liveweather.app",
+  "appName": "WeatherApp",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

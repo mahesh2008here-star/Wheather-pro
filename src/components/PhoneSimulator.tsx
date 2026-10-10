@@ -1,6 +1,7 @@
-import React from 'react';
-import { Wifi, Battery, Signal, Maximize2, Minimize2, Smartphone } from 'lucide-react';
+import React, { useState } from 'react';
+import { Wifi, Battery, Signal, Maximize2, Smartphone, Download, Github } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { ApkReleaseModal } from './ApkReleaseModal';
 
 interface PhoneSimulatorProps {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ export const PhoneSimulator: React.FC<PhoneSimulatorProps> = ({
   onToggleSimulatorFrame,
 }) => {
   const { isDarkMode } = useTheme();
+  const [isApkModalOpen, setIsApkModalOpen] = useState(false);
 
   return (
     <div className={`min-h-screen w-full flex flex-col items-center justify-center transition-colors ${
@@ -28,9 +30,19 @@ export const PhoneSimulator: React.FC<PhoneSimulatorProps> = ({
         </div>
 
         <div className="flex items-center space-x-2">
+          {/* APK / GitHub Release Guide Button */}
+          <button
+            onClick={() => setIsApkModalOpen(true)}
+            className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 font-semibold text-[11px] transition-all cursor-pointer"
+            title="Download APK and GitHub Actions instructions"
+          >
+            <Download size={12} />
+            <span>Get Android APK</span>
+          </button>
+
           <button
             onClick={onToggleSimulatorFrame}
-            className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white font-medium text-[11px] transition-all"
+            className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white font-medium text-[11px] transition-all cursor-pointer"
             title="Toggle between phone bezel and full view"
           >
             {isSimulatorFrame ? (
@@ -47,6 +59,12 @@ export const PhoneSimulator: React.FC<PhoneSimulatorProps> = ({
           </button>
         </div>
       </header>
+
+      {/* APK Release Modal */}
+      <ApkReleaseModal 
+        isOpen={isApkModalOpen} 
+        onClose={() => setIsApkModalOpen(false)} 
+      />
 
       {/* SIMULATOR CONTAINER */}
       <main className="flex-1 w-full flex items-center justify-center p-0 sm:p-4 overflow-hidden">

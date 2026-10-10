@@ -13,7 +13,9 @@ import {
   Loader2, 
   ChevronRight,
   ShieldCheck,
-  RefreshCw
+  RefreshCw,
+  Download,
+  Github
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { LocationInfo } from '../types/weather';
@@ -27,6 +29,7 @@ interface LocationsManagerScreenProps {
   onDeleteLocation: (id: string) => void;
   onRefreshData: () => void;
   lastUpdated: string;
+  onOpenApkModal?: () => void;
 }
 
 export const LocationsManagerScreen: React.FC<LocationsManagerScreenProps> = ({
@@ -37,6 +40,7 @@ export const LocationsManagerScreen: React.FC<LocationsManagerScreenProps> = ({
   onDeleteLocation,
   onRefreshData,
   lastUpdated,
+  onOpenApkModal,
 }) => {
   const { 
     isDarkMode, 
@@ -298,6 +302,39 @@ export const LocationsManagerScreen: React.FC<LocationsManagerScreenProps> = ({
               {pressureUnit}
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* ANDROID APK & GITHUB RELEASE */}
+      <div className="mb-5">
+        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-2 px-1">
+          Android Build & Release
+        </span>
+        <div 
+          onClick={onOpenApkModal}
+          className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+            isDarkMode 
+              ? 'bg-[#0A0A0C] border-emerald-500/30 hover:border-emerald-500/50 shadow-md' 
+              : 'bg-white border-emerald-500/30 hover:border-emerald-500/60 shadow-sm'
+          }`}
+        >
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400">
+              <Download size={18} />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-bold block text-white">Android APK & GitHub Actions</span>
+                <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-400">
+                  Ready
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                Download APK from GitHub Actions or build locally
+              </p>
+            </div>
+          </div>
+          <ChevronRight size={16} className="text-zinc-500" />
         </div>
       </div>
 
