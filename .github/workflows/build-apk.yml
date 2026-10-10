@@ -49,16 +49,34 @@ jobs:
       - name: Build Web Application
         run: npm run build
 
-      - name: Sync Capacitor Android
+      - name: Setup & Sync Capacitor Android
         run: |
+          # 1. If android platform directory does not exist, add it
           if [ ! -d "android" ]; then
-            echo "Android platform not found. Adding platform..."
+            echo "Android platform directory not found. Adding platform..."
             npx cap add android
           fi
+
+          # 2. If Gradle wrapper or root project files are missing, restore them from Capacitor CLI's official template
+          if [ ! -f "android/gradlew" ] || [ ! -f "android/build.gradle" ] || [ ! -f "android/settings.gradle" ] || [ ! -f "android/gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "Missing Gradle wrapper or root Gradle configuration in android/ directory."
+            echo "Restoring missing Gradle wrapper and project files from installed @capacitor/cli template..."
+            tar -xzf node_modules/@capacitor/cli/assets/android-template.tar.gz -C android --skip-old-files build.gradle settings.gradle variables.gradle gradle.properties gradlew gradlew.bat gradle/ || true
+          fi
+
+          # 3. Synchronize compiled web assets and plugins into the Android project
+          echo "Running Capacitor sync..."
           npx cap sync android
 
-      - name: Ensure Executable Permissions for Gradle
-        run: chmod +x android/gradlew
+          # 4. Verify gradlew exists and grant execution permissions
+          if [ ! -f "android/gradlew" ]; then
+            echo "::error::android/gradlew could not be found or generated in the runner!"
+            ls -la android || true
+            exit 1
+          fi
+
+          chmod +x android/gradlew
+          echo "android/gradlew is verified and executable."
 
       - name: Accept Android SDK Licenses
         run: |
