@@ -1,0 +1,6 @@
+{
+  "name": "Farm Weather - Smart Agriculture & Climate",
+  "description": "Live agricultural weather forecasting, animated microclimate landscape, interactive farm parcel map, and actionable farming recommendations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

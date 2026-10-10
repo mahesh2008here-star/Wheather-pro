@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #000000;
+    color: #1e293b;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* True OLED AMOLED Pure Pitch Black (#000000) */
+.dark body {
+  background-color: #000000 !important;
+  color: #f8fafc !important;
+}
+
+/* Custom hide scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Ultra Smooth Spring Animations */
+@keyframes cardSlideFade {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-card-slide-fade {
+  animation: cardSlideFade 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Radar pulse animation */
+@keyframes radarSweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-radar-sweep {
+  animation: radarSweep 3.2s linear infinite;
+}
+
+/* Breathing glow for live indicators */
+@keyframes breathingGlow {
+  0%, 100% {
+    opacity: 0.65;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+.animate-breathing-glow {
+  animation: breathingGlow 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Lightning flash for storm scene */
+@keyframes stormLightning {
+  0%, 92%, 100% {
+    opacity: 0;
+  }
+  93%, 95% {
+    opacity: 0.85;
+  }
+  94% {
+    opacity: 0.2;
+  }
+  96% {
+    opacity: 1;
+  }
+}
+
+.animate-lightning {
+  animation: stormLightning 6s ease-in-out infinite;
+}
+
+/* Floating drift animation for clouds & sun */
+@keyframes floatDrift {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-float-drift {
+  animation: floatDrift 4.5s ease-in-out infinite;
+}
+
+/* Pulse shimmer for OLED accent cards */
+@keyframes oledShimmer {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.18);
+  }
+}
+
+.oled-glow-sky {
+  animation: oledShimmer 4s ease-in-out infinite;
+}
