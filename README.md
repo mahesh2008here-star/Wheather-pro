@@ -104,18 +104,22 @@ When you push code to GitHub, GitHub acts as a code repository. It does not auto
 We added `.github/workflows/build-apk.yml` and initialized **Capacitor Android** in the repository.
 
 #### Method 1: Download the APK from GitHub Actions
-1. Push this repository to your GitHub.
-2. In your GitHub repository, click on the **Actions** tab at the top.
-3. Select the workflow titled **"Build & Release Android APK"**.
-4. Click on the latest workflow run.
-5. Scroll down to the **Artifacts** section at the bottom of the summary page.
-6. Click **`WeatherApp-Android-APK`** to download your APK!
+1. In your GitHub repository, click on the **Actions** tab at the top.
+2. Select the workflow titled **"Build & Release Android APK"**.
+3. If the previous run failed (Red X), click on that run, then click **"Re-run all jobs"** (top right), or push a new commit to trigger the fixed workflow.
+4. Once completed (Green checkmark), scroll down to **Artifacts** at the bottom of the page.
+5. Click **`WeatherApp-Android-APK`** to download your APK!
 
-#### Method 2: Create a GitHub Release (APK Automatically Attached)
+#### Method 2: Automatic GitHub Release (APK Attached to Assets)
+The workflow now automatically creates and updates a release with the APK:
 1. On your GitHub repo page, click **Releases** (on the right sidebar).
-2. Click **"Draft a new release"**.
-3. Create a tag (e.g., `v1.0.0`), give it a title, and click **"Publish release"**.
-4. GitHub Actions will automatically compile the APK and attach `WeatherApp-release.apk` directly under the **Assets** section of your Release!
+2. Under the **"Latest Android APK Release"**, look under **Assets**.
+3. Click **`WeatherApp-release.apk`** to download and install immediately on your Android phone!
+
+#### 🔧 What Was Fixed for the Red X Build Failure:
+- **Dependency Resolution (`ERESOLVE`)**: Removed root `esbuild` version conflict with Vite 8 and added `--legacy-peer-deps` so `npm install` passes smoothly in CI.
+- **Java 21 Requirement**: Upgraded JDK from 17 to Java 21 (Temurin) to support Capacitor 8 and Android Gradle Plugin 8.13+.
+- **Automated Platform Provisioning**: Added automatic fallback detection to initialize Android assets if not already cloned.
 
 #### Method 3: Build the APK Locally on Your Computer
 If you have Node.js and Java / Android Studio installed:
