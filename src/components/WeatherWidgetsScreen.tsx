@@ -2,87 +2,89 @@ import React, { useState } from 'react';
 import { 
   Sparkles, 
   Smartphone, 
-  Copy, 
   Check, 
+  Copy, 
   Sun, 
+  CloudSun, 
   CloudRain, 
   Wind, 
-  Layers, 
+  Droplets, 
+  Compass, 
+  Layers,
   ExternalLink,
-  Compass,
-  Palette,
-  Eye,
-  Sliders
+  ChevronRight,
+  Maximize2
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { CurrentWeatherMetrics, HourlyForecastItem, LocationInfo } from '../types/weather';
 import { FarmWeatherHero } from './FarmWeatherHero';
 
-interface WeatherWidgetsScreenProps {
+interface AndroidHomeWidgetsProps {
   metrics: CurrentWeatherMetrics;
   hourly: HourlyForecastItem[];
   location: LocationInfo;
+  onSelectWidgetPreview?: (widgetKey: string) => void;
 }
 
-export const WeatherWidgetsScreen: React.FC<WeatherWidgetsScreenProps> = ({
+export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
   metrics,
   hourly,
   location,
 }) => {
   const { isDarkMode, formatTemp, formatWind } = useTheme();
-  const [selectedWidgetType, setSelectedWidgetType] = useState<'medium' | 'small' | 'large' | 'lockscreen'>('medium');
-  const [widgetTheme, setWidgetTheme] = useState<'oled' | 'glass' | 'neon'>('oled');
-  const [copied, setCopied] = useState<boolean>(false);
+  const [selectedWidget, setSelectedWidget] = useState<'glance_medium' | 'glance_pill' | 'house_hero' | 'clock_weather'>('house_hero');
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const handleCopyCode = () => {
-    setCopied(true);
-    navigator.clipboard?.writeText?.(`// Weather Pro iOS WidgetKit & Android Glance
-// Type: ${selectedWidgetType.toUpperCase()} | Theme: ${widgetTheme.toUpperCase()}
-// Location: ${location.name} (${location.latitude}, ${location.longitude})
-// Live Condition: ${metrics.conditionTitle} (${metrics.temperature}°C)
-// Auto-Scene State: ${metrics.sceneState}
-// OLED Pure Black Enabled: ${isDarkMode}`);
-    setTimeout(() => setCopied(false), 2200);
+  const handleCopyNotice = (widgetName: string) => {
+    setCopiedKey(widgetName);
+    navigator.clipboard?.writeText?.(
+      `// Android Material You Widget Configuration\n// Widget: ${widgetName}\n// Location: ${location.name}\n// Temp: ${formatTemp(metrics.temperature)}\n// Condition: ${metrics.conditionTitle}`
+    );
+    setTimeout(() => setCopiedKey(null), 2500);
   };
 
   return (
     <div className={`w-full min-h-full px-4 pt-3 pb-24 transition-colors ${
-      isDarkMode ? 'bg-[#000000] text-white' : 'bg-[#F8F6F0] text-stone-900'
+      isDarkMode ? 'bg-[#000000] text-white' : 'bg-[#F4F6FA] text-slate-900'
     }`}>
       {/* HEADER */}
       <div className="mb-4">
         <div className="flex items-center space-x-2">
-          <Sparkles className="text-amber-400" size={20} />
-          <h1 className="text-2xl font-black tracking-tight">
-            Microclimate Widgets
-          </h1>
+          <div className="w-8 h-8 rounded-xl bg-teal-500/15 text-teal-400 flex items-center justify-center">
+            <Layers size={18} />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight">
+              Android Home Screen Widgets
+            </h1>
+            <p className={`text-xs mt-0.5 font-medium ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>
+              Material You adaptable widgets with live house & weather scenery
+            </p>
+          </div>
         </div>
-        <p className={`text-xs mt-0.5 font-medium ${isDarkMode ? 'text-zinc-400' : 'text-stone-500'}`}>
-          Interactive home screen & lock screen widgets with auto-weather scene
-        </p>
       </div>
 
-      {/* WIDGET SIZE PICKER */}
-      <div className={`flex space-x-1.5 p-1 rounded-2xl mb-3 border ${
-        isDarkMode ? 'bg-[#0A0A0C] border-white/10' : 'bg-black/5 border-black/5'
+      {/* ANDROID WIDGET SELECTOR TABS */}
+      <div className={`flex space-x-1 p-1 rounded-2xl mb-4 border ${
+        isDarkMode ? 'bg-[#12141A] border-white/10' : 'bg-slate-200/70 border-slate-300/60'
       }`}>
         {[
-          { id: 'medium' as const, label: 'Medium 4x2' },
-          { id: 'small' as const, label: 'Small 2x2' },
-          { id: 'large' as const, label: 'Bento 4x4' },
-          { id: 'lockscreen' as const, label: 'Lock Screen' },
+          { id: 'house_hero' as const, label: 'House Scene (4×2)' },
+          { id: 'glance_medium' as const, label: 'Material Forecast (4×2)' },
+          { id: 'clock_weather' as const, label: 'At a Glance (3×1)' },
+          { id: 'glance_pill' as const, label: 'Compact Pill (2×1)' },
         ].map(item => (
           <button
             key={item.id}
-            onClick={() => setSelectedWidgetType(item.id)}
-            className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              selectedWidgetType === item.id
+            onClick={() => setSelectedWidget(item.id)}
+            className={`flex-1 py-2 px-1 rounded-xl text-xs font-semibold transition-all text-center ${
+              selectedWidget === item.id
                 ? isDarkMode
-                  ? 'bg-white text-black shadow-lg scale-[1.02]'
-                  : 'bg-stone-900 text-white shadow-md scale-[1.02]'
+                  ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-xs'
+                  : 'bg-white text-teal-700 border border-teal-600/20 shadow-xs font-bold'
                 : isDarkMode
                   ? 'text-zinc-400 hover:text-white'
-                  : 'text-stone-600 hover:text-stone-900'
+                  : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             {item.label}
@@ -90,234 +92,193 @@ export const WeatherWidgetsScreen: React.FC<WeatherWidgetsScreenProps> = ({
         ))}
       </div>
 
-      {/* WIDGET THEME SELECTOR */}
-      <div className="flex items-center justify-between mb-3 px-1">
-        <span className="text-[11px] font-bold text-zinc-500 flex items-center space-x-1">
-          <Palette size={12} />
-          <span>Style Preset</span>
-        </span>
-        <div className="flex space-x-1">
-          {[
-            { id: 'oled' as const, label: 'OLED Black' },
-            { id: 'glass' as const, label: 'Frosted Glass' },
-            { id: 'neon' as const, label: 'Neon Cyber' },
-          ].map(theme => (
-            <button
-              key={theme.id}
-              onClick={() => setWidgetTheme(theme.id)}
-              className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold transition-all ${
-                widgetTheme === theme.id
-                  ? 'bg-sky-500 text-white shadow-xs'
-                  : isDarkMode
-                  ? 'bg-zinc-900 text-zinc-400 hover:text-white border border-white/10'
-                  : 'bg-stone-200/70 text-stone-700'
-              }`}
-            >
-              {theme.label}
-            </button>
-          ))}
+      {/* WIDGET PREVIEW CARD (ON HOMESCREEN MOCKUP) */}
+      <div className="mb-5">
+        <div className="flex items-center justify-between mb-2 px-1">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-teal-400">
+            Interactive Home Screen Preview
+          </span>
+          <span className="text-[10px] text-zinc-500">
+            Android 14+ / 15 Material You
+          </span>
         </div>
-      </div>
 
-      {/* WIDGET PREVIEW SHOWCASE */}
-      <div className="w-full flex flex-col items-center justify-center py-2">
-        {/* 1. MEDIUM 4x2 WIDGET */}
-        {selectedWidgetType === 'medium' && (
-          <div 
-            className={`w-full max-w-[360px] h-[175px] rounded-[32px] p-3.5 shadow-2xl overflow-hidden relative border transition-all ${
-              widgetTheme === 'neon'
-                ? 'bg-[#000000] border-sky-400/50 shadow-[0_0_30px_rgba(56,189,248,0.25)]'
-                : widgetTheme === 'glass'
-                ? 'bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl'
-                : isDarkMode 
-                ? 'bg-[#000000] border-white/15 shadow-[0_8px_30px_rgba(0,0,0,0.95)]' 
-                : 'bg-white border-stone-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.06)]'
-            }`}
-          >
-            <div className="flex h-full w-full">
-              {/* Left Column: Mini Animated Weather Microclimate Scene */}
-              <div className="w-[145px] h-full rounded-2xl overflow-hidden relative shadow-inner shrink-0 border border-black/10 dark:border-white/15">
-                <div className="scale-75 origin-top-left -ml-6 -mt-4 w-[240px] pointer-events-none">
-                  <FarmWeatherHero
-                    sceneState={metrics.sceneState}
-                    temperature={metrics.temperature}
-                    conditionTitle={metrics.conditionTitle}
-                    isLive={false}
-                  />
-                </div>
-              </div>
-
-              {/* Right Column: Live Data & Hourly Forecast */}
-              <div className="flex-1 pl-3 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className={`text-[11px] font-extrabold truncate max-w-[100px] ${isDarkMode ? 'text-zinc-200' : 'text-stone-800'}`}>
-                      {location.name}
-                    </span>
-                    <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
-                      AQI {metrics.airQuality.aqi}
-                    </span>
-                  </div>
-                  <div className="flex items-baseline space-x-1.5 mt-0.5">
-                    <span className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
-                      {formatTemp(metrics.temperature)}
-                    </span>
-                    <span className="text-[11px] font-bold text-sky-400 truncate max-w-[90px]">
-                      {metrics.conditionTitle}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Mini Hourly Strip */}
-                <div className="flex justify-between items-center pt-2 border-t border-black/5 dark:border-white/10 text-center">
-                  {hourly.slice(0, 4).map((h, i) => (
-                    <div key={i} className="flex flex-col items-center">
-                      <span className="text-[9px] font-semibold text-zinc-500">{h.hour}</span>
-                      <span className={`text-[10px] font-bold my-0.5 ${isDarkMode ? 'text-zinc-200' : 'text-stone-800'}`}>
-                        {formatTemp(h.temperature)}
-                      </span>
-                      <span className="text-[8px] font-bold text-sky-400">{h.rainProbability}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 2. SMALL 2x2 SQUARE WIDGET */}
-        {selectedWidgetType === 'small' && (
-          <div 
-            className={`w-[175px] h-[175px] rounded-[32px] p-4 shadow-2xl overflow-hidden relative border transition-all flex flex-col justify-between ${
-              widgetTheme === 'neon'
-                ? 'bg-[#000000] border-sky-400/50 shadow-[0_0_25px_rgba(56,189,248,0.3)]'
-                : widgetTheme === 'glass'
-                ? 'bg-white/10 backdrop-blur-xl border-white/20'
-                : isDarkMode 
-                ? 'bg-[#000000] border-white/15 shadow-[0_8px_30px_rgba(0,0,0,0.95)]' 
-                : 'bg-white border-stone-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.06)]'
-            }`}
-          >
-            {/* Background Mini Scene */}
-            <div className="absolute inset-0 opacity-40 pointer-events-none scale-60 origin-top-left -ml-8 -mt-6 w-[320px]">
+        {/* WIDGET 1: THE HOUSE SCENERY WIDGET */}
+        {selectedWidget === 'house_hero' && (
+          <div className="w-full rounded-3xl overflow-hidden shadow-2xl border border-white/10 relative group">
+            {/* Embedded Live House Scenery with real weather */}
+            <div className="relative w-full h-[210px] overflow-hidden">
               <FarmWeatherHero
                 sceneState={metrics.sceneState}
                 temperature={metrics.temperature}
                 conditionTitle={metrics.conditionTitle}
-                isLive={false}
+                isLive={true}
+                tempMin={metrics.tempMinToday}
+                tempMax={metrics.tempMaxToday}
+                apparentTemperature={metrics.apparentTemperature}
               />
             </div>
-
-            <div className="relative z-10 flex justify-between items-start">
-              <div>
-                <span className={`text-xs font-black truncate block ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
-                  {location.name}
+            {/* Material You bottom glass footer */}
+            <div className={`p-3 flex items-center justify-between backdrop-blur-md border-t ${
+              isDarkMode 
+                ? 'bg-black/85 border-white/10 text-white' 
+                : 'bg-white/95 border-slate-200 text-slate-800'
+            }`}>
+              <div className="flex items-center space-x-2">
+                <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+                <span className="text-xs font-bold">{location.name}</span>
+                <span className="text-[11px] opacity-70">
+                  • High {formatTemp(metrics.tempMaxToday)} / Low {formatTemp(metrics.tempMinToday)}
                 </span>
-                <span className="text-[10px] font-bold text-sky-400">{metrics.conditionTitle}</span>
               </div>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            </div>
-
-            <div className="relative z-10">
-              <span className={`text-4xl font-black ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
-                {formatTemp(metrics.temperature)}
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-400 border border-teal-500/30">
+                Tap opens App
               </span>
-              <div className="flex justify-between text-[10px] font-bold text-zinc-400 mt-1">
-                <span>H:{formatTemp(metrics.tempMaxToday)}</span>
-                <span>L:{formatTemp(metrics.tempMinToday)}</span>
-              </div>
             </div>
           </div>
         )}
 
-        {/* 3. LARGE 4x4 BENTO PRO WIDGET */}
-        {selectedWidgetType === 'large' && (
-          <div 
-            className={`w-full max-w-[360px] rounded-[36px] p-4 shadow-2xl overflow-hidden relative border transition-all ${
-              widgetTheme === 'neon'
-                ? 'bg-[#000000] border-sky-400/50 shadow-[0_0_35px_rgba(56,189,248,0.25)]'
-                : widgetTheme === 'glass'
-                ? 'bg-white/10 backdrop-blur-xl border-white/20'
-                : isDarkMode 
-                ? 'bg-[#000000] border-white/15 shadow-[0_8px_30px_rgba(0,0,0,0.95)]' 
-                : 'bg-white border-stone-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.06)]'
-            }`}
-          >
-            {/* Top Scene Banner */}
-            <div className="w-full h-32 rounded-2xl overflow-hidden relative border border-black/10 dark:border-white/15 mb-3">
-              <div className="scale-75 origin-top-left -ml-8 -mt-6 w-[440px] pointer-events-none">
-                <FarmWeatherHero
-                  sceneState={metrics.sceneState}
-                  temperature={metrics.temperature}
-                  conditionTitle={metrics.conditionTitle}
-                  isLive={false}
-                  apparentTemperature={metrics.apparentTemperature}
-                />
+        {/* WIDGET 2: MATERIAL FORECAST (4x2) */}
+        {selectedWidget === 'glance_medium' && (
+          <div className={`w-full p-4 rounded-3xl border shadow-xl transition-all ${
+            isDarkMode 
+              ? 'bg-[#151922] border-white/10 text-white' 
+              : 'bg-[#EBF2F7] border-slate-200 text-slate-800'
+          }`}>
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs font-semibold text-teal-400 uppercase tracking-wide">
+                  {location.name}
+                </p>
+                <div className="flex items-baseline space-x-2 mt-0.5">
+                  <span className="text-3xl font-black">{formatTemp(metrics.temperature)}</span>
+                  <span className="text-sm font-semibold">{metrics.conditionTitle}</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-xs font-bold block">
+                  H:{formatTemp(metrics.tempMaxToday)} L:{formatTemp(metrics.tempMinToday)}
+                </span>
+                <span className="text-[11px] opacity-70">
+                  Feels {formatTemp(metrics.apparentTemperature)}
+                </span>
               </div>
             </div>
 
-            {/* Metrics Row */}
-            <div className="grid grid-cols-3 gap-2 text-center pt-1 border-t border-black/5 dark:border-white/10">
-              <div className="p-2 rounded-xl bg-black/5 dark:bg-zinc-950 border border-black/5 dark:border-white/5">
-                <span className="text-[10px] text-zinc-500 font-bold block">Wind</span>
-                <span className="text-xs font-black">{formatWind(metrics.windSpeed)}</span>
-              </div>
-              <div className="p-2 rounded-xl bg-black/5 dark:bg-zinc-950 border border-black/5 dark:border-white/5">
-                <span className="text-[10px] text-zinc-500 font-bold block">Humidity</span>
-                <span className="text-xs font-black">{metrics.humidity}%</span>
-              </div>
-              <div className="p-2 rounded-xl bg-black/5 dark:bg-zinc-950 border border-black/5 dark:border-white/5">
-                <span className="text-[10px] text-zinc-500 font-bold block">UV Index</span>
-                <span className="text-xs font-black text-amber-400">{metrics.uvIndex} Mod</span>
-              </div>
+            {/* Next 5 hours strip */}
+            <div className="grid grid-cols-5 gap-1.5 pt-3 border-t border-black/10 dark:border-white/10">
+              {hourly.slice(0, 5).map((item, idx) => (
+                <div key={idx} className="flex flex-col items-center py-1">
+                  <span className="text-[11px] opacity-75 mb-1">{item.hour}</span>
+                  <span className="text-xs font-bold">{formatTemp(item.temperature)}</span>
+                  {item.rainProbability > 0 && (
+                    <span className="text-[9px] font-semibold text-teal-400 mt-0.5">
+                      {item.rainProbability}%
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* 4. LOCK SCREEN WIDGET */}
-        {selectedWidgetType === 'lockscreen' && (
-          <div className="w-full max-w-[340px] p-5 rounded-[36px] bg-[#000000] border border-white/15 shadow-2xl flex flex-col items-center space-y-4">
-            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
-              OLED Lock Screen Glance
-            </span>
-
-            {/* Lockscreen Complications Row */}
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 rounded-full border-2 border-white/20 p-1 flex flex-col items-center justify-center text-center">
-                <span className="text-sm">☀️</span>
-                <span className="text-sm font-black text-white mt-0.5">{formatTemp(metrics.temperature)}</span>
+        {/* WIDGET 3: AT A GLANCE (3x1) */}
+        {selectedWidget === 'clock_weather' && (
+          <div className={`w-full p-4 rounded-3xl border shadow-lg flex items-center justify-between ${
+            isDarkMode 
+              ? 'bg-[#151922] border-white/10 text-white' 
+              : 'bg-[#EBF2F7] border-slate-200 text-slate-800'
+          }`}>
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 rounded-2xl bg-teal-500/20 text-teal-400 flex items-center justify-center font-black">
+                <Sun size={26} />
               </div>
+              <div>
+                <div className="flex items-baseline space-x-2">
+                  <span className="text-2xl font-black">{formatTemp(metrics.temperature)}</span>
+                  <span className="text-xs font-bold text-teal-400">{location.name}</span>
+                </div>
+                <p className="text-[11px] opacity-70 font-medium">
+                  {metrics.conditionTitle} • Humidity {metrics.humidity}%
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-xs font-bold block text-teal-400">
+                Wind {formatWind(metrics.windSpeed)}
+              </span>
+              <span className="text-[10px] opacity-60">
+                AQI {metrics.airQuality.aqi} ({metrics.airQuality.category})
+              </span>
+            </div>
+          </div>
+        )}
 
-              {/* Inline Lockscreen Complication */}
-              <div className="px-3.5 py-2 rounded-2xl border border-white/20 text-xs font-bold text-white flex items-center space-x-2 bg-white/5">
-                <span>📍 {location.name}</span>
-                <span>•</span>
-                <span className="text-sky-300">{formatTemp(metrics.temperature)} {metrics.conditionTitle}</span>
+        {/* WIDGET 4: COMPACT PILL (2x1) */}
+        {selectedWidget === 'glance_pill' && (
+          <div className="flex justify-center">
+            <div className={`px-5 py-3 rounded-full border shadow-lg flex items-center space-x-3.5 ${
+              isDarkMode 
+                ? 'bg-[#151922] border-white/10 text-white' 
+                : 'bg-[#EBF2F7] border-slate-200 text-slate-800'
+            }`}>
+              <Sun size={20} className="text-amber-400 shrink-0" />
+              <span className="text-lg font-black">{formatTemp(metrics.temperature)}</span>
+              <div className="h-4 w-px bg-white/20" />
+              <div className="text-left">
+                <span className="text-xs font-bold block leading-tight">{location.name}</span>
+                <span className="text-[10px] opacity-70 leading-tight block">{metrics.conditionTitle}</span>
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* WIDGET CODE & INTEGRATION FOOTER */}
-      <div className={`mt-5 p-4 rounded-3xl border transition-all ${
-        isDarkMode ? 'bg-[#0A0A0C] border-white/10' : 'bg-black/5 border-black/5'
+      {/* HOW TO ADD ON ANDROID */}
+      <div className={`p-4 rounded-3xl border mb-4 ${
+        isDarkMode ? 'bg-[#10131A] border-white/10' : 'bg-white border-slate-200 shadow-sm'
       }`}>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-bold">Install to Home Screen</span>
-          <button
-            onClick={handleCopyCode}
-            className="flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold shadow-sm transition-all"
-          >
-            {copied ? <Check size={13} /> : <Copy size={13} />}
-            <span>{copied ? 'Copied Specs!' : 'Copy Widget Specs'}</span>
-          </button>
-        </div>
-        <p className="text-[11px] text-zinc-400 leading-relaxed">
-          Supports iOS 18/19 WidgetKit (SwiftUI) and Android 15/16 Glance. The animated weather microclimate renders automatically using real-time local telemetry.
-        </p>
+        <h3 className="text-xs font-bold uppercase tracking-wider text-teal-400 mb-2 flex items-center space-x-1.5">
+          <Smartphone size={14} />
+          <span>How to Add to Android Home Screen</span>
+        </h3>
+        <ol className="space-y-2 text-xs opacity-85 leading-relaxed">
+          <li className="flex items-start space-x-2">
+            <span className="font-bold text-teal-400">1.</span>
+            <span>Long-press any empty space on your Android phone's home screen.</span>
+          </li>
+          <li className="flex items-start space-x-2">
+            <span className="font-bold text-teal-400">2.</span>
+            <span>Tap <strong>Widgets</strong> in the pop-up menu.</span>
+          </li>
+          <li className="flex items-start space-x-2">
+            <span className="font-bold text-teal-400">3.</span>
+            <span>Find <strong>WeatherApp</strong> and drag your preferred widget to the screen.</span>
+          </li>
+          <li className="flex items-start space-x-2">
+            <span className="font-bold text-teal-400">4.</span>
+            <span>Tapping the widget directly launches your live house scenery and saved weather location!</span>
+          </li>
+        </ol>
       </div>
+
+      {/* COPY WIDGET CONFIGURATION BUTTON */}
+      <button
+        onClick={() => handleCopyNotice(selectedWidget)}
+        className="w-full py-3 px-4 rounded-2xl bg-teal-500 hover:bg-teal-600 text-slate-950 font-bold text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-lg shadow-teal-500/20"
+      >
+        {copiedKey === selectedWidget ? (
+          <>
+            <Check size={16} />
+            <span>Widget Configuration Copied!</span>
+          </>
+        ) : (
+          <>
+            <Copy size={16} />
+            <span>Copy Widget Code / Config</span>
+          </>
+        )}
+      </button>
     </div>
   );
 };
-

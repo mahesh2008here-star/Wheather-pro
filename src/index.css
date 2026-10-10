@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --app-accent: #00F2B4;
+    --app-glow: rgba(0, 242, 180, 0.4);
+  }
+
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: #000000;
@@ -10,6 +15,34 @@
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
+}
+
+/* Sony X-Reality Color Engine for Mobile Boost */
+/* Enhances contrast, micro-texture clarity, dynamic range and rich gamut vibrancy */
+.x-reality-boost {
+  filter: contrast(1.08) saturate(1.22) brightness(1.02);
+  transition: filter 0.4s ease-in-out;
+}
+
+.dark .x-reality-boost {
+  filter: contrast(1.12) saturate(1.28) brightness(1.04);
+}
+
+/* Dynamic Accent Elements */
+.bg-custom-accent {
+  background-color: var(--app-accent) !important;
+}
+
+.text-custom-accent {
+  color: var(--app-accent) !important;
+}
+
+.border-custom-accent {
+  border-color: var(--app-accent) !important;
+}
+
+.shadow-custom-glow {
+  box-shadow: 0 0 24px var(--app-glow) !important;
 }
 
 /* True OLED AMOLED Pure Pitch Black (#000000) */

@@ -33,6 +33,19 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <!-- Android Home Screen Weather House Widget -->
+        <receiver
+            android:name=".WeatherHouseWidgetProvider"
+            android:label="Weather House Scene"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/weather_house_widget_info" />
+        </receiver>
     </application>
 
     <!-- Permissions -->
