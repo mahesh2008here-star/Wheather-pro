@@ -64,35 +64,65 @@
   scrollbar-width: none;
 }
 
-/* Apple Liquid Glass Navigation Dock Concept */
+/* Apple Liquid Glass Navigation Dock Concept - 85% Glass Liquidity (Low Opacity, High Transparency) */
 .liquid-glass-dock {
-  background: rgba(8, 12, 20, 0.55);
-  backdrop-filter: blur(36px) saturate(240%);
-  -webkit-backdrop-filter: blur(36px) saturate(240%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(10, 15, 26, 0.15) 100%);
+  backdrop-filter: blur(12px) saturate(190%) contrast(102%);
+  -webkit-backdrop-filter: blur(12px) saturate(190%) contrast(102%);
   border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow: 
-    0 24px 48px -12px rgba(0, 0, 0, 0.75),
+    0 16px 36px -8px rgba(0, 0, 0, 0.45),
     0 0 0 1px rgba(255, 255, 255, 0.12) inset,
-    0 1.5px 3px 0 rgba(255, 255, 255, 0.4) inset;
+    0 1.5px 3px 0 rgba(255, 255, 255, 0.4) inset,
+    0 0 18px var(--app-accent-glow);
+  transform: translateZ(0);
+  will-change: backdrop-filter;
 }
 
 .liquid-glass-dock-light {
-  background: rgba(240, 244, 252, 0.42);
-  backdrop-filter: blur(36px) saturate(240%);
-  -webkit-backdrop-filter: blur(36px) saturate(240%);
-  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(225, 238, 255, 0.12) 100%);
+  backdrop-filter: blur(12px) saturate(190%) contrast(102%);
+  -webkit-backdrop-filter: blur(12px) saturate(190%) contrast(102%);
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
   box-shadow: 
-    0 20px 48px -10px rgba(15, 23, 42, 0.16),
-    0 0 0 1px rgba(255, 255, 255, 0.6) inset,
-    0 1.5px 3px 0 rgba(255, 255, 255, 0.95) inset;
+    0 14px 32px -8px rgba(15, 23, 42, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+    0 1.5px 3px 0 rgba(255, 255, 255, 0.75) inset,
+    0 0 16px var(--app-accent-glow);
+  transform: translateZ(0);
+  will-change: backdrop-filter;
 }
 
-/* Snappy Instant Touch Scale Feedback */
+/* Snappy Native Android-like Touch Response & Hardware Acceleration */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gpu-accelerate {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform;
+}
+
+.snappy-touch {
+  transition: transform 0.08s cubic-bezier(0.1, 0.9, 0.2, 1), background-color 0.12s ease, opacity 0.12s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+}
+.snappy-touch:active {
+  transform: scale(0.95);
+}
+
 .touch-response {
-  transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, opacity 0.15s ease;
+  transition: transform 0.1s cubic-bezier(0.1, 0.9, 0.2, 1), background-color 0.12s ease, opacity 0.12s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 .touch-response:active {
-  transform: scale(0.94);
+  transform: scale(0.93);
 }
 
 /* Specular Light Sheen Reflection on Apple Liquid Glass */

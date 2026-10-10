@@ -27,6 +27,7 @@ import { LiveRadarScreen } from './components/LiveRadarScreen';
 import { AirAndSunScreen } from './components/AirAndSunScreen';
 import { WeatherWidgetsScreen } from './components/WeatherWidgetsScreen';
 import { SettingsScreen } from './components/SettingsScreen';
+import { MicroclimateAgriAdvisory } from './components/MicroclimateAgriAdvisory';
 import { 
   DEFAULT_LOCATIONS, 
   fetchLiveWeather, 
@@ -491,6 +492,9 @@ function MainWeatherApp() {
             {/* Comprehensive Android Weather Metrics Cards */}
             <ConditionsGrid metrics={metrics} />
 
+            {/* Microclimate & Agriculture Field Advisory Module */}
+            <MicroclimateAgriAdvisory metrics={metrics} />
+
             {/* Hourly 24h & 7-Day Expandable Daily Forecast */}
             <ForecastSection
               daily={dailyForecast}
@@ -525,6 +529,8 @@ function MainWeatherApp() {
               metrics={metrics}
               hourly={hourlyForecast}
               location={activeLocation}
+              isLoading={isLoading}
+              onRefreshData={() => handleFetchWeather(activeLocation)}
             />
           </div>
         )}

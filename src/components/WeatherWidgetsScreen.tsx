@@ -1,25 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Sparkles, 
   Smartphone, 
   Check, 
   Sun, 
-  CloudSun, 
-  CloudRain, 
-  Wind, 
-  Droplets, 
-  Compass, 
   Layers,
-  ChevronRight,
-  Maximize2,
   CheckCircle2,
-  Palette,
   Eye,
-  Sliders,
-  ExternalLink,
-  ShieldCheck,
-  Zap,
-  Info
+  Info,
+  RefreshCw,
+  Clock,
+  RotateCw,
+  Zap
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { CurrentWeatherMetrics, HourlyForecastItem, LocationInfo } from '../types/weather';
@@ -29,6 +21,8 @@ interface AndroidHomeWidgetsProps {
   metrics: CurrentWeatherMetrics;
   hourly: HourlyForecastItem[];
   location: LocationInfo;
+  isLoading?: boolean;
+  onRefreshData?: () => void;
 }
 
 interface WidgetDefinition {
@@ -82,10 +76,12 @@ const WIDGETS_LIST: WidgetDefinition[] = [
 
 const STORAGE_PINNED_WIDGETS_KEY = 'weatherapp_pinned_widgets';
 
-export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
+export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = React.memo(({
   metrics,
   hourly,
   location,
+  isLoading = false,
+  onRefreshData
 }) => {
   const { isDarkMode, formatTemp, formatWind, customAccentColor } = useTheme();
 
@@ -93,7 +89,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
   const [selectedWidgetId, setSelectedWidgetId] = useState<string>('house_hero');
   
   // Customization: Glass / Dark / Vibrant
-  const [widgetTheme, setWidgetTheme] = useState<'liquid_glass' | 'oled_black' | 'sony_vivid'>('liquid_glass');
+  const [widgetTheme] = useState<'liquid_glass' | 'oled_black' | 'sony_vivid'>('liquid_glass');
 
   // Track which widgets are added to home screen
   const [pinnedWidgetIds, setPinnedWidgetIds] = useState<string[]>(() => {
@@ -123,21 +119,19 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
   const selectedWidget = WIDGETS_LIST.find(w => w.id === selectedWidgetId) || WIDGETS_LIST[0];
   const isSelectedPinned = pinnedWidgetIds.includes(selectedWidget.id);
 
-  // Core Working "Add to Home Screen" Trigger
-  const handleToggleAddToHomeScreen = (widget: WidgetDefinition) => {
+  // Snappy working "Add to Home Screen" Trigger with haptics
+  const handleToggleAddToHomeScreen = useCallback((widget: WidgetDefinition) => {
+    try { navigator.vibrate?.([15, 30, 15]); } catch {}
+    
     const isCurrentlyPinned = pinnedWidgetIds.includes(widget.id);
 
     if (isCurrentlyPinned) {
-      // Remove from Home Screen
       setPinnedWidgetIds(prev => prev.filter(id => id !== widget.id));
       setActionNotice(`Removed "${widget.name}" from active Home Screen widgets.`);
-      setTimeout(() => setActionNotice(null), 3000);
-      try { navigator.vibrate?.(20); } catch {}
+      setTimeout(() => setActionNotice(null), 2500);
       return;
     }
 
-    // Add to Home Screen:
-    // 1. Check if running inside native Android APK with AndroidWidgetBridge
     let nativeTriggered = false;
     if (typeof window !== 'undefined' && (window as any).AndroidWidgetBridge) {
       try {
@@ -150,47 +144,93 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
       }
     }
 
-    // 2. Play haptic feedback
-    try {
-      navigator.vibrate?.([40, 60, 40]);
-    } catch {}
-
-    // 3. Update pinned widgets list
     setPinnedWidgetIds(prev => [...prev, widget.id]);
 
-    // 4. Show success banner
     if (nativeTriggered) {
       setActionNotice(`Android System Dialog opened! "${widget.name}" added to Home Screen.`);
     } else {
       setActionNotice(`✓ "${widget.name}" successfully added to your Home Screen!`);
     }
 
-    setTimeout(() => setActionNotice(null), 4000);
-  };
+    setTimeout(() => setActionNotice(null), 3500);
+  }, [pinnedWidgetIds]);
 
   return (
-    <div className={`w-full min-h-full px-4 pt-3 pb-32 select-none transition-colors ${
+    <div className={`w-full min-h-full px-4 pt-3 pb-32 select-none transition-colors touch-manipulation gpu-accelerate ${
       isDarkMode ? 'text-white' : 'text-slate-900'
     }`}>
-      {/* HEADER */}
+      {/* HEADER WITH VISUAL SYNC INDICATOR & REFETCH TRIGGER */}
       <div className="mb-4">
-        <div className="flex items-center space-x-2">
-          <div 
-            className="w-9 h-9 rounded-2xl flex items-center justify-center font-black shadow-sm"
-            style={{ 
-              backgroundColor: `${customAccentColor}25`,
-              color: customAccentColor 
-            }}
-          >
-            <Layers size={19} />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div 
+              className="w-9 h-9 rounded-2xl flex items-center justify-center font-black shadow-sm shrink-0 gpu-accelerate"
+              style={{ 
+                backgroundColor: `${customAccentColor}25`,
+                color: customAccentColor 
+              }}
+            >
+              <Layers size={19} />
+            </div>
+            <div>
+              <h1 className={`text-xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                Home Screen Widgets
+              </h1>
+              <p className={`text-xs mt-0.5 font-bold ${isDarkMode ? 'text-zinc-400' : 'text-slate-600'}`}>
+                Aesthetic, working Android widgets with snappy touch response
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className={`text-xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-              Home Screen Widgets
-            </h1>
-            <p className={`text-xs mt-0.5 font-bold ${isDarkMode ? 'text-zinc-400' : 'text-slate-600'}`}>
-              Aesthetic, working Android widgets — tap to add directly to your home screen
-            </p>
+
+          {/* REFETCH / SYNC ACTION BUTTON WITH INSTANT TOUCH RESPONSE */}
+          {onRefreshData && (
+            <button
+              onClick={() => {
+                onRefreshData();
+                try { navigator.vibrate?.(12); } catch {}
+              }}
+              disabled={isLoading}
+              className={`p-2.5 rounded-2xl border snappy-touch cursor-pointer ${
+                isLoading 
+                  ? 'bg-teal-500/20 border-teal-500/40 text-teal-300' 
+                  : isDarkMode 
+                    ? 'bg-[#121622] hover:bg-[#1A2030] border-white/10 text-zinc-300 hover:text-white' 
+                    : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-700 shadow-xs'
+              }`}
+              title="Refetch weather data now"
+            >
+              <RefreshCw size={16} className={isLoading ? 'animate-spin text-teal-400' : ''} />
+            </button>
+          )}
+        </div>
+
+        {/* VISUAL LIVE SYNC INDICATOR BAR */}
+        <div className={`mt-3 p-2.5 px-3.5 rounded-2xl border flex items-center justify-between text-xs font-bold transition-all gpu-accelerate ${
+          isLoading
+            ? 'bg-teal-500/15 border-teal-500/40 text-teal-300 shadow-md animate-pulse'
+            : isDarkMode 
+              ? 'bg-[#101420] border-white/10 text-zinc-300' 
+              : 'bg-white border-slate-200 text-slate-800 shadow-xs'
+        }`}>
+          <div className="flex items-center space-x-2.5">
+            <div className="relative flex items-center justify-center">
+              {isLoading ? (
+                <RotateCw size={14} className="animate-spin text-teal-400 shrink-0" />
+              ) : (
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-500" />
+                </span>
+              )}
+            </div>
+            <span>
+              {isLoading ? 'Refetching live satellite & microclimate data...' : 'Widgets Live Sync Engine Active'}
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-1.5 text-[11px] font-black px-2.5 py-0.5 rounded-full bg-teal-500/20 border border-teal-500/30 text-teal-300">
+            <Clock size={11} className={isLoading ? 'animate-spin' : ''} />
+            <span>Updated {metrics.lastUpdated || 'Just now'}</span>
           </div>
         </div>
       </div>
@@ -198,7 +238,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
       {/* FEEDBACK ACTION TOAST */}
       {actionNotice && (
         <div 
-          className="mb-4 p-3 rounded-2xl text-slate-950 font-black text-xs flex items-center justify-between shadow-lg animate-card-slide-fade"
+          className="mb-4 p-3 rounded-2xl text-slate-950 font-black text-xs flex items-center justify-between shadow-lg animate-card-slide-fade gpu-accelerate"
           style={{ backgroundColor: customAccentColor }}
         >
           <div className="flex items-center space-x-2">
@@ -207,15 +247,15 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
           </div>
           <button 
             onClick={() => setActionNotice(null)} 
-            className="text-[11px] font-black uppercase opacity-75 hover:opacity-100 p-1 cursor-pointer"
+            className="text-[11px] font-black uppercase opacity-75 hover:opacity-100 p-1 cursor-pointer snappy-touch"
           >
             ✕
           </button>
         </div>
       )}
 
-      {/* WIDGET GALLERY HORIZONTAL SELECTION PILLS */}
-      <div className="flex space-x-2 overflow-x-auto no-scrollbar pb-2 mb-4">
+      {/* WIDGET GALLERY HORIZONTAL SELECTION PILLS - HIGH TOUCH SENSITIVITY */}
+      <div className="flex space-x-2 overflow-x-auto no-scrollbar pb-2 mb-4 touch-manipulation">
         {WIDGETS_LIST.map(widget => {
           const isSelected = selectedWidgetId === widget.id;
           const isPinned = pinnedWidgetIds.includes(widget.id);
@@ -226,7 +266,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
                 setSelectedWidgetId(widget.id);
                 try { navigator.vibrate?.(10); } catch {}
               }}
-              className={`py-2 px-3.5 rounded-2xl text-xs font-black whitespace-nowrap transition-all duration-150 flex items-center space-x-2 cursor-pointer active:scale-95 ${
+              className={`py-2 px-3.5 rounded-2xl text-xs font-black whitespace-nowrap snappy-touch flex items-center space-x-2 cursor-pointer ${
                 isSelected
                   ? 'text-slate-950 shadow-md scale-102 font-extrabold'
                   : isDarkMode
@@ -262,10 +302,10 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
           </span>
         </div>
 
-        {/* CONTAINER MOCKUP: THE WIDGET ITSELF */}
+        {/* CONTAINER MOCKUP: THE WIDGET ITSELF - HIGHLY RESPONSIVE SNAPPY TAP */}
         <div 
           onClick={() => handleToggleAddToHomeScreen(selectedWidget)}
-          className="cursor-pointer transition-transform active:scale-[0.985] group"
+          className="cursor-pointer snappy-touch group gpu-accelerate"
           title="Tap to toggle Add to Home Screen"
         >
           {/* 1. THE ICONIC FARM HOUSE SCENE WIDGET (4x2) */}
@@ -283,52 +323,68 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
                 />
               </div>
 
-              {/* Liquid Glass bottom strip */}
+              {/* Liquid Glass bottom strip with EXPLICIT HIGHLY READABLE LAST UPDATED TIME */}
               <div className={`p-3 flex items-center justify-between backdrop-blur-xl border-t ${
                 isDarkMode 
                   ? 'bg-black/85 border-white/15 text-white' 
                   : 'bg-white/95 border-slate-200 text-slate-900'
               }`}>
                 <div className="flex items-center space-x-2">
-                  <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse shrink-0" />
                   <span className="text-xs font-black">{location.name}</span>
-                  <span className="text-[11px] opacity-70">
+                  <span className="text-[11px] opacity-70 hidden sm:inline">
                     • H:{formatTemp(metrics.tempMaxToday)} L:{formatTemp(metrics.tempMinToday)}
                   </span>
                 </div>
                 
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center space-x-1 ${
-                  isSelectedPinned 
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' 
-                    : 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
-                }`}>
-                  {isSelectedPinned ? <Check size={10} /> : <Sparkles size={10} />}
-                  <span>{isSelectedPinned ? 'Added' : 'Tap to Add'}</span>
-                </span>
+                <div className="flex items-center space-x-2">
+                  {/* EXPLICIT LAST UPDATED BADGE */}
+                  <div className="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-teal-500/20 border border-teal-400/40 text-teal-300 text-[10px] font-black shadow-xs">
+                    <Clock size={11} className={isLoading ? 'animate-spin' : ''} />
+                    <span>Updated {metrics.lastUpdated || 'Just now'}</span>
+                  </div>
+
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center space-x-1 ${
+                    isSelectedPinned 
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' 
+                      : 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
+                  }`}>
+                    {isSelectedPinned ? <Check size={10} /> : <Sparkles size={10} />}
+                    <span>{isSelectedPinned ? 'Added' : 'Add'}</span>
+                  </span>
+                </div>
               </div>
             </div>
           )}
 
           {/* 2. APPLE LIQUID GLASS FORECAST (4x2) */}
           {selectedWidget.id === 'glance_medium' && (
-            <div className={`w-full p-4 rounded-3xl relative overflow-hidden transition-all ${
+            <div className={`w-full p-4 rounded-3xl relative overflow-hidden transition-all gpu-accelerate ${
               widgetTheme === 'liquid_glass' 
                 ? isDarkMode ? 'liquid-glass-dock text-white' : 'liquid-glass-dock-light text-slate-900'
                 : widgetTheme === 'oled_black'
                 ? 'bg-black border border-white/10 text-white'
                 : 'bg-gradient-to-br from-teal-950/80 via-slate-900 to-black border border-teal-500/30 text-white'
             }`}>
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div>
-                  <p className="text-xs font-extrabold text-teal-400 uppercase tracking-wide">
-                    {location.name}
+                  <p className="text-xs font-extrabold text-teal-400 uppercase tracking-wide flex items-center space-x-1.5">
+                    <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+                    <span>{location.name}</span>
                   </p>
                   <div className="flex items-baseline space-x-2 mt-0.5">
                     <span className="text-3xl font-black">{formatTemp(metrics.temperature)}</span>
                     <span className="text-sm font-semibold opacity-90">{metrics.conditionTitle}</span>
                   </div>
                 </div>
-                <div className="text-right">
+
+                <div className="text-right flex flex-col items-end">
+                  {/* EXPLICIT LAST UPDATED BADGE */}
+                  <div className="mb-1 px-2.5 py-0.5 rounded-full bg-teal-400/15 border border-teal-400/30 text-teal-300 text-[10px] font-black flex items-center space-x-1 shadow-xs">
+                    <Clock size={11} className={isLoading ? 'animate-spin' : ''} />
+                    <span>Updated {metrics.lastUpdated || 'Just now'}</span>
+                  </div>
+
                   <span className="text-xs font-bold block">
                     H:{formatTemp(metrics.tempMaxToday)} L:{formatTemp(metrics.tempMinToday)}
                   </span>
@@ -357,7 +413,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
 
           {/* 3. SONY X-REALITY AT-A-GLANCE (3x2) */}
           {selectedWidget.id === 'clock_weather' && (
-            <div className={`w-full p-4 rounded-3xl border shadow-xl relative overflow-hidden ${
+            <div className={`w-full p-4 rounded-3xl border shadow-xl relative overflow-hidden gpu-accelerate ${
               isDarkMode 
                 ? 'bg-[#0E131E] border-white/15 text-white' 
                 : 'bg-white border-slate-200 text-slate-800'
@@ -371,7 +427,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
               <div className="flex items-center justify-between mb-3 relative z-10">
                 <div className="flex items-center space-x-3">
                   <div 
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center font-black shadow-md"
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center font-black shadow-md shrink-0"
                     style={{ backgroundColor: `${customAccentColor}25`, color: customAccentColor }}
                   >
                     <Sun size={26} />
@@ -387,7 +443,13 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
                   </div>
                 </div>
 
-                <div className="text-right">
+                <div className="text-right flex flex-col items-end">
+                  {/* EXPLICIT LAST UPDATED BADGE */}
+                  <div className="mb-1.5 px-2.5 py-0.5 rounded-full bg-teal-500/20 border border-teal-500/30 text-teal-300 text-[10px] font-black flex items-center space-x-1">
+                    <Clock size={11} className={isLoading ? 'animate-spin' : ''} />
+                    <span>Synced {metrics.lastUpdated || 'Just now'}</span>
+                  </div>
+
                   <span className="text-xs font-bold block text-teal-400">
                     Wind {formatWind(metrics.windSpeed)}
                   </span>
@@ -408,7 +470,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
 
           {/* 4. LIQUID GLASS MINIMAL PILL (2x1) */}
           {selectedWidget.id === 'glance_pill' && (
-            <div className="flex justify-center py-2">
+            <div className="flex flex-col items-center py-2 gpu-accelerate">
               <div className={`px-6 py-3.5 rounded-full border shadow-xl flex items-center space-x-4 ${
                 widgetTheme === 'liquid_glass'
                   ? isDarkMode ? 'liquid-glass-dock text-white' : 'liquid-glass-dock-light text-slate-900'
@@ -422,13 +484,19 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
                   <span className="text-[10px] opacity-80 leading-tight block">{metrics.conditionTitle}</span>
                 </div>
               </div>
+
+              {/* EXPLICIT LAST UPDATED TIME FOR MINIMAL PILL */}
+              <div className="mt-2.5 px-3 py-1 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-300 text-[11px] font-black flex items-center space-x-1.5 shadow-xs">
+                <Clock size={12} className={isLoading ? 'animate-spin' : ''} />
+                <span>Widget Last Synced: {metrics.lastUpdated || 'Just now'}</span>
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {/* DEDICATED "ADD TO HOME SCREEN" WORKING CONTROLS CARD */}
-      <div className={`p-4 rounded-3xl border shadow-xl mb-5 transition-all ${
+      <div className={`p-4 rounded-3xl border shadow-xl mb-5 transition-all gpu-accelerate ${
         isDarkMode 
           ? 'bg-[#10141E] border-white/10 text-white' 
           : 'bg-white border-slate-200 text-slate-900'
@@ -447,7 +515,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
           </div>
         </div>
 
-        {/* WORKING "ADD TO HOME SCREEN" TOGGLE SWITCH */}
+        {/* WORKING "ADD TO HOME SCREEN" TOGGLE SWITCH WITH INSTANT NATIVE TOUCH RESPONSE */}
         <div className={`p-3.5 rounded-2xl flex items-center justify-between border mb-4 transition-all ${
           isSelectedPinned 
             ? 'bg-teal-500/10 border-teal-500/40' 
@@ -466,7 +534,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
               <span className={`text-[10px] font-medium block ${
                 isSelectedPinned ? 'text-teal-400 font-bold' : isDarkMode ? 'text-zinc-400' : 'text-slate-500'
               }`}>
-                {isSelectedPinned ? '✓ Active & syncing live weather' : 'Toggle to pin widget to launcher'}
+                {isSelectedPinned ? `✓ Active • Synced at ${metrics.lastUpdated || 'Just now'}` : 'Toggle to pin widget to launcher'}
               </span>
             </div>
           </div>
@@ -477,7 +545,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
             role="switch"
             aria-checked={isSelectedPinned}
             onClick={() => handleToggleAddToHomeScreen(selectedWidget)}
-            className={`w-13 h-7 rounded-full p-1 transition-colors duration-200 ease-in-out cursor-pointer relative shadow-inner ${
+            className={`w-13 h-7 rounded-full p-1 transition-colors duration-200 ease-in-out cursor-pointer relative shadow-inner snappy-touch ${
               isSelectedPinned ? 'bg-teal-500' : isDarkMode ? 'bg-zinc-700' : 'bg-slate-300'
             }`}
           >
@@ -492,7 +560,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
         {/* INSTANT ONE-TAP PIN BUTTON */}
         <button
           onClick={() => handleToggleAddToHomeScreen(selectedWidget)}
-          className={`w-full py-3.5 px-4 rounded-2xl font-black text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-lg active:scale-98 ${
+          className={`w-full py-3.5 px-4 rounded-2xl font-black text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-lg snappy-touch ${
             isSelectedPinned
               ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40'
               : 'bg-teal-500 hover:bg-teal-400 text-slate-950 shadow-teal-500/25'
@@ -511,7 +579,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
         </button>
       </div>
 
-      {/* ALL WORKING WIDGETS STATUS SUMMARY LIST */}
+      {/* ALL WORKING WIDGETS STATUS SUMMARY LIST - SNAPPY TOUCH */}
       <div className="mb-5">
         <span 
           className="text-[11px] font-black uppercase tracking-wider block mb-2 px-1"
@@ -527,8 +595,11 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
             return (
               <div
                 key={widget.id}
-                onClick={() => setSelectedWidgetId(widget.id)}
-                className={`p-3.5 rounded-2xl border flex items-center justify-between transition-all duration-150 cursor-pointer active:scale-98 ${
+                onClick={() => {
+                  setSelectedWidgetId(widget.id);
+                  try { navigator.vibrate?.(10); } catch {}
+                }}
+                className={`p-3.5 rounded-2xl border flex items-center justify-between transition-all duration-150 cursor-pointer snappy-touch ${
                   isSelected
                     ? isDarkMode ? 'bg-white/10 border-white/20' : 'bg-slate-50 border-slate-400'
                     : isDarkMode ? 'bg-[#10141E] border-white/10 hover:border-white/20' : 'bg-white border-slate-200/90 shadow-xs'
@@ -564,7 +635,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
                       e.stopPropagation();
                       handleToggleAddToHomeScreen(widget);
                     }}
-                    className={`text-[10px] font-black px-3 py-1 rounded-full transition-all cursor-pointer active:scale-90 ${
+                    className={`text-[10px] font-black px-3 py-1 rounded-full transition-all cursor-pointer snappy-touch ${
                       isPinned 
                         ? 'text-slate-950 shadow-xs' 
                         : isDarkMode ? 'bg-[#181E2C] text-zinc-200 hover:text-white' : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
@@ -606,10 +677,12 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = ({
           </li>
           <li className="flex items-start space-x-2">
             <span className="font-black" style={{ color: customAccentColor }}>3.</span>
-            <span>All widgets auto-sync your active city (<strong>{location.name}</strong>) and live animated microclimate farm graphics!</span>
+            <span>All widgets auto-sync your active city (<strong>{location.name}</strong>) with live weather readings (last synced <strong>{metrics.lastUpdated || 'Just now'}</strong>).</span>
           </li>
         </ol>
       </div>
     </div>
   );
-};
+});
+
+WeatherWidgetsScreen.displayName = 'WeatherWidgetsScreen';
