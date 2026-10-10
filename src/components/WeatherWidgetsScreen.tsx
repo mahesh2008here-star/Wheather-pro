@@ -11,7 +11,15 @@ import {
   RefreshCw,
   Clock,
   RotateCw,
-  Zap
+  Zap,
+  Wind,
+  Droplets,
+  Sprout,
+  Compass,
+  CloudRain,
+  ShieldAlert,
+  Sliders,
+  TrendingUp
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { CurrentWeatherMetrics, HourlyForecastItem, LocationInfo } from '../types/weather';
@@ -32,36 +40,45 @@ interface WidgetDefinition {
   sizeTag: string;
   dimensions: string;
   description: string;
-  category: 'house' | 'liquid_glass' | 'x_reality' | 'minimal';
+  category: 'house' | 'liquid_glass' | 'x_reality' | 'agri_soil' | 'minimal';
 }
 
 const WIDGETS_LIST: WidgetDefinition[] = [
   {
     id: 'house_hero',
     nativeId: 'house',
-    name: 'Iconic Farm House Scene',
+    name: 'Dynamic Farm Estate Widget',
     sizeTag: '4×2 Wide',
     dimensions: '4 cols × 2 rows',
-    description: 'Animated farm landscape reacting dynamically to real-time microclimate rain, sunny skies, or night scenery.',
+    description: 'Animated farm landscape reacting dynamically to real-time microclimate rain, sunny skies, or night scenery with moving tractor & wind turbines.',
     category: 'house'
   },
   {
     id: 'glance_medium',
     nativeId: 'forecast',
-    name: 'Apple Liquid Glass Forecast',
+    name: 'Apple Liquid Glass Forecast Hub',
     sizeTag: '4×2 Extended',
     dimensions: '4 cols × 2 rows',
-    description: 'Translucent frosted glass with next 5 hours forecast, precipitation chance, and feels-like barometer.',
+    description: 'Translucent frosted liquid glass with next 5 hours forecast, precipitation chance, and feels-like barometer.',
     category: 'liquid_glass'
   },
   {
     id: 'clock_weather',
     nativeId: 'glance',
-    name: 'Sony X-Reality At-A-Glance',
+    name: 'Sony X-Reality At-A-Glance Clock',
     sizeTag: '3×2 Compact',
     dimensions: '3 cols × 2 rows',
-    description: 'Deep AMOLED contrast with vibrant ambient radial aura, wind vectors, UV meter, and air quality.',
+    description: 'Deep AMOLED contrast with vibrant ambient radial aura, live digital clock, wind vectors, UV meter, and air quality.',
     category: 'x_reality'
+  },
+  {
+    id: 'agri_soil_widget',
+    nativeId: 'agri',
+    name: 'Microclimate Soil & Crop Advisory',
+    sizeTag: '4×2 Extended',
+    dimensions: '4 cols × 2 rows',
+    description: 'Farm-specialized weather telemetry displaying soil moisture %, evapotranspiration rate, spraying safety score, and next rain window.',
+    category: 'agri_soil'
   },
   {
     id: 'glance_pill',
@@ -69,7 +86,7 @@ const WIDGETS_LIST: WidgetDefinition[] = [
     name: 'Liquid Glass Minimal Pill',
     sizeTag: '2×1 Glance',
     dimensions: '2 cols × 1 row',
-    description: 'Ultra-clean floating glass pill displaying current live temperature and weather condition.',
+    description: 'Ultra-clean floating glass pill displaying current live temperature, weather condition, and pulse ring.',
     category: 'minimal'
   }
 ];
@@ -308,7 +325,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = React.mem
           className="cursor-pointer snappy-touch group gpu-accelerate"
           title="Tap to toggle Add to Home Screen"
         >
-          {/* 1. THE ICONIC FARM HOUSE SCENE WIDGET (4x2) */}
+          {/* 1. DYNAMIC FARM ESTATE HERO WIDGET (4x2) */}
           {selectedWidget.id === 'house_hero' && (
             <div className="w-full rounded-3xl overflow-hidden shadow-2xl border border-white/20 relative">
               <div className="relative w-full h-[205px] overflow-hidden">
@@ -468,7 +485,59 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = React.mem
             </div>
           )}
 
-          {/* 4. LIQUID GLASS MINIMAL PILL (2x1) */}
+          {/* 4. MICROCLIMATE CROP & SOIL ADVISORY WIDGET (4x2) */}
+          {selectedWidget.id === 'agri_soil_widget' && (
+            <div className={`w-full p-4 rounded-3xl border shadow-xl relative overflow-hidden gpu-accelerate ${
+              isDarkMode 
+                ? 'bg-gradient-to-br from-[#0A110D] via-[#0D1812] to-black border-emerald-500/30 text-white' 
+                : 'bg-emerald-50/90 border-emerald-200 text-slate-900'
+            }`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-bold">
+                    <Sprout size={18} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-extrabold uppercase tracking-wide text-emerald-400">
+                      Crop & Soil Field Telemetry
+                    </h4>
+                    <span className="text-[11px] opacity-80 font-bold">{location.name} Farm District</span>
+                  </div>
+                </div>
+
+                {/* EXPLICIT LAST UPDATED BADGE */}
+                <div className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-black flex items-center space-x-1 shadow-xs">
+                  <Clock size={11} className={isLoading ? 'animate-spin' : ''} />
+                  <span>Synced {metrics.lastUpdated || 'Just now'}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-center">
+                  <span className="text-[10px] text-zinc-400 block font-bold">Soil Moisture</span>
+                  <span className="text-xs font-black text-emerald-400">68% Optimal</span>
+                </div>
+                <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-center">
+                  <span className="text-[10px] text-zinc-400 block font-bold">Evapotransp.</span>
+                  <span className="text-xs font-black text-emerald-400">3.4 mm/day</span>
+                </div>
+                <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-center">
+                  <span className="text-[10px] text-zinc-400 block font-bold">Spray Score</span>
+                  <span className="text-xs font-black text-amber-400">92/100 Safe</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] font-bold p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
+                <span className="flex items-center space-x-1">
+                  <CloudRain size={13} />
+                  <span>Next Rain Window: {metrics.rainChance > 30 ? 'Expected in 4h' : 'No rain for 24h'}</span>
+                </span>
+                <span className="font-black underline">Field Advisory →</span>
+              </div>
+            </div>
+          )}
+
+          {/* 5. LIQUID GLASS MINIMAL PILL (2x1) */}
           {selectedWidget.id === 'glance_pill' && (
             <div className="flex flex-col items-center py-2 gpu-accelerate">
               <div className={`px-6 py-3.5 rounded-full border shadow-xl flex items-center space-x-4 ${

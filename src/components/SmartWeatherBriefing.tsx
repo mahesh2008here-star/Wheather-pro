@@ -10,11 +10,16 @@ import {
   RefreshCw, 
   Info,
   CheckCircle2,
-  Cpu
+  Cpu,
+  Volume2 as SoundIcon,
+  Check,
+  AlertCircle,
+  HelpCircle,
+  Sliders
 } from 'lucide-react';
 import { CurrentWeatherMetrics, LocationInfo } from '../types/weather';
 import { useTheme } from '../context/ThemeContext';
-import { ttsService, TTSOptions } from '../services/ttsService';
+import { ttsService, TTSOptions, unlockAudioHardware } from '../services/ttsService';
 
 interface SmartWeatherBriefingProps {
   metrics: CurrentWeatherMetrics;
@@ -28,9 +33,14 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
   const { isDarkMode, formatTemp } = useTheme();
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [speechRate, setSpeechRate] = useState<number>(1.0);
+  const [selectedVoice, setSelectedVoice] = useState<string>('Brian');
+  const [engineMode, setEngineMode] = useState<'auto' | 'cloud' | 'native' | 'synth'>('auto');
   const [currentProgress, setCurrentProgress] = useState<{ current: number; total: number } | null>(null);
   const [activeEngine, setActiveEngine] = useState<string>('Universal HD Voice');
   const [speechError, setSpeechError] = useState<string | null>(null);
+  const [soundTestedOk, setSoundTestedOk] = useState<boolean>(false);
+  const [isTestingSound, setIsTestingSound] = useState<boolean>(false);
+  const [showSettings, setShowSettings] = useState<boolean>(false);
 
   // Generate dynamic intelligent AI briefing text based on real weather metrics
   const briefing = React.useMemo(() => {
@@ -82,8 +92,22 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
     };
   }, []);
 
-  const handleTogglePlay = (forcedEngine?: 'cloud' | 'native') => {
+  const handleTestSoundHardware = async () => {
+    setIsTestingSound(true);
     setSpeechError(null);
+    unlockAudioHardware();
+    
+    const success = await ttsService.playDiagnosticChime();
+    setIsTestingSound(false);
+    if (success) {
+      setSoundTestedOk(true);
+      setTimeout(() => setSoundTestedOk(false), 4000);
+    }
+  };
+
+  const handleTogglePlay = (forcedEngine?: 'auto' | 'cloud' | 'native' | 'synth') => {
+    setSpeechError(null);
+    unlockAudioHardware();
 
     if (isPlaying) {
       ttsService.stop();
@@ -94,9 +118,12 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
 
     const rawText = `Weather briefing for ${location.name}. Currently ${formatTemp(metrics.temperature)}, ${metrics.conditionTitle}. ${briefing.summary} Suggested outfit: ${briefing.outfit}`;
 
+    const activeMode = forcedEngine || engineMode;
+
     const options: TTSOptions = {
       rate: speechRate,
-      engine: forcedEngine || 'auto',
+      engine: activeMode,
+      voiceName: selectedVoice,
       onStart: () => {
         setIsPlaying(true);
         setActiveEngine(ttsService.getActiveEngineName());
@@ -125,7 +152,6 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
     const newSpeed = speeds[nextIndex];
     setSpeechRate(newSpeed);
 
-    // If currently playing, restart with new speed
     if (isPlaying) {
       ttsService.stop();
       setTimeout(() => handleTogglePlay(), 50);
@@ -148,7 +174,7 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
               <Sparkles size={14} className={isPlaying ? "animate-spin text-sky-400" : ""} style={{ animationDuration: '6s' }} />
             </div>
             <span className={`text-xs font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
-              AI Weather Briefing
+              AI Weather Voice Briefing
             </span>
             <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase border ${briefing.badgeColor}`}>
               {briefing.badgeText}
@@ -170,6 +196,21 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
               {speechRate.toFixed(1)}x
             </button>
 
+            {/* Voice Options Toggle Button */}
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className={`p-1.5 rounded-lg text-[10px] transition-all border ${
+                showSettings 
+                  ? 'bg-sky-500/20 text-sky-400 border-sky-500/40' 
+                  : isDarkMode 
+                  ? 'bg-zinc-900/80 text-zinc-400 border-white/10' 
+                  : 'bg-stone-100 text-stone-600 border-stone-200'
+              }`}
+              title="Voice Engine Settings"
+            >
+              <Sliders size={13} />
+            </button>
+
             {/* Play/Stop Main Voice Button */}
             <button
               onClick={() => handleTogglePlay()}
@@ -189,7 +230,7 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
                 </>
               ) : (
                 <>
-                  <Volume2 size={13} className="text-sky-400" />
+                  <Volume2 size={13} className="text-sky-400 animate-pulse" />
                   <span>Play Voice</span>
                 </>
               )}
@@ -197,7 +238,91 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
           </div>
         </div>
 
-        {/* Speech Playing Sound Equalizer Waves */}
+        {/* Speech Settings Accordion Panel */}
+        {showSettings && (
+          <div className="mb-3 p-3 rounded-xl bg-zinc-900/90 border border-sky-500/20 text-xs space-y-2.5">
+            <div className="flex items-center justify-between text-[11px] font-bold text-sky-400 border-b border-white/10 pb-1.5">
+              <span>Voice Engine Selection</span>
+              <button 
+                onClick={handleTestSoundHardware}
+                disabled={isTestingSound}
+                className="flex items-center space-x-1 px-2 py-0.5 rounded-md bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 font-extrabold text-[10px] transition-all"
+              >
+                <SoundIcon size={11} />
+                <span>{isTestingSound ? 'Playing Chime...' : 'Test Sound Hardware'}</span>
+              </button>
+            </div>
+
+            {/* Engine Tabs */}
+            <div className="grid grid-cols-3 gap-1.5 text-[10px]">
+              <button
+                onClick={() => setEngineMode('auto')}
+                className={`py-1.5 px-2 rounded-lg font-bold border transition-all text-center ${
+                  engineMode === 'auto'
+                    ? 'bg-sky-500 text-white border-sky-400 shadow-sm'
+                    : 'bg-zinc-800 text-zinc-400 border-white/5 hover:text-white'
+                }`}
+              >
+                Auto HD
+              </button>
+              <button
+                onClick={() => setEngineMode('native')}
+                className={`py-1.5 px-2 rounded-lg font-bold border transition-all text-center ${
+                  engineMode === 'native'
+                    ? 'bg-sky-500 text-white border-sky-400 shadow-sm'
+                    : 'bg-zinc-800 text-zinc-400 border-white/5 hover:text-white'
+                }`}
+              >
+                System Voice
+              </button>
+              <button
+                onClick={() => setEngineMode('synth')}
+                className={`py-1.5 px-2 rounded-lg font-bold border transition-all text-center ${
+                  engineMode === 'synth'
+                    ? 'bg-sky-500 text-white border-sky-400 shadow-sm'
+                    : 'bg-zinc-800 text-zinc-400 border-white/5 hover:text-white'
+                }`}
+              >
+                Web Audio Synth
+              </button>
+            </div>
+
+            {/* Voice Persona Selection */}
+            <div className="flex items-center space-x-2 pt-1 text-[11px]">
+              <span className="text-zinc-400 font-semibold shrink-0">Voice Persona:</span>
+              <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-0.5">
+                {[
+                  { id: 'Brian', name: 'Brian (Natural UK Male)' },
+                  { id: 'Salli', name: 'Salli (Natural US Female)' },
+                  { id: 'Joanna', name: 'Joanna (Soft US Female)' },
+                  { id: 'Joey', name: 'Joey (Deep Male)' }
+                ].map(v => (
+                  <button
+                    key={v.id}
+                    onClick={() => setSelectedVoice(v.id)}
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${
+                      selectedVoice === v.id 
+                        ? 'bg-sky-500/20 text-sky-400 border-sky-400' 
+                        : 'bg-zinc-800/80 text-zinc-400 border-white/5'
+                    }`}
+                  >
+                    {v.id}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Sound Test Confirmation Toast */}
+        {soundTestedOk && (
+          <div className="flex items-center space-x-2 p-2 mb-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold animate-fadeIn">
+            <CheckCircle2 size={13} className="shrink-0" />
+            <span>Audio Hardware Verified! Sound chime played successfully on your device.</span>
+          </div>
+        )}
+
+        {/* Speech Playing Equalizer Wave Bar */}
         {isPlaying && (
           <div className="flex items-center justify-between px-3 py-1.5 mb-2.5 rounded-xl bg-sky-500/10 border border-sky-500/20">
             <div className="flex items-center space-x-2">
@@ -249,16 +374,16 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
         <div className="flex items-center justify-between mt-2 pt-1 border-t border-white/5 text-[9px]">
           <div className="flex items-center space-x-1 text-zinc-500">
             <Cpu size={10} className="text-sky-400/80" />
-            <span>Universal Audio Stream + WebSpeech Supported</span>
+            <span>Multi-Tier Voice Engine (HD Cloud Stream + System Speech + Web Audio Synth)</span>
           </div>
 
           <div className="flex items-center space-x-2">
             <button 
-              onClick={() => handleTogglePlay('cloud')}
-              className="text-sky-400 hover:underline font-bold"
-              title="Force HD Audio Stream Mode"
+              onClick={handleTestSoundHardware}
+              className="text-sky-400 hover:underline font-bold flex items-center space-x-0.5"
+              title="Test Sound Hardware On Device"
             >
-              HD Stream
+              <span>🔊 Test Sound</span>
             </button>
             <span className="text-zinc-600">|</span>
             <button 
@@ -276,10 +401,10 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
           <div className="mt-2 p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] flex items-center justify-between">
             <span>{speechError}</span>
             <button 
-              onClick={() => handleTogglePlay('cloud')}
+              onClick={() => handleTogglePlay('synth')}
               className="px-2 py-0.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold text-[9px]"
             >
-              Retry Cloud Audio
+              Play Web Audio Synth
             </button>
           </div>
         )}
