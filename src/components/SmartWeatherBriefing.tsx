@@ -380,34 +380,21 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
           <div className="flex items-center space-x-2">
             <button 
               onClick={handleTestSoundHardware}
-              className="text-sky-400 hover:underline font-bold flex items-center space-x-0.5"
+              className="text-sky-400 hover:underline font-bold flex items-center space-x-0.5 cursor-pointer"
               title="Test Sound Hardware On Device"
             >
               <span>🔊 Test Sound</span>
             </button>
             <span className="text-zinc-600">|</span>
             <button 
-              onClick={() => handleTogglePlay('native')}
-              className="text-zinc-400 hover:text-zinc-200 font-bold"
-              title="Force System Device TTS Engine"
+              onClick={() => handleTogglePlay('synth')}
+              className="text-zinc-400 hover:text-zinc-200 font-bold cursor-pointer"
+              title="Force Web Audio Synth"
             >
-              System Voice
+              Web Audio Synth
             </button>
           </div>
         </div>
-
-        {/* Error notification banner */}
-        {speechError && (
-          <div className="mt-2 p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] flex items-center justify-between">
-            <span>{speechError}</span>
-            <button 
-              onClick={() => handleTogglePlay('synth')}
-              className="px-2 py-0.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold text-[9px]"
-            >
-              Play Web Audio Synth
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

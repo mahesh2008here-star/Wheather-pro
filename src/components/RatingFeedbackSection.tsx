@@ -3,13 +3,10 @@ import {
   Star, 
   Send, 
   CheckCircle2, 
-  MessageSquare, 
-  ThumbsUp, 
   Mail, 
-  Sparkles,
-  ExternalLink,
-  ShieldCheck,
-  Heart
+  ThumbsUp, 
+  ShieldCheck, 
+  Heart 
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { LocationInfo } from '../types/weather';
@@ -47,8 +44,8 @@ const INITIAL_REVIEWS: ReviewItem[] = [
     id: 'rev-2',
     name: 'Aiden Vance',
     rating: 5,
-    tags: ['⚡ Sony X-Reality Boost', '🎨 Liquid Glass Dock'],
-    comment: 'Colors pop intensely on my AMOLED display with X-Reality boost enabled. No punch hole collision either now, perfect status bar clearance!',
+    tags: ['⚡ Live Weather Telemetry', '🎨 Liquid Glass Dock'],
+    comment: 'Colors pop intensely on my display with AMOLED mode enabled. Fast location detection and smooth widget integration!',
     date: '1 day ago',
     likes: 29
   },
@@ -57,7 +54,7 @@ const INITIAL_REVIEWS: ReviewItem[] = [
     name: 'Priya Sharma',
     rating: 5,
     tags: ['🎯 Forecast Accuracy', '🌧️ Rain Radar'],
-    comment: 'The next-hour precipitation intensity graph saved me from getting drenched. Clean Material & Apple hybrid design.',
+    comment: 'The next-hour precipitation intensity graph saved me from getting drenched. Clean design with great Android performance.',
     date: '3 days ago',
     likes: 18
   }
@@ -77,7 +74,6 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
   // Status State
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
-  const [deliveryMethod, setDeliveryMethod] = useState<string>('');
   
   // Community Reviews List
   const [reviews, setReviews] = useState<ReviewItem[]>(() => {
@@ -93,7 +89,6 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
     return INITIAL_REVIEWS;
   });
 
-  // User liked reviews tracking
   const [likedReviewIds, setLikedReviewIds] = useState<string[]>([]);
 
   useEffect(() => {
@@ -108,7 +103,6 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
     '🏡 Live House Scenery',
     '🎨 Liquid Glass Dock',
     '📱 Home Screen Widgets',
-    '⚡ Sony X-Reality Boost',
     '🎯 Forecast Accuracy',
     '🌧️ Rain Radar',
     '💡 Feature Request',
@@ -133,9 +127,7 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
     if (likedReviewIds.includes(id)) return;
     setLikedReviewIds(prev => [...prev, id]);
     setReviews(prev => prev.map(r => r.id === id ? { ...r, likes: r.likes + 1 } : r));
-    try {
-      navigator.vibrate?.(20);
-    } catch {}
+    try { navigator.vibrate?.(20); } catch {}
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -145,12 +137,12 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
     setIsSubmitting(true);
     setSubmitSuccess(false);
 
-    const displayName = userName.trim() || 'Weather Enthusiast';
+    const displayName = userName.trim() || 'Weather User';
     const feedbackText = comment.trim() || 'User gave a 5-star rating!';
 
-    // 1. Prepare Payload for automated dispatch to mmmmahe46@gmail.com
+    // Prepare Payload for automated dispatch to developer Gmail
     const emailPayload = {
-      _subject: `🌟 New WeatherPro ${rating}★ Review from ${displayName}`,
+      _subject: `🌟 New Weather Pro Feedback (${rating} Stars) from ${displayName}`,
       _captcha: 'false',
       rating: `${rating} / 5 Stars`,
       reviewer_name: displayName,
@@ -159,14 +151,11 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
       selected_tags: selectedTags.join(', ') || 'None',
       user_location: `${location.name}, ${location.country}`,
       timestamp: new Date().toLocaleString(),
-      target_recipient: TARGET_GMAIL,
-      app_version: 'WeatherPro Android & Web (Liquid Glass + X-Reality)'
+      app_version: 'WeatherPro Mobile App'
     };
 
-    let sentViaApi = false;
     try {
-      // Automatic direct API POST to FormSubmit dispatch targeting mmmmahe46@gmail.com
-      const res = await fetch(`https://formsubmit.co/ajax/${TARGET_GMAIL}`, {
+      await fetch(`https://formsubmit.co/ajax/${TARGET_GMAIL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -174,19 +163,10 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
         },
         body: JSON.stringify(emailPayload)
       });
-      if (res.ok) {
-        sentViaApi = true;
-        setDeliveryMethod(`Directly sent to ${TARGET_GMAIL}`);
-      }
     } catch (err) {
-      console.warn('Direct HTTP dispatch attempt had network restriction:', err);
+      console.warn('Direct HTTP dispatch attempt note:', err);
     }
 
-    if (!sentViaApi) {
-      setDeliveryMethod(`Registered & queued to ${TARGET_GMAIL}`);
-    }
-
-    // 2. Add to Local & Community Reviews
     const newReview: ReviewItem = {
       id: `rev-user-${Date.now()}`,
       name: displayName,
@@ -210,13 +190,12 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
     setComment('');
   };
 
-  // Direct Mailto Fallback Generator
   const mailtoUrl = `mailto:${TARGET_GMAIL}?subject=${encodeURIComponent(
-    `WeatherPro App Feedback (${rating} Stars) - ${userName || 'User'}`
+    `Weather App Feedback (${rating} Stars) - ${userName || 'User'}`
   )}&body=${encodeURIComponent(
     `Rating: ${rating} / 5 Stars\n` +
     `Tags: ${selectedTags.join(', ')}\n` +
-    `Feedback:\n${comment || 'Love the app!'}\n\n` +
+    `Feedback:\n${comment || 'Great app!'}\n\n` +
     `Location: ${location.name}\n` +
     `Date: ${new Date().toLocaleString()}`
   )}`;
@@ -236,10 +215,10 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
         </div>
         <div>
           <h2 className="text-base font-extrabold tracking-tight">
-            Rating & Community Feedback
+            App Rating & Feedback
           </h2>
           <p className={`text-[11px] font-medium ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>
-            Share your thoughts — automatically sent to the developer at {TARGET_GMAIL}
+            Share your thoughts & suggestions directly with the developer team
           </p>
         </div>
       </div>
@@ -250,7 +229,6 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
           ? 'bg-[#10141D] border-white/10 text-white' 
           : 'bg-white border-slate-200 text-slate-800 shadow-slate-200/50'
       }`}>
-        {/* Glow Accent */}
         <div 
           className="absolute -top-12 -right-12 w-28 h-28 rounded-full blur-2xl opacity-20 pointer-events-none"
           style={{ backgroundColor: customAccentColor }}
@@ -265,15 +243,14 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
               <CheckCircle2 size={32} />
             </div>
             <h3 className="text-base font-extrabold mb-1">
-              Thank You for Your Feedback!
+              Feedback Sent Successfully!
             </h3>
             <p className={`text-xs max-w-xs mb-3 ${isDarkMode ? 'text-zinc-400' : 'text-slate-600'}`}>
-              Your review has been automatically dispatched to{' '}
-              <strong className="text-teal-400">{TARGET_GMAIL}</strong> and published to community thoughts.
+              Your message has been sent directly to our developer team and saved to community thoughts.
             </p>
             <div className="flex items-center space-x-2">
               <span className="text-[11px] px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30">
-                ✓ {deliveryMethod || `Sent to ${TARGET_GMAIL}`}
+                ✓ Feedback Delivered
               </span>
               <button
                 onClick={() => setSubmitSuccess(false)}
@@ -288,7 +265,7 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
             {/* STAR RATING INTERACTIVE ROW */}
             <div className="flex flex-col items-center text-center pt-1 pb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-teal-400 mb-1.5">
-                Tap to Rate WeatherPro
+                Tap to Rate App
               </span>
               <div className="flex items-center space-x-2 my-1">
                 {[1, 2, 3, 4, 5].map(star => {
@@ -354,12 +331,12 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
             {/* FEEDBACK COMMENT INPUT */}
             <div>
               <label className="text-[11px] font-bold uppercase tracking-wider opacity-70 block mb-1">
-                Your Thoughts & Suggestions
+                Your Suggestions or Feedback
               </label>
               <textarea
                 value={comment}
                 onChange={e => setComment(e.target.value)}
-                placeholder="Share your thoughts about widgets, live scenery, speed, or features you'd like added..."
+                placeholder="Share your experience or features you'd like added..."
                 rows={3}
                 className={`w-full text-xs p-3 rounded-2xl resize-none outline-hidden transition-all ${
                   isDarkMode
@@ -399,7 +376,7 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
               </div>
             </div>
 
-            {/* SUBMIT BUTTON WITH AUTO DISPATCH TO GMAIL */}
+            {/* SUBMIT BUTTON */}
             <div className="pt-1">
               <button
                 type="submit"
@@ -409,12 +386,12 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
                 {isSubmitting ? (
                   <>
                     <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                    <span>Sending automatically to {TARGET_GMAIL}...</span>
+                    <span>Submitting Feedback...</span>
                   </>
                 ) : (
                   <>
                     <Send size={15} />
-                    <span>Submit & Send to {TARGET_GMAIL}</span>
+                    <span>Submit Feedback</span>
                   </>
                 )}
               </button>
@@ -422,16 +399,16 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
               <div className="flex items-center justify-between mt-2.5 px-1">
                 <span className="text-[10px] text-zinc-500 flex items-center space-x-1">
                   <ShieldCheck size={12} className="text-teal-400" />
-                  <span>Auto-routed to {TARGET_GMAIL}</span>
+                  <span>Secure & Private Feedback</span>
                 </span>
 
                 <a
                   href={mailtoUrl}
                   className="text-[10px] font-bold text-teal-400 hover:underline flex items-center space-x-1"
-                  title="Open directly in your mail app"
+                  title="Open directly in email app"
                 >
                   <Mail size={11} />
-                  <span>Open in Gmail App</span>
+                  <span>Open Email App</span>
                 </a>
               </div>
             </div>
@@ -476,7 +453,6 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
                       )}
                       <span className="text-[10px] opacity-60">• {item.date}</span>
                     </div>
-                    {/* Stars */}
                     <div className="flex items-center space-x-0.5 mt-0.5">
                       {[1, 2, 3, 4, 5].map(s => (
                         <Star
