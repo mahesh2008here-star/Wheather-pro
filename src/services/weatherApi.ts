@@ -76,7 +76,7 @@ export async function fetchLiveWeather(
   hourly: HourlyForecastItem[];
   daily: DailyForecastItem[];
 }> {
-  const url = `${ENV.OPEN_METEO_API_URL}?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,surface_pressure,visibility,wind_speed_10m,relative_humidity_2m,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,daylight_duration,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant&timezone=auto`;
+  const url = `${ENV.OPEN_METEO_API_URL}?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,surface_pressure,visibility,wind_speed_10m,relative_humidity_2m,uv_index,soil_temperature_0cm,soil_moisture_0_to_1cm&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,daylight_duration,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant,et0_fao_evapotranspiration&timezone=auto`;
 
   try {
     const res = await fetch(url);
@@ -172,6 +172,14 @@ export async function fetchLiveWeather(
 
     const nextHourRain = generateMinuteCast(precip, currentRainProb, nextHourPrecip, nextHourProb);
 
+    const soilTempRaw = data.hourly?.soil_temperature_0cm?.[0];
+    const soilMoistRaw = data.hourly?.soil_moisture_0_to_1cm?.[0];
+    const et0Raw = data.daily?.et0_fao_evapotranspiration?.[0];
+
+    const soilTemp = soilTempRaw !== undefined ? Math.round(soilTempRaw) : Math.round(temp - 1);
+    const soilMoist = soilMoistRaw !== undefined ? Math.round(soilMoistRaw * 100) : Math.min(85, Math.max(20, Math.round(hum * 0.65)));
+    const et0 = et0Raw !== undefined ? Number(et0Raw.toFixed(1)) : Number((0.0023 * (temp + 17.8) * Math.sqrt(Math.max(1, windSpd)) * 1.8).toFixed(1));
+
     const currentMetrics: CurrentWeatherMetrics = {
       temperature: temp,
       apparentTemperature: appTemp,
@@ -202,6 +210,9 @@ export async function fetchLiveWeather(
       airQuality,
       astronomy,
       nextHourRain,
+      soilTemperature: soilTemp,
+      soilMoisture: soilMoist,
+      evapotranspiration: et0,
     };
 
     const hourlyItems: HourlyForecastItem[] = [];
@@ -244,6 +255,7 @@ export async function fetchLiveWeather(
     const dUv = data.daily?.uv_index_max || [];
     const dWind = data.daily?.wind_speed_10m_max || [];
     const dWindDir = data.daily?.wind_direction_10m_dominant || [];
+    const dEt0 = data.daily?.et0_fao_evapotranspiration || [];
 
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -270,6 +282,7 @@ export async function fetchLiveWeather(
         windSpeedMax: Math.round(dWind[i] ?? windSpd),
         windDirectionCardinal: getCardinalDirection(windDirDeg),
         precipitationHours: pSum > 5 ? 5 : pProb > 40 ? 2 : 0,
+        evapotranspiration: dEt0[i] !== undefined ? Number(dEt0[i].toFixed(1)) : et0,
       });
     }
 

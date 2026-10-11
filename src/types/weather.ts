@@ -82,6 +82,9 @@ export interface CurrentWeatherMetrics {
   airQuality: AirQualityData;
   astronomy: AstronomyData;
   nextHourRain: MinuteRainItem[];
+  soilTemperature?: number;
+  soilMoisture?: number;
+  evapotranspiration?: number;
 }
 
 export interface HourlyForecastItem {
@@ -112,6 +115,7 @@ export interface DailyForecastItem {
   windSpeedMax: number;
   windDirectionCardinal?: string;
   precipitationHours: number;
+  evapotranspiration?: number;
 }
 
 export type WeatherAlertSeverity = 'warning' | 'advisory' | 'watch';

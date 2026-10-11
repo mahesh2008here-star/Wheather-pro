@@ -3,10 +3,9 @@ import {
   Star, 
   Send, 
   CheckCircle2, 
-  Mail, 
   ThumbsUp, 
   ShieldCheck, 
-  Heart 
+  MessageSquareQuote
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { LocationInfo } from '../types/weather';
@@ -26,41 +25,41 @@ interface ReviewItem {
   isUserReview?: boolean;
 }
 
-const STORAGE_REVIEWS_KEY = 'weatherapp_community_reviews';
-const STORAGE_USER_RATED_KEY = 'weatherapp_has_rated';
+const STORAGE_REVIEWS_KEY = 'farmweather_community_reviews';
+const STORAGE_USER_RATED_KEY = 'farmweather_has_rated';
 
 const INITIAL_REVIEWS: ReviewItem[] = [
   {
     id: 'rev-1',
     name: 'Mahesh K.',
     rating: 5,
-    tags: ['🏡 Live House Scenery', '📱 Home Screen Widgets'],
-    comment: 'The animated farm house reacting to rain and sun right on my home screen widget is unmatched! The liquid glass dock makes navigation super fluid.',
+    tags: ['🌱 Soil Advisory', '🌧️ Rain Radar'],
+    comment: 'The agricultural spraying index and next-hour precipitation timeline have saved so much fertilizer and fuel.',
     date: '2 hours ago',
-    likes: 42
+    likes: 38
   },
   {
     id: 'rev-2',
-    name: 'Aiden Vance',
+    name: 'Carlos Mendez',
     rating: 5,
-    tags: ['⚡ Live Weather Telemetry', '🎨 Liquid Glass Dock'],
-    comment: 'Colors pop intensely on my display with AMOLED mode enabled. Fast location detection and smooth widget integration!',
+    tags: ['🌾 Farm Telemetry', '☀️ Hourly Forecast'],
+    comment: 'Clear editorial design with massive legible weather numbers. Works fast on my phone during fieldwork.',
     date: '1 day ago',
-    likes: 29
+    likes: 24
   },
   {
     id: 'rev-3',
-    name: 'Priya Sharma',
+    name: 'Sarah Jenkins',
     rating: 5,
-    tags: ['🎯 Forecast Accuracy', '🌧️ Rain Radar'],
-    comment: 'The next-hour precipitation intensity graph saved me from getting drenched. Clean design with great Android performance.',
+    tags: ['🚜 Field Microclimates', '🎯 High Accuracy'],
+    comment: 'The frost alert and evapotranspiration calculations are spot-on for crop irrigation planning.',
     date: '3 days ago',
-    likes: 18
+    likes: 19
   }
 ];
 
 export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location }) => {
-  const { isDarkMode, customAccentColor } = useTheme();
+  const { isDarkMode } = useTheme();
 
   // Form State
   const [rating, setRating] = useState<number>(5);
@@ -68,14 +67,14 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
   const [userName, setUserName] = useState<string>('');
   const [userEmail, setUserEmail] = useState<string>('');
   const [comment, setComment] = useState<string>('');
-  const [selectedTags, setSelectedTags] = useState<string[]>(['🏡 Live House Scenery', '🎨 Liquid Glass Dock']);
+  const [selectedTags, setSelectedTags] = useState<string[]>(['🌾 Farm Telemetry', '🌱 Soil Advisory']);
   const [validationError, setValidationError] = useState<string | null>(null);
   
   // Status State
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
   
-  // Community Reviews List
+  // Reviews List
   const [reviews, setReviews] = useState<ReviewItem[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_REVIEWS_KEY);
@@ -84,7 +83,7 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch (e) {
-      console.warn('Failed to parse stored reviews:', e);
+      console.warn('Failed to parse reviews:', e);
     }
     return INITIAL_REVIEWS;
   });
@@ -100,21 +99,22 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
   }, [reviews]);
 
   const availableTags = [
-    '🏡 Live House Scenery',
-    '🎨 Liquid Glass Dock',
-    '📱 Home Screen Widgets',
-    '🎯 Forecast Accuracy',
+    '🌾 Farm Telemetry',
+    '🌱 Soil Advisory',
+    '🚜 Field Microclimates',
     '🌧️ Rain Radar',
-    '💡 Feature Request',
+    '☀️ Hourly Forecast',
+    '🎯 High Accuracy',
+    '💡 Feature Idea',
     '🐛 Bug Report'
   ];
 
   const ratingLabels: { [key: number]: string } = {
-    1: 'Needs Improvement 😕',
-    2: 'Fair Experience 🌤️',
-    3: 'Good App ⛅',
-    4: 'Great Weather App! ☀️',
-    5: 'Masterpiece Experience! 🌟❤️'
+    1: 'Needs Improvement',
+    2: 'Fair Experience',
+    3: 'Good App',
+    4: 'Great Agricultural Tool',
+    5: 'Exceptional Weather App'
   };
 
   const toggleTag = (tag: string) => {
@@ -127,7 +127,7 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
     if (likedReviewIds.includes(id)) return;
     setLikedReviewIds(prev => [...prev, id]);
     setReviews(prev => prev.map(r => r.id === id ? { ...r, likes: r.likes + 1 } : r));
-    try { navigator.vibrate?.(20); } catch {}
+    try { navigator.vibrate?.(15); } catch {}
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -135,34 +135,17 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
     setValidationError(null);
 
     if (rating === 0) {
-      setValidationError('Please select a star rating before submitting.');
+      setValidationError('Please select a star rating.');
       return;
     }
 
-    if (!comment.trim() && selectedTags.length === 0) {
-      setValidationError('Please write a brief comment or select at least one feature tag.');
+    if (!comment.trim()) {
+      setValidationError('Please share a short review or suggestion.');
       return;
     }
 
     setIsSubmitting(true);
-    setSubmitSuccess(false);
-
-    const displayName = userName.trim() || 'Weather User';
-    const feedbackText = comment.trim() || 'User gave a 5-star rating!';
-
-    // Prepare Payload for automated dispatch to developer Gmail
-    const emailPayload = {
-      _subject: `🌟 New Weather Pro Feedback (${rating} Stars) from ${displayName}`,
-      _captcha: 'false',
-      rating: `${rating} / 5 Stars`,
-      reviewer_name: displayName,
-      reviewer_email: userEmail.trim() || 'Anonymous (App User)',
-      comment: feedbackText,
-      selected_tags: selectedTags.join(', ') || 'None',
-      user_location: `${location.name}, ${location.country}`,
-      timestamp: new Date().toLocaleString(),
-      app_version: 'WeatherPro Mobile App'
-    };
+    const displayName = userName.trim() || 'Farmer ' + Math.floor(100 + Math.random() * 900);
 
     try {
       await fetch('/api/feedback', {
@@ -173,33 +156,31 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
         },
         body: JSON.stringify({
           displayName,
+          email: userEmail.trim(),
           rating,
-          feedbackText,
-          selectedTags,
-          userLocation: `${location.name}, ${location.country}`,
-          userEmail: userEmail.trim()
+          comment: comment.trim(),
+          tags: selectedTags,
+          location: location.name
         })
       });
     } catch (err) {
-      console.warn('Backend feedback route note:', err);
+      console.warn('Server feedback sync note:', err);
     }
 
-    const newReview: ReviewItem = {
-      id: `rev-user-${Date.now()}`,
+    const newReviewItem: ReviewItem = {
+      id: 'rev-' + Date.now(),
       name: displayName,
       rating,
-      tags: selectedTags,
-      comment: feedbackText,
+      tags: [...selectedTags],
+      comment: comment.trim(),
       date: 'Just now',
       likes: 1,
       isUserReview: true
     };
 
-    setReviews(prev => [newReview, ...prev]);
-
+    setReviews(prev => [newReviewItem, ...prev]);
     try {
       localStorage.setItem(STORAGE_USER_RATED_KEY, 'true');
-      navigator.vibrate?.([30, 50, 30]);
     } catch {}
 
     setIsSubmitting(false);
@@ -208,72 +189,42 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
   };
 
   return (
-    <section className="w-full px-4 pt-4 pb-12 select-none">
-      {/* SECTION HEADER */}
-      <div className="flex items-center space-x-2 mb-3">
-        <div 
-          className="w-8 h-8 rounded-xl flex items-center justify-center font-bold"
-          style={{ 
-            backgroundColor: `${customAccentColor}25`,
-            color: customAccentColor 
-          }}
-        >
-          <Heart size={18} />
-        </div>
-        <div>
-          <h2 className="text-base font-extrabold tracking-tight">
-            App Rating & Feedback
-          </h2>
-          <p className={`text-[11px] font-medium ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>
-            Share your thoughts & suggestions directly with the developer team
-          </p>
-        </div>
+    <section aria-label="Community Feedback & Reviews" className="select-none">
+      <div className="flex items-center space-x-2 mb-2 px-1">
+        <MessageSquareQuote size={16} className="text-[#FF5C00]" />
+        <h3 className="text-xs font-black tracking-tight uppercase">
+          User Feedback & Reviews
+        </h3>
       </div>
 
-      {/* RATING SUBMISSION CARD */}
-      <div className={`p-4 rounded-3xl border shadow-xl relative overflow-hidden transition-all mb-6 ${
-        isDarkMode 
-          ? 'bg-[#10141D] border-white/10 text-white' 
-          : 'bg-white border-slate-200 text-slate-800 shadow-slate-200/50'
+      {/* FEEDBACK SUBMISSION CARD */}
+      <div className={`p-4 rounded-[26px] border shadow-xs transition-colors mb-4 ${
+        isDarkMode ? 'bg-[#121814] border-[#1E2821] text-[#F3F6F4]' : 'bg-[#FFFFFF] border-[#E8E6DF] text-[#121814]'
       }`}>
-        <div 
-          className="absolute -top-12 -right-12 w-28 h-28 rounded-full blur-2xl opacity-20 pointer-events-none"
-          style={{ backgroundColor: customAccentColor }}
-        />
-
         {submitSuccess ? (
-          <div className="py-6 px-3 flex flex-col items-center text-center animate-card-slide-fade">
-            <div 
-              className="w-14 h-14 rounded-full flex items-center justify-center mb-3"
-              style={{ backgroundColor: `${customAccentColor}20`, color: customAccentColor }}
-            >
-              <CheckCircle2 size={32} />
+          <div className="py-5 px-2 flex flex-col items-center text-center">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2.5 ${
+              isDarkMode ? 'bg-[#18261E] text-[#10B981]' : 'bg-[#EAF5EF] text-[#1B4332]'
+            }`}>
+              <CheckCircle2 size={28} />
             </div>
-            <h3 className="text-base font-extrabold mb-1">
-              Feedback Sent Successfully!
-            </h3>
-            <p className={`text-xs max-w-xs mb-3 ${isDarkMode ? 'text-zinc-400' : 'text-slate-600'}`}>
-              Your message has been sent directly to our developer team and saved to community thoughts.
+            <h4 className="text-sm font-black mb-1">
+              Feedback Received
+            </h4>
+            <p className={`text-xs max-w-xs mb-3 ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
+              Thank you for helping us improve Farm Weather. Your comments have been securely submitted.
             </p>
-            <div className="flex items-center space-x-2">
-              <span className="text-[11px] px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30">
-                ✓ Feedback Delivered
-              </span>
-              <button
-                onClick={() => setSubmitSuccess(false)}
-                className="text-[11px] font-bold text-teal-400 hover:underline cursor-pointer"
-              >
-                Write Another
-              </button>
-            </div>
+            <button
+              onClick={() => setSubmitSuccess(false)}
+              className="text-xs font-bold text-[#10B981] underline cursor-pointer"
+            >
+              Write Another Note
+            </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* STAR RATING INTERACTIVE ROW */}
-            <div className="flex flex-col items-center text-center pt-1 pb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-teal-400 mb-1.5">
-                Tap to Rate App
-              </span>
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            {/* Star Rating Row */}
+            <div className="flex flex-col items-center text-center pt-1">
               <div className="flex items-center space-x-2 my-1">
                 {[1, 2, 3, 4, 5].map(star => {
                   const isFilled = (hoverRating || rating) >= star;
@@ -283,34 +234,33 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
                       type="button"
                       onMouseEnter={() => setHoverRating(star)}
                       onMouseLeave={() => setHoverRating(0)}
-                      onClick={() => {
-                        setRating(star);
-                        try { navigator.vibrate?.(15); } catch {}
-                      }}
-                      className="p-1 rounded-full transition-transform hover:scale-125 active:scale-95 cursor-pointer"
+                      onClick={() => setRating(star)}
+                      className="p-1 rounded-full transition-transform hover:scale-115 active:scale-95 cursor-pointer"
                       title={`${star} Star`}
                     >
                       <Star 
-                        size={28} 
-                        className={`transition-colors duration-200 ${
+                        size={24} 
+                        className={`transition-colors ${
                           isFilled 
-                            ? 'text-amber-400 fill-amber-400 drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)]' 
-                            : isDarkMode ? 'text-zinc-600' : 'text-slate-300'
+                            ? 'text-amber-400 fill-amber-400' 
+                            : isDarkMode ? 'text-zinc-700' : 'text-slate-300'
                         }`}
                       />
                     </button>
                   );
                 })}
               </div>
-              <span className="text-xs font-bold mt-1 text-amber-400">
+              <span className="text-[11px] font-bold text-amber-500">
                 {ratingLabels[hoverRating || rating]}
               </span>
             </div>
 
-            {/* QUICK CATEGORY TAG CHIPS */}
+            {/* Tags */}
             <div>
-              <label className="text-[11px] font-bold uppercase tracking-wider opacity-70 block mb-1.5">
-                What stands out most?
+              <label className={`text-[10px] font-bold uppercase tracking-wider block mb-1.5 ${
+                isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'
+              }`}>
+                What stands out?
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {availableTags.map(tag => {
@@ -320,12 +270,14 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
                       key={tag}
                       type="button"
                       onClick={() => toggleTag(tag)}
-                      className={`text-[10px] font-bold px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-full transition-all cursor-pointer snappy-touch ${
                         isSelected
-                          ? 'bg-teal-500 text-slate-950 font-extrabold shadow-sm scale-102'
+                          ? isDarkMode 
+                            ? 'bg-[#1E2821] text-[#10B981] border border-[#2D3F34]' 
+                            : 'bg-[#1B4332] text-white shadow-xs'
                           : isDarkMode
-                          ? 'bg-[#181D28] text-zinc-300 hover:bg-[#202736] border border-white/5'
-                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
+                            ? 'bg-[#162019] text-[#89998F] border border-[#1E2821]'
+                            : 'bg-[#F8F7F4] text-[#5D6861] border border-[#E8E6DF]'
                       }`}
                     >
                       {tag}
@@ -335,185 +287,155 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
               </div>
             </div>
 
-            {/* FEEDBACK COMMENT INPUT */}
+            {/* Comment Input */}
             <div>
-              <label className="text-[11px] font-bold uppercase tracking-wider opacity-70 block mb-1">
-                Your Suggestions or Feedback
+              <label className={`text-[10px] font-bold uppercase tracking-wider block mb-1 ${
+                isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'
+              }`}>
+                Your Field Feedback or Suggestions
               </label>
               <textarea
                 value={comment}
                 onChange={e => setComment(e.target.value)}
                 placeholder="Share your experience or features you'd like added..."
                 rows={3}
-                className={`w-full text-xs p-3 rounded-2xl resize-none outline-hidden transition-all ${
+                className={`w-full text-xs p-3 rounded-2xl resize-none outline-none transition-colors border ${
                   isDarkMode
-                    ? 'bg-[#0A0D13] border border-white/10 text-white placeholder-zinc-500 focus:border-teal-400'
-                    : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-teal-500'
+                    ? 'bg-[#162019] border-[#1E2821] text-white placeholder-zinc-600 focus:border-[#10B981]'
+                    : 'bg-[#F8F7F4] border-[#E8E6DF] text-[#121814] placeholder-slate-400 focus:border-[#1B4332]'
                 }`}
               />
             </div>
 
-            {/* OPTIONAL USER DETAILS */}
+            {/* Optional User Name & Email */}
             <div className="grid grid-cols-2 gap-2">
-              <div>
-                <input
-                  type="text"
-                  value={userName}
-                  onChange={e => setUserName(e.target.value)}
-                  placeholder="Your Name (Optional)"
-                  className={`w-full text-xs px-3 py-2 rounded-xl outline-hidden ${
-                    isDarkMode
-                      ? 'bg-[#0A0D13] border border-white/10 text-white placeholder-zinc-500'
-                      : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400'
-                  }`}
-                />
-              </div>
-              <div>
-                <input
-                  type="email"
-                  value={userEmail}
-                  onChange={e => setUserEmail(e.target.value)}
-                  placeholder="Your Email (Optional)"
-                  className={`w-full text-xs px-3 py-2 rounded-xl outline-hidden ${
-                    isDarkMode
-                      ? 'bg-[#0A0D13] border border-white/10 text-white placeholder-zinc-500'
-                      : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400'
-                  }`}
-                />
-              </div>
+              <input
+                type="text"
+                value={userName}
+                onChange={e => setUserName(e.target.value)}
+                placeholder="Name (Optional)"
+                className={`w-full text-xs px-3 py-2 rounded-xl outline-none border ${
+                  isDarkMode
+                    ? 'bg-[#162019] border-[#1E2821] text-white placeholder-zinc-600'
+                    : 'bg-[#F8F7F4] border-[#E8E6DF] text-[#121814] placeholder-slate-400'
+                }`}
+              />
+              <input
+                type="email"
+                value={userEmail}
+                onChange={e => setUserEmail(e.target.value)}
+                placeholder="Email (Optional)"
+                className={`w-full text-xs px-3 py-2 rounded-xl outline-none border ${
+                  isDarkMode
+                    ? 'bg-[#162019] border-[#1E2821] text-white placeholder-zinc-600'
+                    : 'bg-[#F8F7F4] border-[#E8E6DF] text-[#121814] placeholder-slate-400'
+                }`}
+              />
             </div>
 
-            {/* VALIDATION ERROR ALERT */}
             {validationError && (
-              <p className="text-xs text-rose-400 font-bold px-1 animate-fadeIn">
-                ⚠️ {validationError}
-              </p>
+              <p className="text-xs text-rose-500 font-bold px-1">{validationError}</p>
             )}
 
-            {/* SUBMIT BUTTON */}
-            <div className="pt-1">
+            {/* Submit Button */}
+            <div>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3 px-4 rounded-2xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-lg shadow-teal-500/25 active:scale-98 disabled:opacity-50"
+                className="w-full py-2.5 px-4 rounded-2xl bg-[#1B4332] hover:bg-[#12281E] text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer snappy-touch shadow-xs disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                    <span>Submitting Feedback...</span>
-                  </>
+                  <span>Sending Feedback...</span>
                 ) : (
                   <>
-                    <Send size={15} />
+                    <Send size={14} />
                     <span>Submit Feedback</span>
                   </>
                 )}
               </button>
 
-              <div className="flex items-center justify-between mt-2.5 px-1">
-                <span className="text-[10px] text-zinc-500 flex items-center space-x-1">
-                  <ShieldCheck size={12} className="text-teal-400" />
-                  <span>Encrypted Developer Feedback</span>
-                </span>
-                <span className="text-[10px] font-bold text-teal-400 flex items-center space-x-1">
-                  <Mail size={11} />
-                  <span>Direct Secure Dispatch</span>
-                </span>
+              <div className="flex items-center justify-center space-x-1.5 mt-2 text-[10px] text-[#5D6861] dark:text-[#89998F] font-medium">
+                <ShieldCheck size={12} className="text-[#10B981]" />
+                <span>Encrypted Developer Feedback • Private & Secure</span>
               </div>
             </div>
           </form>
         )}
       </div>
 
-      {/* COMMUNITY THOUGHTS FEED */}
-      <div>
-        <div className="flex items-center justify-between mb-3 px-1">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-teal-400">
-            Community Thoughts ({reviews.length})
-          </span>
-          <span className="text-[10px] font-bold text-amber-400 flex items-center space-x-1">
-            <Star size={11} className="fill-amber-400" />
-            <span>4.9 / 5.0 Rating</span>
-          </span>
-        </div>
-
-        <div className="space-y-3">
-          {reviews.map(item => {
-            const hasLiked = likedReviewIds.includes(item.id);
-            return (
-              <div
-                key={item.id}
-                className={`p-3.5 rounded-2xl border transition-all ${
-                  item.isUserReview
-                    ? 'border-teal-500/40 bg-teal-500/5'
-                    : isDarkMode
-                    ? 'bg-[#10141D] border-white/5'
-                    : 'bg-white border-slate-200 shadow-xs'
-                }`}
-              >
-                <div className="flex items-start justify-between mb-1.5">
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs font-bold">{item.name}</span>
-                      {item.isUserReview && (
-                        <span className="text-[9px] px-1.5 py-0.2 rounded-sm bg-teal-500/20 text-teal-300 font-bold">
-                          You
-                        </span>
-                      )}
-                      <span className="text-[10px] opacity-60">• {item.date}</span>
-                    </div>
-                    <div className="flex items-center space-x-0.5 mt-0.5">
-                      {[1, 2, 3, 4, 5].map(s => (
-                        <Star
-                          key={s}
-                          size={12}
-                          className={s <= item.rating ? 'text-amber-400 fill-amber-400' : 'text-zinc-600'}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleLikeReview(item.id)}
-                    className={`flex items-center space-x-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                      hasLiked
-                        ? 'bg-teal-500/20 text-teal-300'
-                        : isDarkMode
-                        ? 'bg-zinc-800/80 text-zinc-400 hover:text-white'
-                        : 'bg-slate-100 text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    <ThumbsUp size={11} />
-                    <span>{item.likes}</span>
-                  </button>
-                </div>
-
-                <p className={`text-xs leading-relaxed mb-2 font-medium ${
-                  isDarkMode ? 'text-zinc-300' : 'text-slate-700'
-                }`}>
-                  {item.comment}
-                </p>
-
-                {item.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {item.tags.map((t, i) => (
-                      <span
-                        key={i}
-                        className={`text-[9px] font-semibold px-2 py-0.5 rounded-md ${
-                          isDarkMode
-                            ? 'bg-zinc-800/80 text-zinc-300'
-                            : 'bg-slate-100 text-slate-600'
-                        }`}
-                      >
-                        {t}
+      {/* REVIEWS FEED */}
+      <div className="space-y-2">
+        {reviews.map(item => {
+          const hasLiked = likedReviewIds.includes(item.id);
+          return (
+            <div
+              key={item.id}
+              className={`p-3 rounded-2xl border transition-colors ${
+                item.isUserReview
+                  ? isDarkMode ? 'bg-[#162019] border-[#223326]' : 'bg-[#EAF5EF] border-[#C5E4D2]'
+                  : isDarkMode ? 'bg-[#121814] border-[#1E2821]' : 'bg-white border-[#E8E6DF]'
+              }`}
+            >
+              <div className="flex items-start justify-between mb-1">
+                <div>
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-xs font-bold">{item.name}</span>
+                    {item.isUserReview && (
+                      <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-[#10B981]/15 text-[#10B981] font-bold">
+                        You
                       </span>
+                    )}
+                    <span className="text-[10px] opacity-50">• {item.date}</span>
+                  </div>
+                  <div className="flex items-center space-x-0.5 mt-0.5">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <Star
+                        key={s}
+                        size={11}
+                        className={s <= item.rating ? 'text-amber-400 fill-amber-400' : 'text-zinc-600'}
+                      />
                     ))}
                   </div>
-                )}
+                </div>
+
+                <button
+                  onClick={() => handleLikeReview(item.id)}
+                  className={`flex items-center space-x-1 px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                    hasLiked
+                      ? 'bg-[#10B981]/20 text-[#10B981]'
+                      : isDarkMode
+                      ? 'bg-[#162019] text-[#89998F] hover:text-white'
+                      : 'bg-[#F8F7F4] text-[#5D6861] hover:text-black'
+                  }`}
+                >
+                  <ThumbsUp size={10} />
+                  <span>{item.likes}</span>
+                </button>
               </div>
-            );
-          })}
-        </div>
+
+              <p className={`text-xs leading-relaxed my-1.5 font-medium ${
+                isDarkMode ? 'text-[#89998F]' : 'text-[#4A554E]'
+              }`}>
+                {item.comment}
+              </p>
+
+              {item.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {item.tags.map((t, i) => (
+                    <span
+                      key={i}
+                      className={`text-[9px] font-semibold px-2 py-0.5 rounded-md ${
+                        isDarkMode ? 'bg-[#162019] text-[#89998F]' : 'bg-[#F8F7F4] text-[#5D6861]'
+                      }`}
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </section>
   );

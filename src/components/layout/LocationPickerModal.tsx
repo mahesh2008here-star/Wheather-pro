@@ -11,7 +11,7 @@ interface LocationPickerModalProps {
 }
 
 export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({ isOpen, onClose }) => {
-  const { isDarkMode, customAccentColor } = useTheme();
+  const { isDarkMode } = useTheme();
   const { 
     activeLocation, 
     savedLocations, 
@@ -41,20 +41,24 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({ isOpen
   };
 
   return (
-    <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md p-4 flex flex-col justify-end animate-card-slide-fade">
-      <div className={`w-full rounded-3xl p-4 border max-h-[85vh] overflow-y-auto no-scrollbar shadow-2xl ${
-        isDarkMode ? 'bg-[#0E121A] border-white/15 text-white' : 'bg-white border-slate-300 text-slate-900'
+    <div className="absolute inset-0 z-50 bg-black/75 backdrop-blur-sm p-4 flex flex-col justify-end animate-tab-switch">
+      <div className={`w-full rounded-[28px] p-4 border max-h-[85vh] overflow-y-auto no-scrollbar shadow-2xl transition-colors ${
+        isDarkMode 
+          ? 'bg-[#121814] border-[#1E2821] text-[#F3F6F4]' 
+          : 'bg-white border-[#E8E6DF] text-[#121814]'
       }`}>
-        <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-black/5 dark:border-white/5">
           <div className="flex items-center space-x-2">
-            <MapPin size={18} style={{ color: customAccentColor }} />
-            <h3 className="text-sm font-black">Choose Weather Location</h3>
+            <MapPin size={17} className="text-[#FF5C00]" />
+            <h3 className="text-sm font-black">Choose Weather Parcel</h3>
           </div>
           <button
             onClick={onClose}
-            className={`p-1.5 rounded-full cursor-pointer ${isDarkMode ? 'bg-white/10 text-white' : 'bg-slate-200 text-slate-800'}`}
+            className={`p-1.5 rounded-full cursor-pointer snappy-touch ${
+              isDarkMode ? 'bg-[#162019] text-[#F3F6F4]' : 'bg-[#F8F7F4] text-[#121814]'
+            }`}
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
 
@@ -64,37 +68,46 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({ isOpen
             detectGpsLocation();
             onClose();
           }}
-          className="w-full mb-3 py-2.5 px-3 rounded-xl bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/40 text-teal-300 text-xs font-black flex items-center justify-center space-x-2 cursor-pointer shadow-xs"
+          className={`w-full mb-3 py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center space-x-2 cursor-pointer snappy-touch border transition-all ${
+            isDarkMode
+              ? 'bg-[#1E2821] hover:bg-[#25332A] border-[#2D3F34] text-[#10B981]'
+              : 'bg-[#EAF5EF] hover:bg-[#D7EDE0] border-[#C5E4D2] text-[#1B4332]'
+          }`}
         >
-          <Crosshair size={15} />
-          <span>Use Current GPS Location</span>
+          <Crosshair size={14} />
+          <span>Use Live GPS Location</span>
         </button>
 
         {/* Quick Search Input */}
         <form onSubmit={handleSearch} className="relative mb-3">
           <input
             type="text"
-            placeholder="Search city name (e.g. Tokyo, Berlin)..."
+            placeholder="Search city, district, or coordinates..."
             value={query}
             onChange={e => setQuery(e.target.value)}
-            className={`w-full pl-8 pr-16 py-2 rounded-xl text-xs font-bold border outline-hidden ${
-              isDarkMode ? 'bg-black border-white/10 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'
+            className={`w-full pl-8 pr-16 py-2 rounded-xl text-xs font-bold border outline-none transition-colors ${
+              isDarkMode 
+                ? 'bg-[#162019] border-[#1E2821] text-white focus:border-[#10B981]' 
+                : 'bg-[#F8F7F4] border-[#E8E6DF] text-[#121814] focus:border-[#1B4332]'
             }`}
           />
-          <Search size={14} className="absolute left-2.5 top-2.5 text-zinc-400" />
+          <Search size={14} className="absolute left-2.5 top-2.5 text-[#5D6861] dark:text-[#89998F]" />
           <button
             type="submit"
-            className="absolute right-1 top-1 px-2.5 py-1 rounded-lg text-slate-950 text-[10px] font-black cursor-pointer"
-            style={{ backgroundColor: customAccentColor }}
+            className="absolute right-1 top-1 px-2.5 py-1 rounded-lg bg-[#1B4332] hover:bg-[#12281E] text-white text-[10px] font-black cursor-pointer snappy-touch"
           >
             Search
           </button>
         </form>
 
-        {/* Quick Search Results */}
+        {/* Search Results */}
         {results.length > 0 && (
           <div className="mb-3 space-y-1">
-            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block px-1">Search Results</span>
+            <span className={`text-[10px] font-bold uppercase tracking-wider block px-1 ${
+              isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'
+            }`}>
+              Search Results
+            </span>
             {results.map((loc, idx) => (
               <button
                 key={idx}
@@ -105,19 +118,25 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({ isOpen
                   setResults([]);
                   setQuery('');
                 }}
-                className={`w-full p-2 rounded-xl text-left text-xs font-bold flex items-center justify-between ${
-                  isDarkMode ? 'bg-white/5 hover:bg-white/10 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-900'
+                className={`w-full p-2.5 rounded-xl text-left text-xs font-bold flex items-center justify-between border cursor-pointer snappy-touch ${
+                  isDarkMode 
+                    ? 'bg-[#162019] border-[#1E2821] text-[#F3F6F4] hover:bg-[#1E2821]' 
+                    : 'bg-[#F8F7F4] border-[#E8E6DF] text-[#121814] hover:bg-[#ECE9E0]'
                 }`}
               >
                 <span>{loc.name}, {loc.country}</span>
-                <Plus size={14} style={{ color: customAccentColor }} />
+                <Plus size={14} className="text-[#10B981]" />
               </button>
             ))}
           </div>
         )}
 
         {/* Saved Cities Quick Switch */}
-        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1 px-1">Saved Cities</span>
+        <span className={`text-[10px] font-bold uppercase tracking-wider block mb-1.5 px-1 ${
+          isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'
+        }`}>
+          Saved Locations
+        </span>
         <div className="space-y-1.5">
           {savedLocations.map(loc => {
             const isSelected = loc.id === activeLocation.id;
@@ -128,18 +147,21 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({ isOpen
                   selectLocation(loc);
                   onClose();
                 }}
-                className={`w-full p-2.5 rounded-xl text-left text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
+                className={`w-full p-2.5 rounded-2xl text-left text-xs font-bold flex items-center justify-between border cursor-pointer snappy-touch transition-all ${
                   isSelected
-                    ? 'bg-teal-500/20 border text-white'
-                    : isDarkMode ? 'bg-white/5 hover:bg-white/10 text-zinc-200' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                    ? isDarkMode 
+                      ? 'bg-[#1E2821] border-[#2D3F34] text-[#F3F6F4]' 
+                      : 'bg-[#EAF5EF] border-[#C5E4D2] text-[#121814]'
+                    : isDarkMode 
+                      ? 'bg-[#162019] border-[#1E2821] text-[#89998F] hover:bg-[#1E2821]' 
+                      : 'bg-[#F8F7F4] border-[#E8E6DF] text-[#5D6861] hover:bg-[#ECE9E0]'
                 }`}
-                style={{ borderColor: isSelected ? customAccentColor : undefined }}
               >
                 <div className="flex items-center space-x-2">
-                  <MapPin size={14} style={{ color: isSelected ? customAccentColor : undefined }} />
+                  <MapPin size={14} className={isSelected ? 'text-[#FF5C00]' : 'opacity-40'} />
                   <span>{loc.name}, {loc.country}</span>
                 </div>
-                {isSelected && <Check size={14} style={{ color: customAccentColor }} />}
+                {isSelected && <Check size={14} className="text-[#10B981]" />}
               </button>
             );
           })}

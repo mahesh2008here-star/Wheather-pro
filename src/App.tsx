@@ -15,7 +15,6 @@ import { SettingsScreen } from './components/SettingsScreen';
 import { Navigation } from 'lucide-react';
 
 function MainAppContent() {
-  const { isDarkMode } = useTheme();
   const { 
     activeTab, 
     locationStatus, 
@@ -35,18 +34,18 @@ function MainAppContent() {
 
   return (
     <PhoneSimulator>
-      {/* Top Header Bar */}
+      {/* Top Brand Header Bar */}
       <AppHeader onOpenLocationPicker={() => setIsLocationPickerOpen(true)} />
 
       {/* GPS Location Status Feedback Toast */}
       {locationStatus && (
-        <div className="w-full px-4 pt-1.5 select-none animate-fadeIn z-30">
-          <div className="p-2 px-3 rounded-xl bg-teal-500/20 border border-teal-500/40 text-teal-300 text-xs font-bold flex items-center justify-between shadow-md">
+        <div className="w-full px-4 pt-1.5 select-none animate-tab-switch z-30">
+          <div className="p-2 px-3 rounded-xl bg-[#059669]/15 border border-[#059669]/30 text-[#059669] dark:text-[#34D399] text-xs font-bold flex items-center justify-between shadow-xs">
             <div className="flex items-center space-x-2">
-              <Navigation size={14} className="animate-spin text-teal-400 shrink-0" />
+              <Navigation size={14} className="animate-spin shrink-0" />
               <span>{locationStatus}</span>
             </div>
-            <button onClick={clearLocationStatus} className="text-teal-200 text-xs font-bold p-0.5 cursor-pointer">✕</button>
+            <button onClick={clearLocationStatus} className="p-0.5 cursor-pointer font-bold">✕</button>
           </div>
         </div>
       )}
@@ -58,18 +57,18 @@ function MainAppContent() {
       />
 
       {/* Screen Views with ErrorBoundary Protection */}
-      <div className="flex-1 w-full overflow-y-auto no-scrollbar relative flex flex-col pb-safe animate-tab-switch">
+      <div className="flex-1 w-full overflow-y-auto no-scrollbar relative flex flex-col animate-tab-switch">
         <ErrorBoundary fallbackTitle="Screen Error">
           {activeTab === 0 && <HomeScreen />}
 
           {activeTab === 1 && (
-            <div className="w-full flex-col flex pb-28 sm:pb-32">
+            <div className="w-full flex-col flex">
               <LiveRadarScreen location={activeLocation} />
             </div>
           )}
 
           {activeTab === 2 && (
-            <div className="w-full flex-col flex pb-28 sm:pb-32">
+            <div className="w-full flex-col flex">
               <AirAndSunScreen
                 airQuality={metrics.airQuality}
                 astronomy={metrics.astronomy}
@@ -79,7 +78,7 @@ function MainAppContent() {
           )}
 
           {activeTab === 3 && (
-            <div className="w-full flex-col flex pb-28 sm:pb-32">
+            <div className="w-full flex-col flex">
               <WeatherWidgetsScreen
                 metrics={metrics}
                 hourly={hourlyForecast}
@@ -91,7 +90,7 @@ function MainAppContent() {
           )}
 
           {activeTab === 4 && (
-            <div className="w-full flex-col flex pb-28 sm:pb-32">
+            <div className="w-full flex-col flex">
               <SettingsScreen
                 locations={savedLocations}
                 activeLocation={activeLocation}
@@ -106,7 +105,7 @@ function MainAppContent() {
         </ErrorBoundary>
       </div>
 
-      {/* Apple Liquid Glass Navigation Dock (85% Liquidity) */}
+      {/* Grounded Bottom Navigation Bar */}
       <LiquidDockNav />
     </PhoneSimulator>
   );

@@ -3,12 +3,7 @@ import {
   ShieldCheck, 
   Sun, 
   Moon, 
-  Wind, 
   Flower2, 
-  Activity, 
-  Clock, 
-  Compass, 
-  Sparkles 
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { AirQualityData, AstronomyData, LocationInfo } from '../types/weather';
@@ -27,46 +22,52 @@ export const AirAndSunScreen: React.FC<AirAndSunScreenProps> = ({
   const { isDarkMode } = useTheme();
 
   return (
-    <div className={`w-full min-h-full px-4 pt-3 pb-24 transition-colors ${
-      isDarkMode ? 'bg-[#000000] text-white' : 'bg-[#F8F6F0] text-stone-900'
-    }`}>
+    <div className="w-full px-4 pt-3 pb-24 select-none">
       {/* HEADER */}
-      <div className="mb-4">
-        <h1 className="text-2xl font-black tracking-tight">
-          Air Quality & Sun
+      <div className="mb-3.5 px-1">
+        <h1 className="text-xl font-black tracking-tight">
+          Air Quality & Solar Cycle
         </h1>
-        <p className={`text-xs mt-0.5 font-medium ${isDarkMode ? 'text-zinc-400' : 'text-stone-500'}`}>
+        <p className={`text-xs mt-0.5 font-medium ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
           Atmospheric pollutants, allergens & celestial ephemeris • {location.name}
         </p>
       </div>
 
-      {/* 1. AIR QUALITY INDEX (AQI) HERO CARD */}
+      {/* 1. AIR QUALITY INDEX (EPA AQI) */}
       <div 
-        className={`p-4 rounded-3xl mb-3.5 transition-all relative overflow-hidden ${
-          isDarkMode 
-            ? 'bg-[#000000] border border-white/15 shadow-[0_4px_25px_rgba(0,0,0,0.9)]' 
-            : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
+        className={`p-4 rounded-[26px] mb-3.5 border shadow-xs transition-colors ${
+          isDarkMode ? 'bg-[#121814] border-[#1E2821] text-[#F3F6F4]' : 'bg-[#FFFFFF] border-[#E8E6DF] text-[#121814]'
         }`}
       >
         <div className="flex items-start justify-between">
           <div>
-            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
+            <span className={`text-[10px] font-bold uppercase tracking-wider block ${
+              isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'
+            }`}>
               EPA Air Quality Index
             </span>
             <div className="flex items-baseline space-x-2.5 mt-1">
-              <span className={`text-4xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
+              <span className="text-4xl font-black tracking-tight font-mono-numbers">
                 {airQuality.aqi}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-black border ${
+                airQuality.aqi <= 50 
+                  ? 'bg-[#10B981]/15 text-[#10B981] border-[#10B981]/30'
+                  : airQuality.aqi <= 100
+                  ? 'bg-amber-500/15 text-amber-500 border-amber-500/30'
+                  : 'bg-rose-500/15 text-rose-500 border-rose-500/30'
+              }`}>
                 {airQuality.category}
               </span>
             </div>
-            <p className={`text-xs mt-2 leading-relaxed ${isDarkMode ? 'text-zinc-300' : 'text-stone-600'}`}>
+            <p className={`text-xs mt-2 leading-relaxed font-medium ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
               {airQuality.healthAdvice}
             </p>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
-            <ShieldCheck size={24} />
+          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
+            isDarkMode ? 'bg-[#18261E] text-[#10B981]' : 'bg-[#EAF5EF] text-[#1B4332]'
+          }`}>
+            <ShieldCheck size={22} />
           </div>
         </div>
 
@@ -78,132 +79,85 @@ export const AirAndSunScreen: React.FC<AirAndSunScreenProps> = ({
               style={{ left: `${Math.min(95, Math.max(5, (airQuality.aqi / 200) * 100))}%` }}
             />
           </div>
-          <div className="flex justify-between text-[10px] font-bold text-zinc-500 mt-1">
+          <div className="flex justify-between text-[10px] font-bold text-[#5D6861] dark:text-[#89998F] mt-1">
             <span>Good (0)</span>
-            <span>Mod (50)</span>
+            <span>Moderate (50)</span>
             <span>Unhealthy (150)</span>
             <span>Hazardous (300+)</span>
           </div>
         </div>
 
-        {/* Individual Pollutants Breakdown */}
+        {/* Pollutants Breakdown */}
         <div className="grid grid-cols-4 gap-2 mt-4 pt-3 border-t border-black/5 dark:border-white/5 text-center">
-          <div className="p-2 rounded-xl bg-black/5 dark:bg-white/5">
-            <span className="text-[10px] font-bold text-zinc-400 block">PM2.5</span>
-            <span className="text-xs font-black text-sky-400">{airQuality.pm25} µg</span>
+          <div className={`p-2 rounded-xl border ${isDarkMode ? 'bg-[#162019] border-[#1E2821]' : 'bg-[#F8F7F4] border-[#E8E6DF]'}`}>
+            <span className="text-[10px] font-bold text-[#5D6861] dark:text-[#89998F] block">PM2.5</span>
+            <span className="text-xs font-black text-sky-500">{airQuality.pm25} µg</span>
           </div>
-          <div className="p-2 rounded-xl bg-black/5 dark:bg-white/5">
-            <span className="text-[10px] font-bold text-zinc-400 block">PM10</span>
-            <span className="text-xs font-black text-teal-400">{airQuality.pm10} µg</span>
+          <div className={`p-2 rounded-xl border ${isDarkMode ? 'bg-[#162019] border-[#1E2821]' : 'bg-[#F8F7F4] border-[#E8E6DF]'}`}>
+            <span className="text-[10px] font-bold text-[#5D6861] dark:text-[#89998F] block">PM10</span>
+            <span className="text-xs font-black text-[#10B981]">{airQuality.pm10} µg</span>
           </div>
-          <div className="p-2 rounded-xl bg-black/5 dark:bg-white/5">
-            <span className="text-[10px] font-bold text-zinc-400 block">Ozone</span>
-            <span className="text-xs font-black text-amber-400">{airQuality.ozone} ppb</span>
+          <div className={`p-2 rounded-xl border ${isDarkMode ? 'bg-[#162019] border-[#1E2821]' : 'bg-[#F8F7F4] border-[#E8E6DF]'}`}>
+            <span className="text-[10px] font-bold text-[#5D6861] dark:text-[#89998F] block">Ozone</span>
+            <span className="text-xs font-black text-amber-500">{airQuality.ozone} ppb</span>
           </div>
-          <div className="p-2 rounded-xl bg-black/5 dark:bg-white/5">
-            <span className="text-[10px] font-bold text-zinc-400 block">NO₂</span>
+          <div className={`p-2 rounded-xl border ${isDarkMode ? 'bg-[#162019] border-[#1E2821]' : 'bg-[#F8F7F4] border-[#E8E6DF]'}`}>
+            <span className="text-[10px] font-bold text-[#5D6861] dark:text-[#89998F] block">NO₂</span>
             <span className="text-xs font-black text-purple-400">{airQuality.no2} ppb</span>
           </div>
         </div>
       </div>
 
-      {/* 2. POLLEN & ALLERGEN MONITOR */}
+      {/* 2. SOLAR EPHEMERIS & DAYLIGHT ARC */}
       <div 
-        className={`p-4 rounded-3xl mb-3.5 transition-all ${
-          isDarkMode 
-            ? 'bg-[#000000] border border-white/15 shadow-[0_4px_25px_rgba(0,0,0,0.9)]' 
-            : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
+        className={`p-4 rounded-[26px] mb-3.5 border shadow-xs transition-colors ${
+          isDarkMode ? 'bg-[#121814] border-[#1E2821] text-[#F3F6F4]' : 'bg-[#FFFFFF] border-[#E8E6DF] text-[#121814]'
         }`}
       >
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center space-x-2">
-            <Flower2 size={16} className="text-rose-400" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-              Pollen & Allergen Forecast
-            </h3>
-          </div>
-          <span className="text-[11px] font-bold text-emerald-400">Low Allergy Risk</span>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2">
-          <div className="p-3 rounded-2xl bg-black/5 dark:bg-zinc-950 border border-black/5 dark:border-white/10">
-            <span className="text-[11px] font-bold text-zinc-400 block">Tree Pollen</span>
-            <span className="text-sm font-black text-emerald-400 mt-1 block">{airQuality.treePollen}</span>
-            <div className="w-full h-1 rounded-full bg-zinc-800 mt-2 overflow-hidden">
-              <div className="h-full bg-emerald-400 w-1/4" />
-            </div>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-black/5 dark:bg-zinc-950 border border-black/5 dark:border-white/10">
-            <span className="text-[11px] font-bold text-zinc-400 block">Grass Pollen</span>
-            <span className="text-sm font-black text-emerald-400 mt-1 block">{airQuality.grassPollen}</span>
-            <div className="w-full h-1 rounded-full bg-zinc-800 mt-2 overflow-hidden">
-              <div className="h-full bg-emerald-400 w-1/5" />
-            </div>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-black/5 dark:bg-zinc-950 border border-black/5 dark:border-white/10">
-            <span className="text-[11px] font-bold text-zinc-400 block">Weed Pollen</span>
-            <span className="text-sm font-black text-emerald-400 mt-1 block">{airQuality.weedPollen}</span>
-            <div className="w-full h-1 rounded-full bg-zinc-800 mt-2 overflow-hidden">
-              <div className="h-full bg-emerald-400 w-1/6" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. SOLAR EPHEMERIS & DAYLIGHT ARC */}
-      <div 
-        className={`p-4 rounded-3xl mb-3.5 transition-all ${
-          isDarkMode 
-            ? 'bg-[#000000] border border-white/15 shadow-[0_4px_25px_rgba(0,0,0,0.9)]' 
-            : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
-        }`}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <Sun size={16} className="text-amber-400" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+            <Sun size={16} className="text-[#FF5C00]" />
+            <h3 className="text-xs font-black uppercase tracking-tight">
               Solar Daylight Ephemeris
             </h3>
           </div>
-          <span className="text-[11px] font-bold text-amber-400">
+          <span className="text-[11px] font-bold text-[#FF5C00]">
             Daylight: {astronomy.dayLength}
           </span>
         </div>
 
         {/* Solar Arc Curve SVG */}
-        <div className="relative w-full h-28 flex items-center justify-center">
-          <svg viewBox="0 0 320 110" className="w-full h-full overflow-visible">
+        <div className="relative w-full h-24 flex items-center justify-center">
+          <svg viewBox="0 0 320 100" className="w-full h-full overflow-visible">
             {/* Horizon Line */}
-            <line x1="20" y1="90" x2="300" y2="90" stroke={isDarkMode ? '#27272A' : '#E4E4E7'} strokeWidth="1.5" strokeDasharray="4 4" />
+            <line x1="20" y1="80" x2="300" y2="80" stroke={isDarkMode ? '#1E2821' : '#E8E6DF'} strokeWidth="1.5" strokeDasharray="4 4" />
             
             {/* Solar Path Arc */}
             <path
-              d="M 30 90 Q 160 -10 290 90"
+              d="M 30 80 Q 160 -5 290 80"
               fill="none"
-              stroke={isDarkMode ? '#3F3F46' : '#D4D4D8'}
+              stroke={isDarkMode ? '#223328' : '#DCD7CE'}
               strokeWidth="2.5"
             />
 
-            {/* Daytime Progress Glow Arc */}
+            {/* Daytime Progress Arc */}
             <path
-              d="M 30 90 Q 110 35 180 30"
+              d="M 30 80 Q 110 30 180 25"
               fill="none"
-              stroke="#F59E0B"
+              stroke="#FF5C00"
               strokeWidth="3"
               strokeLinecap="round"
             />
 
-            {/* Sun Icon Position */}
-            <circle cx="180" cy="30" r="12" fill="#F59E0B" filter="drop-shadow(0 0 10px rgba(245, 158, 11, 0.9))" />
-            <circle cx="180" cy="30" r="8" fill="#FEF08A" />
+            {/* Sun Marker */}
+            <circle cx="180" cy="25" r="10" fill="#FF5C00" filter="drop-shadow(0 0 8px rgba(255, 92, 0, 0.7))" />
+            <circle cx="180" cy="25" r="6" fill="#FEF08A" />
 
             {/* Sunrise / Sunset Markers */}
-            <text x="25" y="106" fill={isDarkMode ? '#A1A1AA' : '#71717A'} fontSize="11" fontWeight="bold">
+            <text x="25" y="96" fill={isDarkMode ? '#89998F' : '#5D6861'} fontSize="11" fontWeight="bold">
               {astronomy.sunrise}
             </text>
-            <text x="250" y="106" fill={isDarkMode ? '#A1A1AA' : '#71717A'} fontSize="11" fontWeight="bold">
+            <text x="250" y="96" fill={isDarkMode ? '#89998F' : '#5D6861'} fontSize="11" fontWeight="bold">
               {astronomy.sunset}
             </text>
           </svg>
@@ -211,33 +165,33 @@ export const AirAndSunScreen: React.FC<AirAndSunScreenProps> = ({
 
         <div className="mt-3 pt-3 border-t border-black/5 dark:border-white/5 flex justify-between text-xs">
           <div>
-            <span className="text-zinc-500 text-[11px] block">Golden Hour</span>
-            <span className="font-bold text-amber-400">{astronomy.goldenHour}</span>
+            <span className={`text-[10px] block font-bold ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>Golden Hour</span>
+            <span className="font-bold text-[#FF5C00]">{astronomy.goldenHour}</span>
           </div>
           <div>
-            <span className="text-zinc-500 text-[11px] block">Solar Noon</span>
+            <span className={`text-[10px] block font-bold ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>Solar Noon</span>
             <span className="font-bold">{astronomy.solarNoon}</span>
           </div>
           <div>
-            <span className="text-zinc-500 text-[11px] block">Current Cycle</span>
-            <span className="font-bold text-emerald-400">{astronomy.isDaytime ? 'Daytime' : 'Nighttime'}</span>
+            <span className={`text-[10px] block font-bold ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>Current State</span>
+            <span className="font-bold text-[#10B981]">
+              {astronomy.isDaytime ? 'Daylight' : 'Night'}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* 4. MOON PHASE & ILLUMINATION */}
+      {/* 3. MOON PHASE & ILLUMINATION */}
       <div 
-        className={`p-4 rounded-3xl transition-all ${
-          isDarkMode 
-            ? 'bg-[#000000] border border-white/15 shadow-[0_4px_25px_rgba(0,0,0,0.9)]' 
-            : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
+        className={`p-4 rounded-[26px] mb-3.5 border shadow-xs transition-colors ${
+          isDarkMode ? 'bg-[#121814] border-[#1E2821] text-[#F3F6F4]' : 'bg-[#FFFFFF] border-[#E8E6DF] text-[#121814]'
         }`}
       >
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center space-x-2">
             <Moon size={16} className="text-sky-300" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-              Moon Phase & Illumination
+            <h3 className="text-xs font-black uppercase tracking-tight">
+              Celestial Moon Phase
             </h3>
           </div>
           <span className="text-[11px] font-bold text-sky-400">
@@ -246,22 +200,60 @@ export const AirAndSunScreen: React.FC<AirAndSunScreenProps> = ({
         </div>
 
         <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-3xl shadow-lg shrink-0">
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xs shrink-0 border ${
+            isDarkMode ? 'bg-[#162019] border-[#1E2821]' : 'bg-[#F8F7F4] border-[#E8E6DF]'
+          }`}>
             {astronomy.moonPhase === 'Full Moon' ? '🌕' : astronomy.moonPhase === 'New Moon' ? '🌑' : '🌙'}
           </div>
 
           <div className="flex-1">
-            <h4 className="text-base font-black">{astronomy.moonPhase}</h4>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <h4 className="text-sm font-black">{astronomy.moonPhase}</h4>
+            <p className={`text-xs mt-0.5 ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
               Moonrise at {astronomy.moonrise} • Sets at {astronomy.moonset}
             </p>
 
-            <div className="mt-2 w-full h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+            <div className="mt-2 w-full h-1.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-sky-400 to-indigo-500 rounded-full"
+                className="h-full bg-gradient-to-r from-sky-400 to-[#10B981] rounded-full"
                 style={{ width: `${astronomy.moonIllumination}%` }}
               />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. POLLEN ALLERGEN RISK */}
+      <div 
+        className={`p-4 rounded-[26px] border shadow-xs transition-colors ${
+          isDarkMode ? 'bg-[#121814] border-[#1E2821] text-[#F3F6F4]' : 'bg-[#FFFFFF] border-[#E8E6DF] text-[#121814]'
+        }`}
+      >
+        <div className="flex items-center justify-between mb-3 px-1">
+          <div className="flex items-center space-x-2">
+            <Flower2 size={16} className="text-rose-400" />
+            <h3 className="text-xs font-black uppercase tracking-tight">
+              Crop & Pollen Allergen Levels
+            </h3>
+          </div>
+          <span className="text-[11px] font-bold text-[#10B981]">
+            Low Agricultural Risk
+          </span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <div className={`p-2.5 rounded-2xl border ${isDarkMode ? 'bg-[#162019] border-[#1E2821]' : 'bg-[#F8F7F4] border-[#E8E6DF]'}`}>
+            <span className={`text-[10px] font-bold block ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>Tree Pollen</span>
+            <span className="text-xs font-black text-[#10B981] mt-0.5 block">{airQuality.treePollen}</span>
+          </div>
+
+          <div className={`p-2.5 rounded-2xl border ${isDarkMode ? 'bg-[#162019] border-[#1E2821]' : 'bg-[#F8F7F4] border-[#E8E6DF]'}`}>
+            <span className={`text-[10px] font-bold block ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>Grass Pollen</span>
+            <span className="text-xs font-black text-[#10B981] mt-0.5 block">{airQuality.grassPollen}</span>
+          </div>
+
+          <div className={`p-2.5 rounded-2xl border ${isDarkMode ? 'bg-[#162019] border-[#1E2821]' : 'bg-[#F8F7F4] border-[#E8E6DF]'}`}>
+            <span className={`text-[10px] font-bold block ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>Weed Pollen</span>
+            <span className="text-xs font-black text-[#10B981] mt-0.5 block">{airQuality.weedPollen}</span>
           </div>
         </div>
       </div>

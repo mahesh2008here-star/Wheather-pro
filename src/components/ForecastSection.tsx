@@ -6,14 +6,11 @@ import {
   CloudRain, 
   CloudDrizzle, 
   CloudLightning,
-  CalendarDays,
-  ChevronDown,
+  Calendar,
+  Clock,
   Droplets,
-  CloudRainWind,
-  Wind,
-  SunMedium,
-  Sparkles,
-  Clock
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { DailyForecastItem, HourlyForecastItem } from '../types/weather';
 import { useTheme } from '../context/ThemeContext';
@@ -29,120 +26,90 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
   hourly,
   currentTemp,
 }) => {
-  const { isDarkMode, formatTemp, formatWind } = useTheme();
-  const [expandedDailyIndex, setExpandedDailyIndex] = useState<number | null>(null);
-  const [expandedHourlyIndex, setExpandedHourlyIndex] = useState<number | null>(null);
-
-  const toggleDailyExpand = (idx: number) => {
-    setExpandedDailyIndex(prev => (prev === idx ? null : idx));
-  };
-
-  const toggleHourlyExpand = (idx: number) => {
-    setExpandedHourlyIndex(prev => (prev === idx ? null : idx));
-  };
+  const { isDarkMode, formatTemp } = useTheme();
+  const [selectedDayIdx, setSelectedDayIdx] = useState<number | null>(null);
 
   const renderWeatherIcon = (code: number, size = 18) => {
-    if (code === 0 || code === 1) return <Sun size={size} className="text-amber-500 shrink-0 animate-pulse" />;
-    if (code === 2) return <CloudSun size={size} className="text-amber-500 shrink-0" />;
-    if (code === 3) return <Cloud size={size} className="text-slate-400 shrink-0" />;
-    if ([51, 53, 55].includes(code)) return <CloudDrizzle size={size} className="text-blue-400 shrink-0" />;
-    if ([61, 63, 65, 80, 81, 82].includes(code)) return <CloudRain size={size} className="text-blue-500 shrink-0" />;
-    if ([95, 96, 99].includes(code)) return <CloudLightning size={size} className="text-purple-500 shrink-0" />;
-    return <CloudSun size={size} className="text-amber-500 shrink-0" />;
+    if (code === 0 || code === 1) return <Sun size={size} className="text-[#FF5C00] shrink-0" />;
+    if (code === 2) return <CloudSun size={size} className="text-[#FF5C00] shrink-0" />;
+    if (code === 3) return <Cloud size={size} className="text-[#89998F] shrink-0" />;
+    if ([51, 53, 55].includes(code)) return <CloudDrizzle size={size} className="text-[#0284C7] shrink-0" />;
+    if ([61, 63, 65, 80, 81, 82].includes(code)) return <CloudRain size={size} className="text-[#0284C7] shrink-0" />;
+    if ([95, 96, 99].includes(code)) return <CloudLightning size={size} className="text-[#FF5C00] shrink-0" />;
+    return <CloudSun size={size} className="text-[#FF5C00] shrink-0" />;
   };
 
-  // Find overall min and max for range normalization
-  const overallMin = Math.min(...daily.map(d => d.tempMin), currentTemp - 5);
-  const overallMax = Math.max(...daily.map(d => d.tempMax), currentTemp + 5);
-  const totalRange = Math.max(1, overallMax - overallMin);
+  // Find min/max across all days for normalized range bars
+  const minTempAll = Math.min(...daily.map(d => d.tempMin), currentTemp - 2);
+  const maxTempAll = Math.max(...daily.map(d => d.tempMax), currentTemp + 2);
+  const totalSpan = Math.max(1, maxTempAll - minTempAll);
 
   return (
-    <div className="w-full px-4 py-3 select-none">
-      {/* HOURLY STRIP WITH EXPANDABLE COLUMN CARDS */}
+    <div className="w-full px-4 py-2 space-y-3.5 select-none">
+      {/* 1. 24-HOUR HOURLY TIMELINE STRIP */}
       <div 
-        className={`mb-3.5 p-3.5 rounded-2xl transition-all ${
+        className={`w-full p-4 rounded-[26px] border shadow-xs transition-colors ${
           isDarkMode 
-            ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)]' 
-            : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
+            ? 'bg-[#121814] border-[#1E2821] text-[#F3F6F4]' 
+            : 'bg-[#FFFFFF] border-[#E8E6DF] text-[#121814]'
         }`}
       >
-        <div className="flex items-center justify-between mb-2 px-1">
-          <div className="flex items-center space-x-1.5">
-            <Clock size={15} className="text-sky-400" />
-            <span className={`text-xs font-bold tracking-tight ${isDarkMode ? 'text-zinc-200' : 'text-stone-700'}`}>
-              24-Hour Forecast
-            </span>
+        <div className="flex items-center justify-between mb-3 px-1">
+          <div className="flex items-center space-x-2">
+            <Clock size={15} className="text-[#FF5C00]" />
+            <h3 className="text-xs font-black tracking-tight uppercase">
+              24-Hour Horizon
+            </h3>
           </div>
-          <span className="text-[10px] text-teal-400 font-bold">
-            Tap column to expand
+          <span className={`text-[10px] font-bold ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
+            Next 24 Hours
           </span>
         </div>
 
-        <div className="flex space-x-2.5 overflow-x-auto no-scrollbar py-1">
-          {hourly.slice(0, 16).map((item, idx) => {
-            const isHourlyExpanded = expandedHourlyIndex === idx;
+        <div className="flex space-x-2 overflow-x-auto no-scrollbar py-1">
+          {hourly.slice(0, 24).map((hourItem, idx) => {
+            const isNow = idx === 0 || hourItem.isCurrent;
             return (
               <div 
                 key={idx}
-                onClick={() => toggleHourlyExpand(idx)}
-                className={`flex flex-col items-center p-2 rounded-xl transition-all duration-200 cursor-pointer touch-response shrink-0 ${
-                  isHourlyExpanded
+                className={`flex flex-col items-center py-2.5 px-2.5 rounded-2xl min-w-[58px] shrink-0 transition-all border ${
+                  isNow 
                     ? isDarkMode 
-                      ? 'bg-zinc-900 border border-teal-400/60 shadow-lg min-w-[120px]' 
-                      : 'bg-teal-50 border border-teal-300 shadow-md min-w-[120px]'
-                    : item.isCurrent 
-                      ? isDarkMode 
-                        ? 'bg-sky-500/20 border border-sky-400/40 min-w-[54px]' 
-                        : 'bg-sky-50 border border-sky-200 min-w-[54px]' 
-                      : isDarkMode
-                        ? 'bg-white/5 hover:bg-white/10 min-w-[54px]'
-                        : 'bg-stone-50 hover:bg-stone-100 min-w-[54px]'
+                      ? 'bg-[#1A231D] border-[#FF5C00]/40 text-[#F3F6F4]' 
+                      : 'bg-[#F8F7F4] border-[#FF5C00]/30 text-[#121814]'
+                    : isDarkMode 
+                      ? 'bg-[#151D18] border-transparent hover:border-[#1E2821]' 
+                      : 'bg-[#FAFAF8] border-transparent hover:border-[#E8E6DF]'
                 }`}
               >
-                <span className={`text-[11px] font-semibold mb-1 ${
-                  item.isCurrent 
-                    ? 'text-sky-400 font-bold' 
-                    : isDarkMode ? 'text-zinc-400' : 'text-stone-500'
-                }`}>
-                  {item.hour}
-                </span>
-
-                <div className="my-1">
-                  {renderWeatherIcon(item.weatherCode, 22)}
+                <div className="flex items-center space-x-1 mb-1">
+                  {isNow && <span className="w-1.5 h-1.5 rounded-full bg-[#FF5C00]" />}
+                  <span className={`text-[11px] ${
+                    isNow ? 'font-black text-[#FF5C00]' : 'font-semibold text-[#5D6861] dark:text-[#89998F]'
+                  }`}>
+                    {isNow ? 'Now' : hourItem.hour}
+                  </span>
                 </div>
 
-                <span className={`text-xs font-black mt-0.5 ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
-                  {formatTemp(item.temperature)}
+                <div className="my-1.5">
+                  {renderWeatherIcon(hourItem.weatherCode, 18)}
+                </div>
+
+                <span className="text-xs font-black font-mono-numbers my-1">
+                  {formatTemp(hourItem.temperature)}
                 </span>
 
-                {item.rainProbability > 0 ? (
-                  <span className="text-[10px] font-bold text-sky-400 mt-0.5">
-                    💧 {item.rainProbability}%
+                {hourItem.rainProbability > 0 ? (
+                  <span className={`text-[10px] font-bold flex items-center space-x-0.5 mt-0.5 ${
+                    hourItem.rainProbability >= 30 ? 'text-[#FF5C00]' : 'text-[#0284C7]'
+                  }`}>
+                    <Droplets size={10} className="shrink-0" />
+                    <span>{hourItem.rainProbability}%</span>
                   </span>
                 ) : (
-                  <span className="text-[10px] opacity-0 mt-0.5">0%</span>
-                )}
-
-                {/* EXPANDED DETAILED CARD VIEW WHEN HOURLY COLUMN IS TAPPED */}
-                {isHourlyExpanded && (
-                  <div className="mt-2 pt-2 border-t border-white/10 w-full text-[10px] space-y-1.5 animate-card-slide-fade">
-                    <div className="flex justify-between font-bold">
-                      <span className="text-zinc-400">Feels like:</span>
-                      <span className="text-teal-400">{formatTemp(item.apparentTemp ?? item.temperature)}</span>
-                    </div>
-                    <div className="flex justify-between font-bold">
-                      <span className="text-zinc-400">Wind:</span>
-                      <span>{formatWind(item.windSpeed ?? 12)}</span>
-                    </div>
-                    <div className="flex justify-between font-bold">
-                      <span className="text-zinc-400">Humidity:</span>
-                      <span className="text-blue-400">{item.humidity ?? 65}%</span>
-                    </div>
-                    <div className="flex justify-between font-bold">
-                      <span className="text-zinc-400">UV Index:</span>
-                      <span className="text-amber-400">{item.uvIndex ?? 4}</span>
-                    </div>
-                  </div>
+                  <span className="text-[10px] opacity-25 font-mono-numbers mt-0.5">
+                    -
+                  </span>
                 )}
               </div>
             );
@@ -150,197 +117,125 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
         </div>
       </div>
 
-      {/* 7-DAY FORECAST WITH EXPANDABLE DAILY ITEMS */}
+      {/* 2. 7-DAY FORECAST WITH PROPORTIONAL RANGE BARS */}
       <div 
-        className={`p-4 rounded-2xl transition-all ${
+        className={`w-full p-4 rounded-[26px] border shadow-xs transition-colors ${
           isDarkMode 
-            ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)]' 
-            : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
+            ? 'bg-[#121814] border-[#1E2821] text-[#F3F6F4]' 
+            : 'bg-[#FFFFFF] border-[#E8E6DF] text-[#121814]'
         }`}
       >
-        <div className="flex items-center justify-between mb-3 pb-2 border-b border-stone-100 dark:border-white/10">
+        <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center space-x-2">
-            <CalendarDays size={16} className={isDarkMode ? 'text-zinc-400' : 'text-stone-500'} />
-            <h3 className={`text-sm font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
-              7-Day Forecast
+            <Calendar size={15} className="text-[#10B981]" />
+            <h3 className="text-xs font-black tracking-tight uppercase">
+              7-Day Crop Forecast
             </h3>
           </div>
-          <span className="text-[10px] font-bold text-teal-400">
-            Tap day to expand
+          <span className={`text-[10px] font-bold ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
+            Daily Outlook
           </span>
         </div>
 
-        <div className="space-y-1.5">
-          {daily.map((item, idx) => {
-            const isExpanded = expandedDailyIndex === idx;
-            const minPos = ((item.tempMin - overallMin) / totalRange) * 100;
-            const maxPos = ((item.tempMax - overallMin) / totalRange) * 100;
-            const barWidth = Math.max(8, maxPos - minPos);
-            const itemHumidity = item.humidity ?? (item.rainProbability > 50 ? 82 : 64);
-            const itemWind = item.windSpeedMax ?? 16;
-            const itemRainHours = item.precipitationHours ?? (item.precipitationSum > 5 ? 4 : item.rainProbability > 30 ? 2 : 0);
+        <div className="space-y-1 divide-y divide-black/5 dark:divide-white/5">
+          {daily.map((dayItem, idx) => {
+            const isToday = idx === 0;
+            const isExpanded = selectedDayIdx === idx;
+            
+            const leftPercent = Math.max(0, Math.min(100, ((dayItem.tempMin - minTempAll) / totalSpan) * 100));
+            const barWidthPercent = Math.max(12, Math.min(100 - leftPercent, ((dayItem.tempMax - dayItem.tempMin) / totalSpan) * 100));
 
             return (
-              <div 
-                key={idx}
-                className={`rounded-xl transition-all duration-200 ${
-                  isExpanded
-                    ? isDarkMode
-                      ? 'bg-zinc-950 border border-teal-400/50 shadow-xs'
-                      : 'bg-stone-50 ring-1 ring-teal-500/30 shadow-xs'
-                    : isDarkMode
-                      ? 'hover:bg-white/5'
-                      : 'hover:bg-stone-50'
-                }`}
-              >
-                {/* INTERACTIVE TAP ROW */}
+              <div key={idx} className="pt-2 first:pt-0">
                 <div 
-                  onClick={() => toggleDailyExpand(idx)}
-                  className="flex items-center justify-between text-xs py-2 px-2 cursor-pointer select-none touch-response"
+                  onClick={() => setSelectedDayIdx(isExpanded ? null : idx)}
+                  className={`py-2 px-2.5 rounded-2xl flex items-center justify-between cursor-pointer snappy-touch transition-colors ${
+                    isExpanded 
+                      ? isDarkMode ? 'bg-[#1A231D]' : 'bg-[#F2EFE8]' 
+                      : isDarkMode ? 'hover:bg-[#162019]' : 'hover:bg-[#F8F7F4]'
+                  }`}
                 >
-                  {/* Day name & brief condition */}
-                  <div className="w-24">
-                    <span className={`font-black block ${isDarkMode ? 'text-slate-200' : 'text-stone-800'}`}>
-                      {item.dayName}
+                  {/* Day Name */}
+                  <div className="w-18 shrink-0 flex items-center space-x-1.5">
+                    {isToday && <span className="w-1.5 h-1.5 rounded-full bg-[#FF5C00] shrink-0" />}
+                    <span className={`text-xs block ${
+                      isToday ? 'font-black text-[#121814] dark:text-[#F3F6F4]' : 'font-bold text-[#5D6861] dark:text-[#89998F]'
+                    }`}>
+                      {isToday ? 'Today' : dayItem.dayName}
                     </span>
-                    {item.rainProbability > 10 ? (
-                      <span className="text-[10px] font-bold text-blue-500">
-                        💧 {item.rainProbability}%
+                  </div>
+
+                  {/* Icon & Rain Chance */}
+                  <div className="flex items-center space-x-1.5 w-16 shrink-0 justify-start">
+                    {renderWeatherIcon(dayItem.weatherCode, 16)}
+                    {dayItem.rainProbability > 15 ? (
+                      <span className={`text-[10px] font-bold flex items-center ${
+                        dayItem.rainProbability >= 40 ? 'text-[#FF5C00]' : 'text-[#0284C7]'
+                      }`}>
+                        {dayItem.rainProbability}%
                       </span>
-                    ) : (
-                      <span className={`text-[10px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-stone-400'}`}>
-                        {item.conditionDescription}
-                      </span>
-                    )}
+                    ) : null}
                   </div>
 
-                  {/* Weather icon */}
-                  <div className="w-7 flex justify-center">
-                    {renderWeatherIcon(item.weatherCode, 18)}
+                  {/* Proportional Temperature Range Bar */}
+                  <div className="flex-1 mx-3 flex items-center space-x-2">
+                    <span className="text-xs font-mono-numbers font-medium w-7 text-right text-[#5D6861] dark:text-[#89998F]">
+                      {formatTemp(dayItem.tempMin)}
+                    </span>
+
+                    <div className="flex-1 h-1.5 rounded-full bg-black/10 dark:bg-white/10 relative overflow-hidden">
+                      <div 
+                        className="h-full rounded-full bg-[#FF5C00]"
+                        style={{
+                          marginLeft: `${leftPercent}%`,
+                          width: `${barWidthPercent}%`
+                        }}
+                      />
+                    </div>
+
+                    <span className="text-xs font-mono-numbers font-black w-7 text-left">
+                      {formatTemp(dayItem.tempMax)}
+                    </span>
                   </div>
 
-                  {/* Min temp */}
-                  <span className={`w-8 text-right font-bold ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>
-                    {formatTemp(item.tempMin)}
-                  </span>
-
-                  {/* Temperature Range Bar */}
-                  <div className="flex-1 mx-2.5 h-1.5 rounded-full bg-stone-100 dark:bg-slate-700 relative overflow-hidden">
-                    <div 
-                      className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-teal-400 via-amber-400 to-rose-400"
-                      style={{
-                        left: `${Math.min(90, Math.max(0, minPos))}%`,
-                        width: `${Math.min(100 - minPos, barWidth)}%`,
-                      }}
-                    />
-                  </div>
-
-                  {/* Max temp */}
-                  <span className={`w-8 text-left font-black ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
-                    {formatTemp(item.tempMax)}
-                  </span>
-
-                  {/* Expand Chevron Icon */}
-                  <div className="pl-1">
-                    <ChevronDown 
-                      size={14} 
-                      className={`text-stone-400 dark:text-slate-500 transition-transform duration-200 ${
-                        isExpanded ? 'rotate-180 text-teal-400' : ''
-                      }`} 
-                    />
+                  <div className="shrink-0 text-[#89998F] pl-1">
+                    {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                   </div>
                 </div>
 
-                {/* EXPANDABLE DETAIL DRAWER */}
+                {/* Day Detail Expansion */}
                 {isExpanded && (
-                  <div className="px-3 pb-3 pt-1 border-t border-stone-200/50 dark:border-white/10 animate-card-slide-fade">
-                    <div className="grid grid-cols-2 gap-2 mt-1">
-                      {/* 1. PRECIPITATION BREAKDOWN CARD */}
-                      <div className={`p-2.5 rounded-xl ${
-                        isDarkMode ? 'bg-[#000000] border border-white/15' : 'bg-white border border-stone-200/60'
-                      }`}>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider flex items-center space-x-1">
-                            <CloudRainWind size={12} className="mr-1" />
-                            <span>Precipitation</span>
-                          </span>
-                          <span className="text-xs font-black text-sky-400">
-                            {item.rainProbability}%
-                          </span>
-                        </div>
-
-                        <div className="flex items-baseline justify-between text-xs">
-                          <span className="text-stone-500 dark:text-zinc-400 text-[11px]">Expected Volume:</span>
-                          <span className="font-bold text-stone-900 dark:text-white">
-                            {item.precipitationSum > 0 ? `${item.precipitationSum} mm` : '0.0 mm'}
-                          </span>
-                        </div>
-
-                        <div className="mt-1.5 w-full h-1.5 rounded-full bg-sky-100 dark:bg-zinc-800 overflow-hidden">
-                          <div 
-                            className="h-full bg-sky-500 rounded-full" 
-                            style={{ width: `${item.rainProbability}%` }}
-                          />
-                        </div>
-
-                        <div className="mt-1.5 flex justify-between text-[10px] text-stone-500 dark:text-zinc-400 font-medium">
-                          <span>Duration:</span>
-                          <span>{itemRainHours > 0 ? `~${itemRainHours} hrs duration` : 'No rain window'}</span>
-                        </div>
-                      </div>
-
-                      {/* 2. HUMIDITY & COMFORT CARD */}
-                      <div className={`p-2.5 rounded-xl ${
-                        isDarkMode ? 'bg-[#000000] border border-white/15' : 'bg-white border border-stone-200/60'
-                      }`}>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] font-bold text-teal-400 uppercase tracking-wider flex items-center space-x-1">
-                            <Droplets size={12} className="mr-1" />
-                            <span>Humidity Levels</span>
-                          </span>
-                          <span className="text-xs font-black text-teal-400">
-                            {itemHumidity}%
-                          </span>
-                        </div>
-
-                        <div className="flex items-baseline justify-between text-xs">
-                          <span className="text-stone-500 dark:text-zinc-400 text-[11px]">Relative Level:</span>
-                          <span className="font-bold text-stone-900 dark:text-white">
-                            {itemHumidity > 80 ? 'Humid' : itemHumidity > 60 ? 'Comfortable' : 'Crisp & Dry'}
-                          </span>
-                        </div>
-
-                        <div className="mt-1.5 w-full h-1.5 rounded-full bg-teal-100 dark:bg-zinc-800 overflow-hidden">
-                          <div 
-                            className="h-full bg-teal-500 rounded-full" 
-                            style={{ width: `${itemHumidity}%` }}
-                          />
-                        </div>
-
-                        <div className="mt-1.5 flex justify-between text-[10px] text-stone-500 dark:text-zinc-400 font-medium">
-                          <span>Comfort:</span>
-                          <span className={itemHumidity > 80 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}>
-                            {itemHumidity > 80 ? 'Muggy feel' : 'Fresh breeze'}
-                          </span>
-                        </div>
-                      </div>
+                  <div className={`p-3 mx-1 my-1.5 rounded-2xl text-xs space-y-2 animate-tab-switch border ${
+                    isDarkMode ? 'bg-[#101612] border-[#1E2821]' : 'bg-[#FAFAF8] border-[#E8E6DF]'
+                  }`}>
+                    <div className="flex items-center justify-between font-bold text-[11px]">
+                      <span className="text-[#FF5C00] font-black">
+                        {dayItem.conditionDescription}
+                      </span>
+                      <span>
+                        Precipitation: <strong>{dayItem.precipitationSum} mm</strong>
+                      </span>
                     </div>
 
-                    {/* DAILY CONSUMER WEATHER SUMMARY STRIP */}
-                    <div className="mt-2 flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-sky-500/10 text-sky-800 dark:text-sky-300 text-[11px] font-medium border border-sky-400/20">
-                      <div className="flex items-center space-x-1.5 truncate">
-                        <Sparkles size={12} className="shrink-0 text-sky-400" />
-                        <span className="truncate">
-                          {item.precipitationSum >= 5 
-                            ? 'Wet conditions expected — rain jacket or umbrella recommended' 
-                            : item.rainProbability > 40 
-                              ? 'Passing showers possible — plan outdoor commutes accordingly' 
-                              : 'Clear & pleasant weather — ideal for outdoor sports and walking'}
+                    <div className="grid grid-cols-3 gap-2 pt-1 border-t border-black/5 dark:border-white/5 text-[10px]">
+                      <div>
+                        <span className="text-[#5D6861] dark:text-[#89998F] block font-bold">Max Wind</span>
+                        <span className="font-black text-xs font-mono-numbers mt-0.5 block">
+                          {dayItem.windSpeedMax} km/h
                         </span>
                       </div>
-                      <span className="text-[10px] font-bold whitespace-nowrap ml-2 opacity-80">
-                        💨 Max {formatWind(itemWind)} • UV {item.uvIndexMax}
-                      </span>
+                      <div>
+                        <span className="text-[#5D6861] dark:text-[#89998F] block font-bold">UV Max</span>
+                        <span className="font-black text-xs font-mono-numbers mt-0.5 block">
+                          {dayItem.uvIndexMax} / 11
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[#5D6861] dark:text-[#89998F] block font-bold">Evapotransp.</span>
+                        <span className="font-black text-xs mt-0.5 block text-[#10B981]">
+                          {dayItem.evapotranspiration ?? 3.2} mm
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
