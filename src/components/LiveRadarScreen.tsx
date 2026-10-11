@@ -97,10 +97,10 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
           className={`relative w-full h-[380px] rounded-3xl overflow-hidden border transition-all ${
             isDarkMode ? 'bg-[#000000] border-white/15 shadow-2xl' : 'bg-[#EAE4DC] border-stone-300 shadow-md'
           }`}
-          style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'center center' }}
         >
           {/* Radar Topography & Geographical Grid Lines */}
           <svg className="w-full h-full absolute inset-0 select-none" viewBox="0 0 400 380">
+            <g style={{ transform: `scale(${zoomLevel})`, transformOrigin: '200px 190px', transition: 'transform 0.3s ease' }}>
             <defs>
               {/* Radar sweep beam gradient */}
               <radialGradient id="radarSweepGlow" cx="50%" cy="50%" r="50%">
@@ -214,6 +214,7 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
             {/* Pinpoint Location Marker */}
             <circle cx="200" cy="190" r="5" fill="#38BDF8" filter="drop-shadow(0 0 6px #38BDF8)" />
             <circle cx="200" cy="190" r="14" fill="none" stroke="#38BDF8" strokeWidth="1.5" className="animate-ping" />
+            </g>
           </svg>
 
           {/* Floating Map Zoom Controls */}

@@ -33,7 +33,7 @@ export const HomeScreen: React.FC = () => {
   ];
 
   return (
-    <div className="w-full flex-col flex pb-4">
+    <div className="w-full flex-col flex pb-28 sm:pb-32">
       {/* Dynamic Animated Microclimate Landscape Hero */}
       <FarmWeatherHero
         sceneState={previewScene || metrics.sceneState}

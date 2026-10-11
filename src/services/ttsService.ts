@@ -305,7 +305,12 @@ class UniversalTTSEngine {
 
         const voices = this.getAvailableSystemVoices();
         if (voices.length > 0) {
-          let chosenVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+          const preferredVoiceKeywords = ['google', 'natural', 'neural', 'samantha', 'salli', 'brian', 'zira', 'alex', 'daniel', 'karen'];
+          let chosenVoice = voices.find(v => {
+            const name = v.name.toLowerCase();
+            return v.lang.startsWith('en') && preferredVoiceKeywords.some(kw => name.includes(kw));
+          }) || voices.find(v => v.lang.startsWith('en')) || voices[0];
+
           if (chosenVoice) utterance.voice = chosenVoice;
         }
 
@@ -323,7 +328,7 @@ class UniversalTTSEngine {
 
         utterance.onerror = () => {
           if (startTimeout) clearTimeout(startTimeout);
-          this.playWithWebAudioSynth();
+          this.finishPlayback();
         };
 
         window.speechSynthesis.speak(utterance);

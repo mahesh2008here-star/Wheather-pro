@@ -28,7 +28,6 @@ interface ReviewItem {
 
 const STORAGE_REVIEWS_KEY = 'weatherapp_community_reviews';
 const STORAGE_USER_RATED_KEY = 'weatherapp_has_rated';
-const TARGET_GMAIL = 'mmmmahe46@gmail.com';
 
 const INITIAL_REVIEWS: ReviewItem[] = [
   {
@@ -166,16 +165,23 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
     };
 
     try {
-      await fetch(`https://formsubmit.co/ajax/${TARGET_GMAIL}`, {
+      await fetch('/api/feedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(emailPayload)
+        body: JSON.stringify({
+          displayName,
+          rating,
+          feedbackText,
+          selectedTags,
+          userLocation: `${location.name}, ${location.country}`,
+          userEmail: userEmail.trim()
+        })
       });
     } catch (err) {
-      console.warn('Direct HTTP dispatch attempt note:', err);
+      console.warn('Backend feedback route note:', err);
     }
 
     const newReview: ReviewItem = {
@@ -200,16 +206,6 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
     setSubmitSuccess(true);
     setComment('');
   };
-
-  const mailtoUrl = `mailto:${TARGET_GMAIL}?subject=${encodeURIComponent(
-    `Weather App Feedback (${rating} Stars) - ${userName || 'User'}`
-  )}&body=${encodeURIComponent(
-    `Rating: ${rating} / 5 Stars\n` +
-    `Tags: ${selectedTags.join(', ')}\n` +
-    `Feedback:\n${comment || 'Great app!'}\n\n` +
-    `Location: ${location.name}\n` +
-    `Date: ${new Date().toLocaleString()}`
-  )}`;
 
   return (
     <section className="w-full px-4 pt-4 pb-12 select-none">
@@ -417,17 +413,12 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
               <div className="flex items-center justify-between mt-2.5 px-1">
                 <span className="text-[10px] text-zinc-500 flex items-center space-x-1">
                   <ShieldCheck size={12} className="text-teal-400" />
-                  <span>Secure & Private Feedback</span>
+                  <span>Encrypted Developer Feedback</span>
                 </span>
-
-                <a
-                  href={mailtoUrl}
-                  className="text-[10px] font-bold text-teal-400 hover:underline flex items-center space-x-1"
-                  title="Open directly in email app"
-                >
+                <span className="text-[10px] font-bold text-teal-400 flex items-center space-x-1">
                   <Mail size={11} />
-                  <span>Open Email App</span>
-                </a>
+                  <span>Direct Secure Dispatch</span>
+                </span>
               </div>
             </div>
           </form>

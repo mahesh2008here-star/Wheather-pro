@@ -63,13 +63,13 @@ function MainAppContent() {
           {activeTab === 0 && <HomeScreen />}
 
           {activeTab === 1 && (
-            <div className="w-full flex-col flex pb-4">
+            <div className="w-full flex-col flex pb-28 sm:pb-32">
               <LiveRadarScreen location={activeLocation} />
             </div>
           )}
 
           {activeTab === 2 && (
-            <div className="w-full flex-col flex pb-4">
+            <div className="w-full flex-col flex pb-28 sm:pb-32">
               <AirAndSunScreen
                 airQuality={metrics.airQuality}
                 astronomy={metrics.astronomy}
@@ -79,7 +79,7 @@ function MainAppContent() {
           )}
 
           {activeTab === 3 && (
-            <div className="w-full flex-col flex pb-4">
+            <div className="w-full flex-col flex pb-28 sm:pb-32">
               <WeatherWidgetsScreen
                 metrics={metrics}
                 hourly={hourlyForecast}
@@ -91,7 +91,7 @@ function MainAppContent() {
           )}
 
           {activeTab === 4 && (
-            <div className="w-full flex-col flex pb-4">
+            <div className="w-full flex-col flex pb-28 sm:pb-32">
               <SettingsScreen
                 locations={savedLocations}
                 activeLocation={activeLocation}
