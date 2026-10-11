@@ -70,6 +70,7 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
   const [userEmail, setUserEmail] = useState<string>('');
   const [comment, setComment] = useState<string>('');
   const [selectedTags, setSelectedTags] = useState<string[]>(['🏡 Live House Scenery', '🎨 Liquid Glass Dock']);
+  const [validationError, setValidationError] = useState<string | null>(null);
   
   // Status State
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -132,7 +133,17 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!comment.trim() && rating === 0) return;
+    setValidationError(null);
+
+    if (rating === 0) {
+      setValidationError('Please select a star rating before submitting.');
+      return;
+    }
+
+    if (!comment.trim() && selectedTags.length === 0) {
+      setValidationError('Please write a brief comment or select at least one feature tag.');
+      return;
+    }
 
     setIsSubmitting(true);
     setSubmitSuccess(false);
@@ -375,6 +386,13 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
                 />
               </div>
             </div>
+
+            {/* VALIDATION ERROR ALERT */}
+            {validationError && (
+              <p className="text-xs text-rose-400 font-bold px-1 animate-fadeIn">
+                ⚠️ {validationError}
+              </p>
+            )}
 
             {/* SUBMIT BUTTON */}
             <div className="pt-1">

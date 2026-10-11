@@ -40,6 +40,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker }) =>
 
         <button
           onClick={onOpenLocationPicker}
+          aria-label={`Change active weather location. Currently set to ${activeLocation.name}`}
           className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
             isDarkMode
               ? 'bg-[#141820] text-white hover:bg-[#1C222E] border border-white/15 shadow-xs'
@@ -58,6 +59,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker }) =>
         <button
           onClick={detectGpsLocation}
           disabled={isLocating}
+          aria-label="Detect GPS or IP Location automatically"
           className={`px-2.5 py-1.5 rounded-2xl flex items-center space-x-1 text-[11px] font-black transition-all cursor-pointer ${
             isLocating
               ? 'bg-teal-500/20 text-teal-400 border border-teal-500/40 animate-pulse'
@@ -83,6 +85,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker }) =>
 
         <button
           onClick={toggleDarkMode}
+          aria-label="Toggle dark and light theme"
           className={`w-8 h-8 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
             isDarkMode 
               ? 'bg-[#141820] text-amber-300 hover:bg-[#1C222E] border border-white/10' 
@@ -95,6 +98,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker }) =>
 
         <button
           onClick={refreshWeather}
+          aria-label="Refresh live weather telemetry data"
           className={`w-8 h-8 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
             isLoading ? 'animate-spin text-teal-400' : ''
           } ${

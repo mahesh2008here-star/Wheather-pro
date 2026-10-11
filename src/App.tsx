@@ -58,7 +58,7 @@ function MainAppContent() {
       />
 
       {/* Screen Views with ErrorBoundary Protection */}
-      <div className="flex-1 w-full overflow-y-auto no-scrollbar relative flex flex-col pb-28 animate-tab-switch">
+      <div className="flex-1 w-full overflow-y-auto no-scrollbar relative flex flex-col pb-safe animate-tab-switch">
         <ErrorBoundary fallbackTitle="Screen Error">
           {activeTab === 0 && <HomeScreen />}
 

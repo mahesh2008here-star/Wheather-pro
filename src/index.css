@@ -235,6 +235,25 @@
   animation: tabSwitch 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Reduced motion media query for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Safe area insets for notched devices and Android gesture bar */
+.pb-safe {
+  padding-bottom: max(7rem, calc(6rem + env(safe-area-inset-bottom)));
+}
+
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
 /* Pulse shimmer for OLED accent cards */
 @keyframes oledShimmer {
   0%, 100% {

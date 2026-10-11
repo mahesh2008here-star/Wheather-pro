@@ -722,7 +722,7 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = React.mem
         </div>
       </div>
 
-      {/* QUICK ANDROID LAUNCHER GUIDE */}
+      {/* QUICK ANDROID LAUNCHER GUIDE & PLATFORM CAPABILITY EXPLANATION */}
       <div className={`p-4 rounded-3xl border ${
         isDarkMode ? 'bg-[#0E121B] border-white/10' : 'bg-white border-slate-200/90 shadow-xs'
       }`}>
@@ -731,18 +731,21 @@ export const WeatherWidgetsScreen: React.FC<AndroidHomeWidgetsProps> = React.mem
           style={{ color: customAccentColor }}
         >
           <Info size={14} />
-          <span>Android Launcher Widget Placement</span>
+          <span>Android Launcher Widget Placement & Web Note</span>
         </h4>
+        <div className="mb-2.5 p-2.5 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-[11px] text-sky-300 font-semibold leading-relaxed">
+          💡 <strong>Web Preview vs. System Widget Note:</strong> This screen provides interactive previews and configurations for Android Home Screen Widgets. Real Android system launcher widgets require installing the compiled Capacitor Android APK on an Android OS device.
+        </div>
         <ol className={`space-y-2 text-xs font-semibold leading-relaxed ${
           isDarkMode ? 'text-zinc-200' : 'text-slate-800'
         }`}>
           <li className="flex items-start space-x-2">
             <span className="font-black" style={{ color: customAccentColor }}>1.</span>
-            <span>Tapping <strong>Add to Home Screen Now</strong> opens the native system prompt to place the widget directly on your home screen.</span>
+            <span>Tapping <strong>Add to Home Screen Now</strong> configures the widget layout and invokes the native Capacitor widget bridge when running on Android.</span>
           </li>
           <li className="flex items-start space-x-2">
             <span className="font-black" style={{ color: customAccentColor }}>2.</span>
-            <span>You can also long-press any empty space on your phone home screen &gt; select <strong>Widgets</strong> &gt; choose <strong>WeatherApp</strong>.</span>
+            <span>On Android, long-press any empty space on your phone home screen &gt; select <strong>Widgets</strong> &gt; choose <strong>WeatherApp</strong>.</span>
           </li>
           <li className="flex items-start space-x-2">
             <span className="font-black" style={{ color: customAccentColor }}>3.</span>

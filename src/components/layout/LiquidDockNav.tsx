@@ -34,6 +34,7 @@ export const LiquidDockNav: React.FC = () => {
               setActiveTab(tab.id);
               try { navigator.vibrate?.(12); } catch {}
             }}
+            aria-label={`Navigate to ${tab.label} screen`}
             className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-full touch-response cursor-pointer active:scale-90 ${
               isActive
                 ? 'font-black scale-105'
