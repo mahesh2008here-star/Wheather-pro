@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Wind as WindIcon, 
   Droplets, 
@@ -7,7 +7,13 @@ import {
   SunMedium, 
   ShieldCheck, 
   Compass, 
-  Cloud 
+  Cloud,
+  ChevronDown,
+  Info,
+  Sparkles,
+  Thermometer,
+  CloudRainWind,
+  ShieldAlert
 } from 'lucide-react';
 import { CurrentWeatherMetrics } from '../types/weather';
 import { useTheme } from '../context/ThemeContext';
@@ -18,27 +24,44 @@ interface ConditionsGridProps {
 
 export const ConditionsGrid: React.FC<ConditionsGridProps> = ({ metrics }) => {
   const { isDarkMode, formatTemp, formatWind, formatPressure } = useTheme();
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+
+  const toggleCard = (id: string) => {
+    setExpandedCard(prev => prev === id ? null : id);
+  };
 
   // Animation trigger key when weather updates
   const refreshKey = `${metrics.lastUpdated}-${metrics.sceneState}-${metrics.temperature}`;
 
   return (
-    <div className="w-full px-4 pt-2 pb-2">
-      {/* 2-COLUMN GRID OF MODERN CONSUMER WEATHER CARDS */}
+    <div className="w-full px-4 pt-2 pb-2 select-none">
+      <div className="flex items-center justify-between mb-2 px-1">
+        <span className={`text-xs font-bold tracking-tight ${isDarkMode ? 'text-zinc-300' : 'text-stone-700'}`}>
+          Live Atmospheric Telemetry
+        </span>
+        <span className="text-[10px] text-teal-500 font-bold">
+          Tap any card to expand details
+        </span>
+      </div>
+
+      {/* 2-COLUMN GRID OF EXPANDABLE CONSUMER WEATHER CARDS */}
       <div className="grid grid-cols-2 gap-2.5">
         {/* 1. WIND & GUSTS CARD */}
         <div 
           key={`wind-${refreshKey}`}
+          onClick={() => toggleCard('wind')}
           style={{ animationDelay: '0.02s' }}
-          className={`animate-card-slide-fade p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden ${
-            isDarkMode 
-              ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)]' 
-              : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
+          className={`animate-card-slide-fade p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden cursor-pointer touch-response ${
+            expandedCard === 'wind'
+              ? isDarkMode ? 'bg-zinc-950 border-teal-400/50 ring-1 ring-teal-400/30' : 'bg-stone-50 border-teal-500/50 ring-1 ring-teal-500/20'
+              : isDarkMode 
+                ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)] hover:border-white/25' 
+                : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between mb-2">
             <span className={`text-xs font-semibold ${isDarkMode ? 'text-zinc-400' : 'text-stone-500'}`}>
-              Wind
+              Wind & Gusts
             </span>
             <div className="w-7 h-7 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
               <WindIcon size={16} />
@@ -58,18 +81,38 @@ export const ConditionsGrid: React.FC<ConditionsGridProps> = ({ metrics }) => {
               <Compass size={12} className="mr-1" />
               {metrics.windDirectionCardinal} ({metrics.windDirection}°)
             </span>
-            <span className={isDarkMode ? 'text-zinc-500' : 'text-stone-400'}>Surface</span>
+            <ChevronDown size={14} className={`text-zinc-400 transition-transform ${expandedCard === 'wind' ? 'rotate-180 text-teal-400' : ''}`} />
           </div>
+
+          {/* EXPANDED DETAILED CARD VIEW */}
+          {expandedCard === 'wind' && (
+            <div className="mt-2 pt-2 border-t border-white/10 text-[11px] space-y-1.5 animate-card-slide-fade">
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Wind Vector:</span>
+                <span className="font-bold">{metrics.windDirectionCardinal} @ {metrics.windSpeed} km/h</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Max Gust Threshold:</span>
+                <span className="font-bold text-amber-400">{metrics.windGusts} km/h</span>
+              </div>
+              <p className="text-[10px] text-teal-400 font-medium pt-1">
+                {metrics.windSpeed > 25 ? '💨 High wind speeds in open terrain.' : '🍃 Gentle atmospheric airflow.'}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* 2. HUMIDITY & DEW POINT CARD */}
         <div 
           key={`hum-${refreshKey}`}
+          onClick={() => toggleCard('humidity')}
           style={{ animationDelay: '0.06s' }}
-          className={`animate-card-slide-fade p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden ${
-            isDarkMode 
-              ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)]' 
-              : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
+          className={`animate-card-slide-fade p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden cursor-pointer touch-response ${
+            expandedCard === 'humidity'
+              ? isDarkMode ? 'bg-zinc-950 border-teal-400/50 ring-1 ring-teal-400/30' : 'bg-stone-50 border-teal-500/50 ring-1 ring-teal-500/20'
+              : isDarkMode 
+                ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)] hover:border-white/25' 
+                : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between mb-2">
@@ -89,22 +132,46 @@ export const ConditionsGrid: React.FC<ConditionsGridProps> = ({ metrics }) => {
             Dew point {formatTemp(metrics.dewPoint)}
           </p>
 
-          <div className="mt-2.5 w-full h-1.5 rounded-full bg-blue-100 dark:bg-zinc-800 overflow-hidden">
+          <div className="mt-2.5 w-full h-1.5 rounded-full bg-blue-100 dark:bg-zinc-800 overflow-hidden flex items-center justify-between">
             <div 
               className="h-full bg-blue-500 rounded-full transition-all duration-500" 
               style={{ width: `${metrics.humidity}%` }}
             />
           </div>
+
+          <div className="mt-1 flex justify-end">
+            <ChevronDown size={14} className={`text-zinc-400 transition-transform ${expandedCard === 'humidity' ? 'rotate-180 text-teal-400' : ''}`} />
+          </div>
+
+          {/* EXPANDED DETAILED CARD VIEW */}
+          {expandedCard === 'humidity' && (
+            <div className="mt-2 pt-2 border-t border-white/10 text-[11px] space-y-1.5 animate-card-slide-fade">
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Dew Point Temp:</span>
+                <span className="font-bold text-blue-400">{formatTemp(metrics.dewPoint)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Comfort Rating:</span>
+                <span className="font-bold">{metrics.humidity > 75 ? 'Muggy & Humid' : 'Crisp & Comfortable'}</span>
+              </div>
+              <p className="text-[10px] text-sky-400 font-medium pt-1">
+                Dew point indicates condensation temperature for fog & dew.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* 3. BAROMETER / PRESSURE CARD */}
         <div 
           key={`press-${refreshKey}`}
+          onClick={() => toggleCard('pressure')}
           style={{ animationDelay: '0.10s' }}
-          className={`animate-card-slide-fade p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden ${
-            isDarkMode 
-              ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)]' 
-              : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
+          className={`animate-card-slide-fade p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden cursor-pointer touch-response ${
+            expandedCard === 'pressure'
+              ? isDarkMode ? 'bg-zinc-950 border-teal-400/50 ring-1 ring-teal-400/30' : 'bg-stone-50 border-teal-500/50 ring-1 ring-teal-500/20'
+              : isDarkMode 
+                ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)] hover:border-white/25' 
+                : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between mb-2">
@@ -128,18 +195,38 @@ export const ConditionsGrid: React.FC<ConditionsGridProps> = ({ metrics }) => {
 
           <div className="mt-2.5 pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px]">
             <span className={isDarkMode ? 'text-zinc-400' : 'text-stone-600'}>MSL Baseline</span>
-            <span className="font-semibold text-purple-400">1013 hPa std</span>
+            <ChevronDown size={14} className={`text-zinc-400 transition-transform ${expandedCard === 'pressure' ? 'rotate-180 text-teal-400' : ''}`} />
           </div>
+
+          {/* EXPANDED DETAILED CARD VIEW */}
+          {expandedCard === 'pressure' && (
+            <div className="mt-2 pt-2 border-t border-white/10 text-[11px] space-y-1.5 animate-card-slide-fade">
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Mean Sea Level:</span>
+                <span className="font-bold">{metrics.pressure} hPa</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Trend Signal:</span>
+                <span className="font-bold text-purple-400 capitalize">{metrics.pressureTendency}</span>
+              </div>
+              <p className="text-[10px] text-purple-300 font-medium pt-1">
+                {metrics.pressureTendency === 'falling' ? '⚠️ Falling pressure indicates potential storm or cloud build.' : '☀️ Stable atmospheric pressure.'}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* 4. VISIBILITY & CLOUDS CARD */}
         <div 
           key={`vis-${refreshKey}`}
+          onClick={() => toggleCard('visibility')}
           style={{ animationDelay: '0.14s' }}
-          className={`animate-card-slide-fade p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden ${
-            isDarkMode 
-              ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)]' 
-              : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
+          className={`animate-card-slide-fade p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden cursor-pointer touch-response ${
+            expandedCard === 'visibility'
+              ? isDarkMode ? 'bg-zinc-950 border-teal-400/50 ring-1 ring-teal-400/30' : 'bg-stone-50 border-teal-500/50 ring-1 ring-teal-500/20'
+              : isDarkMode 
+                ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)] hover:border-white/25' 
+                : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between mb-2">
@@ -164,19 +251,36 @@ export const ConditionsGrid: React.FC<ConditionsGridProps> = ({ metrics }) => {
               <Cloud size={12} className="mr-1" />
               {metrics.cloudCover}% clouds
             </span>
-            <span className={isDarkMode ? 'text-zinc-500' : 'text-stone-400'}>Ceiling high</span>
+            <ChevronDown size={14} className={`text-zinc-400 transition-transform ${expandedCard === 'visibility' ? 'rotate-180 text-teal-400' : ''}`} />
           </div>
+
+          {/* EXPANDED DETAILED CARD VIEW */}
+          {expandedCard === 'visibility' && (
+            <div className="mt-2 pt-2 border-t border-white/10 text-[11px] space-y-1.5 animate-card-slide-fade">
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Cloud Coverage:</span>
+                <span className="font-bold">{metrics.cloudCover}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Horizon Clarity:</span>
+                <span className="font-bold text-sky-400">{metrics.visibility >= 10 ? 'Optimal (10km+)' : 'Reduced'}</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* 5. AIR QUALITY PILL CARD */}
       <div 
         key={`aqi-${refreshKey}`}
+        onClick={() => toggleCard('aqi')}
         style={{ animationDelay: '0.18s' }}
-        className={`animate-card-slide-fade mt-2.5 p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden ${
-          isDarkMode 
-            ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)]' 
-            : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
+        className={`animate-card-slide-fade mt-2.5 p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden cursor-pointer touch-response ${
+          expandedCard === 'aqi'
+            ? isDarkMode ? 'bg-zinc-950 border-teal-400/50 ring-1 ring-teal-400/30' : 'bg-stone-50 border-teal-500/50 ring-1 ring-teal-500/20'
+            : isDarkMode 
+              ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)] hover:border-white/25' 
+              : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:border-slate-300'
         }`}
       >
         <div className="flex items-center justify-between">
@@ -198,23 +302,47 @@ export const ConditionsGrid: React.FC<ConditionsGridProps> = ({ metrics }) => {
               </p>
             </div>
           </div>
-          <div className="text-right">
-            <span className="text-[10px] font-bold text-zinc-500 block">PM2.5</span>
-            <span className={`text-xs font-black ${isDarkMode ? 'text-zinc-200' : 'text-stone-800'}`}>
-              {metrics.airQuality.pm25} µg/m³
-            </span>
+          <div className="flex items-center space-x-1">
+            <div className="text-right">
+              <span className="text-[10px] font-bold text-zinc-500 block">PM2.5</span>
+              <span className={`text-xs font-black ${isDarkMode ? 'text-zinc-200' : 'text-stone-800'}`}>
+                {metrics.airQuality.pm25} µg/m³
+              </span>
+            </div>
+            <ChevronDown size={14} className={`text-zinc-400 ml-1 transition-transform ${expandedCard === 'aqi' ? 'rotate-180 text-teal-400' : ''}`} />
           </div>
         </div>
+
+        {/* EXPANDED DETAILED CARD VIEW FOR AQI */}
+        {expandedCard === 'aqi' && (
+          <div className="mt-3 pt-2.5 border-t border-white/10 grid grid-cols-3 gap-2 text-[11px] animate-card-slide-fade">
+            <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-center">
+              <span className="text-zinc-400 text-[10px] block">PM10</span>
+              <span className="font-bold text-emerald-400">{metrics.airQuality.pm10} µg/m³</span>
+            </div>
+            <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-center">
+              <span className="text-zinc-400 text-[10px] block">Ozone (O3)</span>
+              <span className="font-bold text-emerald-400">{metrics.airQuality.ozone} ppb</span>
+            </div>
+            <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-center">
+              <span className="text-zinc-400 text-[10px] block">Pollen</span>
+              <span className="font-bold text-emerald-400">{metrics.airQuality.treePollen}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 6. UV INDEX CARD */}
       <div 
         key={`uv-${refreshKey}`}
+        onClick={() => toggleCard('uv')}
         style={{ animationDelay: '0.22s' }}
-        className={`animate-card-slide-fade mt-2.5 p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden ${
-          isDarkMode 
-            ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)]' 
-            : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
+        className={`animate-card-slide-fade mt-2.5 p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden cursor-pointer touch-response ${
+          expandedCard === 'uv'
+            ? isDarkMode ? 'bg-zinc-950 border-teal-400/50 ring-1 ring-teal-400/30' : 'bg-stone-50 border-teal-500/50 ring-1 ring-teal-500/20'
+            : isDarkMode 
+              ? 'bg-[#000000] border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.95)] hover:border-white/25' 
+              : 'bg-white border border-stone-200/60 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:border-slate-300'
         }`}
       >
         <div className="flex items-center justify-between">
@@ -236,9 +364,12 @@ export const ConditionsGrid: React.FC<ConditionsGridProps> = ({ metrics }) => {
               </div>
             </div>
           </div>
-          <span className={`text-[11px] font-medium ${isDarkMode ? 'text-zinc-400' : 'text-stone-500'}`}>
-            Peak exposure 11 AM - 3 PM
-          </span>
+          <div className="flex items-center space-x-1">
+            <span className={`text-[11px] font-medium ${isDarkMode ? 'text-zinc-400' : 'text-stone-500'}`}>
+              Peak 11 AM - 3 PM
+            </span>
+            <ChevronDown size={14} className={`text-zinc-400 ml-1 transition-transform ${expandedCard === 'uv' ? 'rotate-180 text-teal-400' : ''}`} />
+          </div>
         </div>
 
         {/* 5-Color Spectrum Bar */}
@@ -256,6 +387,15 @@ export const ConditionsGrid: React.FC<ConditionsGridProps> = ({ metrics }) => {
             <span>Extreme</span>
           </div>
         </div>
+
+        {/* EXPANDED DETAILED CARD VIEW FOR UV */}
+        {expandedCard === 'uv' && (
+          <div className="mt-2.5 pt-2 border-t border-white/10 text-[11px] space-y-1 animate-card-slide-fade">
+            <p className="text-amber-400 font-bold">
+              Sun Protection Advisory: {metrics.uvIndex >= 6 ? '☀️ Wear sunglasses & apply SPF 50+ sunscreen outdoors.' : '🌿 Low solar radiation hazard.'}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -219,6 +219,22 @@
   animation: floatDrift 4.5s ease-in-out infinite;
 }
 
+/* Tab switching animation */
+@keyframes tabSwitch {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-tab-switch {
+  animation: tabSwitch 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 /* Pulse shimmer for OLED accent cards */
 @keyframes oledShimmer {
   0%, 100% {

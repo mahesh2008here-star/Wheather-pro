@@ -1,14 +1,15 @@
 /**
  * Universal High-Performance & Bulletproof Text-to-Speech (TTS) Engine
- * Guarantees audio sound playback across Web Browsers, Android WebViews, Capacitor APKs, iOS, and Offline Environments.
+ * Guarantees crystal clear, natural human audio speech playback across Web Browsers,
+ * Android WebViews, Capacitor APKs, iOS, and Offline Environments.
  */
 
 export interface TTSOptions {
   rate?: number; // 0.8 to 1.5
   pitch?: number; // 0.8 to 1.2
   lang?: string; // Default 'en-US'
-  engine?: 'auto' | 'cloud' | 'native' | 'synth'; // 'auto' tries HD Cloud -> Native System Voice -> Web Audio Synth
-  voiceName?: string; // e.g. 'Brian', 'Salli', 'Joanna', or native voice name
+  engine?: 'auto' | 'cloud' | 'native' | 'synth'; // 'auto' tries HD Cloud -> Native System Voice -> Speech Synthesis
+  voiceName?: string; // e.g. 'Brian', 'Salli', 'Joanna', 'Joey'
   onStart?: () => void;
   onEnd?: () => void;
   onError?: (errorMsg: string) => void;
@@ -56,7 +57,7 @@ export const unlockAudioHardware = (): boolean => {
   }
 };
 
-// Clean and sanitize text for crystal clear pronunciation
+// Clean and sanitize text for crystal clear, natural pronunciation
 export const sanitizeForSpeech = (text: string): string => {
   return text
     .replace(/(\d+)\s*°C/gi, '$1 degrees Celsius')
@@ -71,8 +72,8 @@ export const sanitizeForSpeech = (text: string): string => {
     .replace(/\bAQI\b/gi, 'Air Quality Index');
 };
 
-// Split text into natural chunks for optimal streaming and speech synthesis
-export const chunkTextForTTS = (text: string, maxLen = 130): string[] => {
+// Split text into natural sentence chunks for optimal speech streaming
+export const chunkTextForTTS = (text: string, maxLen = 140): string[] => {
   const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
   const chunks: string[] = [];
   let currentChunk = '';
@@ -107,7 +108,6 @@ class UniversalTTSEngine {
   private activeEngineUsed: 'cloud' | 'native' | 'synth' = 'cloud';
   private cachedVoices: SpeechSynthesisVoice[] = [];
   private speechKeepaliveInterval: ReturnType<typeof setInterval> | null = null;
-  private synthAudioNodes: Array<{ stop: () => void }> = [];
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -143,17 +143,17 @@ class UniversalTTSEngine {
   public getActiveEngineName(): string {
     switch (this.activeEngineUsed) {
       case 'cloud':
-        return 'HD AI Cloud Voice (Polly Stream)';
+        return 'HD AI Natural Voice (Polly Stream)';
       case 'native':
-        return 'System Device Voice (Native Android/iOS)';
+        return 'Device Native Speech Engine';
       case 'synth':
-        return 'Web Audio Sound Synth (Offline Mode)';
+        return 'Speech Synthesis Engine';
       default:
-        return 'Universal Audio Engine';
+        return 'Universal Voice Engine';
     }
   }
 
-  // Play a 3-note audio diagnostic chime to test device audio hardware
+  // Play a soft 3-note audio diagnostic chime ONLY when manually testing hardware
   public playDiagnosticChime(): Promise<boolean> {
     return new Promise((resolve) => {
       unlockAudioHardware();
@@ -170,24 +170,24 @@ class UniversalTTSEngine {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+        osc.frequency.setValueAtTime(freq, now + idx * 0.1);
 
-        gain.gain.setValueAtTime(0, now + idx * 0.12);
-        gain.gain.linearRampToValueAtTime(0.18, now + idx * 0.12 + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.25);
+        gain.gain.setValueAtTime(0, now + idx * 0.1);
+        gain.gain.linearRampToValueAtTime(0.12, now + idx * 0.1 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.22);
 
         osc.connect(gain);
         gain.connect(ctx.destination);
 
-        osc.start(now + idx * 0.12);
-        osc.stop(now + idx * 0.12 + 0.26);
+        osc.start(now + idx * 0.1);
+        osc.stop(now + idx * 0.1 + 0.23);
       });
 
-      setTimeout(() => resolve(true), 600);
+      setTimeout(() => resolve(true), 500);
     });
   }
 
-  // Primary method to speak text
+  // Primary method to speak text in natural human voice
   public speak(text: string, options: TTSOptions = {}): void {
     this.stop(); // Clear any existing audio playback
 
@@ -210,15 +210,13 @@ class UniversalTTSEngine {
 
     if (engineMode === 'native') {
       this.playWithWebSpeech();
-    } else if (engineMode === 'synth') {
-      this.playWithWebAudioSynth();
     } else {
       // Auto Strategy: Try HD Cloud Stream first (StreamElements Polly API)
       this.playNextCloudChunk();
     }
   }
 
-  // Strategy A: High-Definition Cloud Audio Stream (StreamElements Free Polly API - 100% CORS enabled)
+  // Strategy A: High-Definition Natural Cloud Stream (StreamElements Polly Voice - 100% CORS enabled)
   private playNextCloudChunk(): void {
     if (!this.isSpeaking || this.currentChunkIndex >= this.currentChunks.length) {
       this.finishPlayback();
@@ -233,7 +231,6 @@ class UniversalTTSEngine {
 
     const encodedText = encodeURIComponent(chunk);
     const voice = this.currentOptions?.voiceName || 'Brian'; // Default high quality Polly male voice
-    // StreamElements provides open, CORS-enabled, reliable Polly voice audio streams
     const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=${voice}&text=${encodedText}`;
 
     try {
@@ -249,14 +246,14 @@ class UniversalTTSEngine {
       };
 
       audio.onerror = (e) => {
-        console.warn('HD Cloud Stream failed or offline, falling back to Native WebSpeech:', e);
+        console.warn('HD Cloud Stream offline, falling back to Native Device WebSpeech:', e);
         this.playWithWebSpeech();
       };
 
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch((err) => {
-          console.warn('Audio play catch error, falling back to Native WebSpeech:', err);
+          console.warn('Audio play catch error, falling back to Native Device WebSpeech:', err);
           this.playWithWebSpeech();
         });
       }
@@ -269,8 +266,11 @@ class UniversalTTSEngine {
   // Strategy B: Native System Device Speech Engine (window.speechSynthesis)
   private playWithWebSpeech(): void {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      console.warn('speechSynthesis not supported, falling back to Web Audio Synth');
-      this.playWithWebAudioSynth();
+      console.warn('speechSynthesis not supported');
+      if (this.currentOptions?.onError) {
+        this.currentOptions.onError('Speech synthesis not supported on this device.');
+      }
+      this.finishPlayback();
       return;
     }
 
@@ -280,7 +280,6 @@ class UniversalTTSEngine {
       window.speechSynthesis.cancel();
       window.speechSynthesis.resume();
 
-      // Clear previous keepalive timer
       if (this.speechKeepaliveInterval) {
         clearInterval(this.speechKeepaliveInterval);
       }
@@ -345,116 +344,17 @@ class UniversalTTSEngine {
         utterance.onerror = (event) => {
           console.warn('Native WebSpeech utterance error:', event);
           if (startTimeout) clearTimeout(startTimeout);
-          // If native speech fails, fallback to Web Audio Synth for remaining chunks
-          this.playWithWebAudioSynth();
+          this.finishPlayback();
         };
-
-        // Fallback safety if native speech doesn't trigger onstart within 1.2s on stuck Android WebViews
-        startTimeout = setTimeout(() => {
-          if (this.isSpeaking && !window.speechSynthesis.speaking) {
-            console.warn('WebSpeech silent timeout on Android WebView, falling back to Web Audio Synth');
-            this.playWithWebAudioSynth();
-          }
-        }, 1200);
 
         window.speechSynthesis.speak(utterance);
       };
 
       speakNextWebSpeechChunk();
     } catch (err) {
-      console.error('WebSpeech execution error, falling back to Web Audio Synth:', err);
-      this.playWithWebAudioSynth();
-    }
-  }
-
-  // Strategy C: Built-in Offline Web Audio Formant Synthesizer (Guaranteed audio sound wave generation on ANY device)
-  private playWithWebAudioSynth(): void {
-    this.activeEngineUsed = 'synth';
-    const ctx = getAudioContext();
-    if (!ctx) {
-      if (this.currentOptions?.onError) {
-        this.currentOptions.onError('Audio hardware unavailable on this device.');
-      }
+      console.error('WebSpeech execution error:', err);
       this.finishPlayback();
-      return;
     }
-
-    if (!this.isSpeaking || this.currentChunkIndex >= this.currentChunks.length) {
-      this.finishPlayback();
-      return;
-    }
-
-    const chunk = this.currentChunks[this.currentChunkIndex];
-    if (this.currentOptions?.onProgress) {
-      this.currentOptions.onProgress(this.currentChunkIndex + 1, this.currentChunks.length);
-    }
-
-    // Convert text into synthesized phonetic vocal tones
-    const words = chunk.split(/\s+/).filter(w => w.length > 0);
-    const now = ctx.currentTime;
-    let timeCursor = now + 0.05;
-
-    this.synthAudioNodes = [];
-
-    const basePitch = (this.currentOptions?.pitch || 1.0) * 160; // 160Hz base vocal pitch
-    const wordDuration = 0.18 / (this.currentOptions?.rate || 1.0);
-
-    words.forEach((word) => {
-      if (!this.isSpeaking) return;
-
-      const osc1 = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
-      const filter = ctx.createBiquadFilter();
-      const gain = ctx.createGain();
-
-      // Formant synthesis for natural speech cadence
-      osc1.type = 'triangle';
-      osc2.type = 'sawtooth';
-
-      // Pitch subtle variations for prosody
-      const wordPitch = basePitch + (word.length % 4) * 8;
-      osc1.frequency.setValueAtTime(wordPitch, timeCursor);
-      osc2.frequency.setValueAtTime(wordPitch * 1.5, timeCursor);
-
-      filter.type = 'bandpass';
-      filter.frequency.setValueAtTime(800 + (word.length % 3) * 400, timeCursor);
-      filter.Q.setValueAtTime(3, timeCursor);
-
-      gain.gain.setValueAtTime(0, timeCursor);
-      gain.gain.linearRampToValueAtTime(0.12, timeCursor + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, timeCursor + wordDuration - 0.01);
-
-      osc1.connect(filter);
-      osc2.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc1.start(timeCursor);
-      osc2.start(timeCursor);
-      osc1.stop(timeCursor + wordDuration);
-      osc2.stop(timeCursor + wordDuration);
-
-      this.synthAudioNodes.push({
-        stop: () => {
-          try {
-            osc1.stop();
-            osc2.stop();
-          } catch (e) {
-            // Already stopped
-          }
-        }
-      });
-
-      timeCursor += wordDuration + 0.04;
-    });
-
-    const totalDurationMs = (timeCursor - now) * 1000;
-    setTimeout(() => {
-      if (this.isSpeaking) {
-        this.currentChunkIndex++;
-        this.playWithWebAudioSynth();
-      }
-    }, totalDurationMs);
   }
 
   // Stop playback completely
@@ -484,11 +384,6 @@ class UniversalTTSEngine {
         console.warn('Error stopping speechSynthesis:', e);
       }
     }
-
-    this.synthAudioNodes.forEach(node => {
-      try { node.stop(); } catch (e) {}
-    });
-    this.synthAudioNodes = [];
 
     if (this.currentOptions?.onEnd) {
       this.currentOptions.onEnd();

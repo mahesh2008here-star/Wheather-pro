@@ -136,17 +136,38 @@ export function determineSceneAutomatically(
 }
 
 // Generate next hour minute-by-minute rain curve (MinuteCast)
-export function generateMinuteCast(currentPrecip: number, rainProb: number): MinuteRainItem[] {
+export function generateMinuteCast(
+  currentPrecip: number, 
+  rainProb: number,
+  nextHourPrecip: number = 0,
+  nextHourProb: number = 0
+): MinuteRainItem[] {
   const items: MinuteRainItem[] = [];
-  const baseIntensity = currentPrecip > 0 ? currentPrecip : rainProb > 60 ? (rainProb - 40) / 15 : 0;
+  
+  // Determine start, peak, and end intensities
+  const p0 = currentPrecip > 0 ? currentPrecip : (rainProb > 25 ? (rainProb - 10) / 20 : 0);
+  const p1 = nextHourPrecip > 0 ? nextHourPrecip : (nextHourProb > 25 ? (nextHourProb - 10) / 20 : 0);
 
   for (let i = 0; i <= 60; i += 5) {
-    // Smooth bell-shaped curve or realistic decay
-    const wave = Math.sin((i / 60) * Math.PI) * (baseIntensity * 0.8);
-    const intensity = Math.max(0, Number((baseIntensity + wave * (Math.random() * 0.3 + 0.8)).toFixed(1)));
+    const t = i / 60; // 0 to 1
+    
+    // Smooth cosine interpolation between current hour precip and next hour precip
+    const smoothBase = p0 + (p1 - p0) * (0.5 - 0.5 * Math.cos(t * Math.PI));
+    
+    // Add realistic micro-variations (wave modulation)
+    const wave = Math.sin(t * Math.PI * 2) * 0.15 * (smoothBase > 0 ? smoothBase : 0.4);
+    let intensity = Math.max(0, Number((smoothBase + (smoothBase > 0 ? wave : 0)).toFixed(1)));
+
+    if (smoothBase === 0 && (rainProb > 30 || nextHourProb > 30)) {
+      // If probability exists but precip is small, generate subtle light drizzle band
+      const peakProb = Math.max(rainProb, nextHourProb);
+      const drizzlePeak = Math.sin(t * Math.PI) * (peakProb / 80);
+      intensity = Math.max(0, Number(drizzlePeak.toFixed(1)));
+    }
+
     let label = 'No rain';
     if (intensity > 4) label = 'Heavy rain';
-    else if (intensity > 1.5) label = 'Moderate rain';
+    else if (intensity > 1.8) label = 'Moderate rain';
     else if (intensity > 0) label = 'Light drizzle';
 
     items.push({
@@ -262,9 +283,12 @@ export async function fetchLiveWeather(
     weedPollen: 'Low',
   };
 
-  // Next-Hour MinuteCast rain curve
-  const rainChanceMax = Math.round(data.daily?.precipitation_probability_max?.[0] ?? (precip > 0 ? 80 : 10));
-  const nextHourRain = generateMinuteCast(precip, rainChanceMax);
+  // Next-Hour MinuteCast rain curve with actual hourly telemetry
+  const currentRainProb = Math.round(data.hourly?.precipitation_probability?.[0] ?? (precip > 0 ? 80 : 10));
+  const nextHourPrecip = Number((data.hourly?.precipitation?.[1] ?? 0).toFixed(1));
+  const nextHourProb = Math.round(data.hourly?.precipitation_probability?.[1] ?? currentRainProb);
+
+  const nextHourRain = generateMinuteCast(precip, currentRainProb, nextHourPrecip, nextHourProb);
 
   const currentMetrics: CurrentWeatherMetrics = {
     temperature: temp,
@@ -283,7 +307,7 @@ export async function fetchLiveWeather(
     cloudCover: clouds,
     uvIndex: uvMax,
     uvLevel,
-    rainChance: rainChanceMax,
+    rainChance: currentRainProb,
     precipitationAmount: precip,
     precipitationRate: precip > 0 ? precip * 1.5 : 0,
     weatherCode: wCode,
@@ -373,6 +397,40 @@ export async function fetchLiveWeather(
     current: currentMetrics,
     hourly: hourlyItems,
     daily: dailyItems,
+  };
+}
+
+// Reverse geocode latitude/longitude coordinates to human-readable city/region
+export async function reverseGeocode(lat: number, lon: number): Promise<LocationInfo> {
+  try {
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      const name = data.city || data.locality || data.principalSubdivision || 'Current Location';
+      const region = data.principalSubdivision || data.locality || '';
+      const country = data.countryName || '';
+      return {
+        id: `gps_loc_${Date.now()}`,
+        name,
+        region,
+        country,
+        latitude: lat,
+        longitude: lon,
+        isCurrent: true,
+      };
+    }
+  } catch (e) {
+    console.warn('Reverse geocode fallback:', e);
+  }
+  return {
+    id: `gps_loc_${Date.now()}`,
+    name: 'Current Location',
+    region: `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`,
+    country: 'GPS Detected',
+    latitude: lat,
+    longitude: lon,
+    isCurrent: true,
   };
 }
 

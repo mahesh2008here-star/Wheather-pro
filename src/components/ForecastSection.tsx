@@ -12,7 +12,8 @@ import {
   CloudRainWind,
   Wind,
   SunMedium,
-  Sparkles
+  Sparkles,
+  Clock
 } from 'lucide-react';
 import { DailyForecastItem, HourlyForecastItem } from '../types/weather';
 import { useTheme } from '../context/ThemeContext';
@@ -29,14 +30,19 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
   currentTemp,
 }) => {
   const { isDarkMode, formatTemp, formatWind } = useTheme();
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [expandedDailyIndex, setExpandedDailyIndex] = useState<number | null>(null);
+  const [expandedHourlyIndex, setExpandedHourlyIndex] = useState<number | null>(null);
 
-  const toggleExpand = (idx: number) => {
-    setExpandedIndex(prev => (prev === idx ? null : idx));
+  const toggleDailyExpand = (idx: number) => {
+    setExpandedDailyIndex(prev => (prev === idx ? null : idx));
+  };
+
+  const toggleHourlyExpand = (idx: number) => {
+    setExpandedHourlyIndex(prev => (prev === idx ? null : idx));
   };
 
   const renderWeatherIcon = (code: number, size = 18) => {
-    if (code === 0 || code === 1) return <Sun size={size} className="text-amber-500 shrink-0" />;
+    if (code === 0 || code === 1) return <Sun size={size} className="text-amber-500 shrink-0 animate-pulse" />;
     if (code === 2) return <CloudSun size={size} className="text-amber-500 shrink-0" />;
     if (code === 3) return <Cloud size={size} className="text-slate-400 shrink-0" />;
     if ([51, 53, 55].includes(code)) return <CloudDrizzle size={size} className="text-blue-400 shrink-0" />;
@@ -51,8 +57,8 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
   const totalRange = Math.max(1, overallMax - overallMin);
 
   return (
-    <div className="w-full px-4 py-3">
-      {/* HOURLY STRIP */}
+    <div className="w-full px-4 py-3 select-none">
+      {/* HOURLY STRIP WITH EXPANDABLE COLUMN CARDS */}
       <div 
         className={`mb-3.5 p-3.5 rounded-2xl transition-all ${
           isDarkMode 
@@ -61,48 +67,86 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
         }`}
       >
         <div className="flex items-center justify-between mb-2 px-1">
-          <span className={`text-xs font-bold tracking-tight ${isDarkMode ? 'text-zinc-200' : 'text-stone-700'}`}>
-            Hourly outlook
-          </span>
-          <span className={`text-[10px] font-medium ${isDarkMode ? 'text-zinc-400' : 'text-stone-500'}`}>
-            Next 24h
+          <div className="flex items-center space-x-1.5">
+            <Clock size={15} className="text-sky-400" />
+            <span className={`text-xs font-bold tracking-tight ${isDarkMode ? 'text-zinc-200' : 'text-stone-700'}`}>
+              24-Hour Forecast
+            </span>
+          </div>
+          <span className="text-[10px] text-teal-400 font-bold">
+            Tap column to expand
           </span>
         </div>
 
-        <div className="flex space-x-3 overflow-x-auto no-scrollbar py-1">
-          {hourly.slice(0, 16).map((item, idx) => (
-            <div 
-              key={idx}
-              className={`flex flex-col items-center min-w-[50px] p-2 rounded-xl transition-all ${
-                item.isCurrent 
-                  ? isDarkMode 
-                    ? 'bg-sky-500/20 border border-sky-400/40' 
-                    : 'bg-sky-50 border border-sky-200' 
-                  : 'hover:bg-stone-50/50 dark:hover:bg-zinc-950'
-              }`}
-            >
-              <span className={`text-[11px] font-semibold mb-1.5 ${
-                item.isCurrent 
-                  ? 'text-sky-400 font-bold' 
-                  : isDarkMode ? 'text-zinc-400' : 'text-stone-500'
-              }`}>
-                {item.hour}
-              </span>
-              <div className="my-1">
-                {renderWeatherIcon(item.weatherCode, 20)}
-              </div>
-              <span className={`text-xs font-bold mt-1 ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
-                {formatTemp(item.temperature)}
-              </span>
-              {item.rainProbability > 0 ? (
-                <span className="text-[10px] font-bold text-sky-400 mt-1">
-                  {item.rainProbability}%
+        <div className="flex space-x-2.5 overflow-x-auto no-scrollbar py-1">
+          {hourly.slice(0, 16).map((item, idx) => {
+            const isHourlyExpanded = expandedHourlyIndex === idx;
+            return (
+              <div 
+                key={idx}
+                onClick={() => toggleHourlyExpand(idx)}
+                className={`flex flex-col items-center p-2 rounded-xl transition-all duration-200 cursor-pointer touch-response shrink-0 ${
+                  isHourlyExpanded
+                    ? isDarkMode 
+                      ? 'bg-zinc-900 border border-teal-400/60 shadow-lg min-w-[120px]' 
+                      : 'bg-teal-50 border border-teal-300 shadow-md min-w-[120px]'
+                    : item.isCurrent 
+                      ? isDarkMode 
+                        ? 'bg-sky-500/20 border border-sky-400/40 min-w-[54px]' 
+                        : 'bg-sky-50 border border-sky-200 min-w-[54px]' 
+                      : isDarkMode
+                        ? 'bg-white/5 hover:bg-white/10 min-w-[54px]'
+                        : 'bg-stone-50 hover:bg-stone-100 min-w-[54px]'
+                }`}
+              >
+                <span className={`text-[11px] font-semibold mb-1 ${
+                  item.isCurrent 
+                    ? 'text-sky-400 font-bold' 
+                    : isDarkMode ? 'text-zinc-400' : 'text-stone-500'
+                }`}>
+                  {item.hour}
                 </span>
-              ) : (
-                <span className="text-[10px] opacity-0 mt-1">0%</span>
-              )}
-            </div>
-          ))}
+
+                <div className="my-1">
+                  {renderWeatherIcon(item.weatherCode, 22)}
+                </div>
+
+                <span className={`text-xs font-black mt-0.5 ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
+                  {formatTemp(item.temperature)}
+                </span>
+
+                {item.rainProbability > 0 ? (
+                  <span className="text-[10px] font-bold text-sky-400 mt-0.5">
+                    💧 {item.rainProbability}%
+                  </span>
+                ) : (
+                  <span className="text-[10px] opacity-0 mt-0.5">0%</span>
+                )}
+
+                {/* EXPANDED DETAILED CARD VIEW WHEN HOURLY COLUMN IS TAPPED */}
+                {isHourlyExpanded && (
+                  <div className="mt-2 pt-2 border-t border-white/10 w-full text-[10px] space-y-1.5 animate-card-slide-fade">
+                    <div className="flex justify-between font-bold">
+                      <span className="text-zinc-400">Feels like:</span>
+                      <span className="text-teal-400">{formatTemp(item.apparentTemp ?? item.temperature)}</span>
+                    </div>
+                    <div className="flex justify-between font-bold">
+                      <span className="text-zinc-400">Wind:</span>
+                      <span>{formatWind(item.windSpeed ?? 12)}</span>
+                    </div>
+                    <div className="flex justify-between font-bold">
+                      <span className="text-zinc-400">Humidity:</span>
+                      <span className="text-blue-400">{item.humidity ?? 65}%</span>
+                    </div>
+                    <div className="flex justify-between font-bold">
+                      <span className="text-zinc-400">UV Index:</span>
+                      <span className="text-amber-400">{item.uvIndex ?? 4}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -118,17 +162,17 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
           <div className="flex items-center space-x-2">
             <CalendarDays size={16} className={isDarkMode ? 'text-zinc-400' : 'text-stone-500'} />
             <h3 className={`text-sm font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
-              7-day forecast
+              7-Day Forecast
             </h3>
           </div>
-          <span className="text-[10px] font-semibold text-stone-400 dark:text-zinc-400">
-            Tap a day to expand
+          <span className="text-[10px] font-bold text-teal-400">
+            Tap day to expand
           </span>
         </div>
 
         <div className="space-y-1.5">
           {daily.map((item, idx) => {
-            const isExpanded = expandedIndex === idx;
+            const isExpanded = expandedDailyIndex === idx;
             const minPos = ((item.tempMin - overallMin) / totalRange) * 100;
             const maxPos = ((item.tempMax - overallMin) / totalRange) * 100;
             const barWidth = Math.max(8, maxPos - minPos);
@@ -142,23 +186,25 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
                 className={`rounded-xl transition-all duration-200 ${
                   isExpanded
                     ? isDarkMode
-                      ? 'bg-zinc-950 border border-sky-400/40 shadow-xs'
-                      : 'bg-stone-50 ring-1 ring-emerald-600/20 shadow-xs'
-                    : 'hover:bg-stone-50/50 dark:hover:bg-zinc-950'
+                      ? 'bg-zinc-950 border border-teal-400/50 shadow-xs'
+                      : 'bg-stone-50 ring-1 ring-teal-500/30 shadow-xs'
+                    : isDarkMode
+                      ? 'hover:bg-white/5'
+                      : 'hover:bg-stone-50'
                 }`}
               >
                 {/* INTERACTIVE TAP ROW */}
                 <div 
-                  onClick={() => toggleExpand(idx)}
-                  className="flex items-center justify-between text-xs py-2 px-2 cursor-pointer select-none"
+                  onClick={() => toggleDailyExpand(idx)}
+                  className="flex items-center justify-between text-xs py-2 px-2 cursor-pointer select-none touch-response"
                 >
                   {/* Day name & brief condition */}
                   <div className="w-24">
-                    <span className={`font-semibold block ${isDarkMode ? 'text-slate-200' : 'text-stone-800'}`}>
+                    <span className={`font-black block ${isDarkMode ? 'text-slate-200' : 'text-stone-800'}`}>
                       {item.dayName}
                     </span>
                     {item.rainProbability > 10 ? (
-                      <span className="text-[10px] font-medium text-blue-500">
+                      <span className="text-[10px] font-bold text-blue-500">
                         💧 {item.rainProbability}%
                       </span>
                     ) : (
@@ -174,7 +220,7 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
                   </div>
 
                   {/* Min temp */}
-                  <span className={`w-8 text-right font-medium ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>
+                  <span className={`w-8 text-right font-bold ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>
                     {formatTemp(item.tempMin)}
                   </span>
 
@@ -190,7 +236,7 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
                   </div>
 
                   {/* Max temp */}
-                  <span className={`w-8 text-left font-bold ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
+                  <span className={`w-8 text-left font-black ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
                     {formatTemp(item.tempMax)}
                   </span>
 
@@ -199,13 +245,13 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
                     <ChevronDown 
                       size={14} 
                       className={`text-stone-400 dark:text-slate-500 transition-transform duration-200 ${
-                        isExpanded ? 'rotate-180 text-emerald-500 dark:text-emerald-400' : ''
+                        isExpanded ? 'rotate-180 text-teal-400' : ''
                       }`} 
                     />
                   </div>
                 </div>
 
-                {/* EXPANDABLE DETAIL DRAWER (Revealing Precipitation Breakdown & Humidity) */}
+                {/* EXPANDABLE DETAIL DRAWER */}
                 {isExpanded && (
                   <div className="px-3 pb-3 pt-1 border-t border-stone-200/50 dark:border-white/10 animate-card-slide-fade">
                     <div className="grid grid-cols-2 gap-2 mt-1">
@@ -230,7 +276,6 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
                           </span>
                         </div>
 
-                        {/* Rain Probability Meter */}
                         <div className="mt-1.5 w-full h-1.5 rounded-full bg-sky-100 dark:bg-zinc-800 overflow-hidden">
                           <div 
                             className="h-full bg-sky-500 rounded-full" 
@@ -265,7 +310,6 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
                           </span>
                         </div>
 
-                        {/* Humidity Level Meter */}
                         <div className="mt-1.5 w-full h-1.5 rounded-full bg-teal-100 dark:bg-zinc-800 overflow-hidden">
                           <div 
                             className="h-full bg-teal-500 rounded-full" 

@@ -1,24 +1,38 @@
 {
+  "id": "/",
   "short_name": "WeatherApp",
   "name": "Live Weather & Microclimate App",
   "description": "Ultra-smooth live weather, animated microclimates, radar, air & sun indicators, and AMOLED OLED display.",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "/pwa-192x192.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "icon-512.png",
+      "src": "/pwa-512x512.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/weather_app_logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any"
     }
   ],
   "start_url": "/",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "scope": "/",
+  "background_color": "#020617",
+  "theme_color": "#020617",
   "display": "standalone",
   "orientation": "portrait"
 }

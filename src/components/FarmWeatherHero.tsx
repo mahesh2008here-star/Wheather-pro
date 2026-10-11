@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { WeatherSceneState } from '../types/weather';
 import { useTheme } from '../context/ThemeContext';
-import { Sparkles, Maximize2, LayoutGrid, Eye, Wind, Moon, Sun, CloudRain, Zap, RefreshCw, Volume2 } from 'lucide-react';
+import { Sparkles, Maximize2, LayoutGrid, Sun, Moon, Volume2, VolumeX } from 'lucide-react';
 
 interface FarmWeatherHeroProps {
   sceneState: WeatherSceneState;
@@ -66,55 +66,55 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
     switch (sceneState) {
       case 'sunny':
         return {
-          gradientStart: '#4FA1E6',
-          gradientMid: '#82C3F2',
-          gradientEnd: '#DCEFFB',
-          hill1: '#4CB838',
-          hill2: '#68CE51',
+          gradientStart: '#3B82F6',
+          gradientMid: '#60A5FA',
+          gradientEnd: '#BAE6FD',
+          hill1: '#379E2A',
+          hill2: '#52C442',
           field: '#856447',
           sunColor: '#F59E0B',
           isNight: false,
         };
       case 'clouds_rolling_in':
         return {
-          gradientStart: '#617B8A',
-          gradientMid: '#8CA3B0',
-          gradientEnd: '#C2D3DD',
-          hill1: '#4A873B',
-          hill2: '#62A350',
+          gradientStart: '#526E7C',
+          gradientMid: '#7D95A4',
+          gradientEnd: '#BCCCD6',
+          hill1: '#3D7431',
+          hill2: '#539744',
           field: '#735B44',
           sunColor: '#FDE047',
           isNight: false,
         };
       case 'wind_picking_up':
         return {
-          gradientStart: '#485C69',
-          gradientMid: '#6B7E8B',
-          gradientEnd: '#A8B7C2',
-          hill1: '#3F6E31',
-          hill2: '#538A42',
+          gradientStart: '#3A4D59',
+          gradientMid: '#5C7180',
+          gradientEnd: '#98A9B5',
+          hill1: '#325C27',
+          hill2: '#467F38',
           field: '#634E3A',
           sunColor: '#FEF08A',
           isNight: false,
         };
       case 'rain_shower':
         return {
-          gradientStart: '#2C3A45',
-          gradientMid: '#4A5B66',
-          gradientEnd: '#7A8B96',
-          hill1: '#2E5225',
-          hill2: '#3D6B32',
+          gradientStart: '#23303B',
+          gradientMid: '#3E4E5B',
+          gradientEnd: '#687987',
+          hill1: '#23421D',
+          hill2: '#315C29',
           field: '#4A3B2B',
           sunColor: '#CBD5E1',
           isNight: false,
         };
       case 'storm':
         return {
-          gradientStart: '#131920',
-          gradientMid: '#222F3C',
-          gradientEnd: '#435466',
-          hill1: '#1E3618',
-          hill2: '#2B4A22',
+          gradientStart: '#0B1017',
+          gradientMid: '#182330',
+          gradientEnd: '#334456',
+          hill1: '#162912',
+          hill2: '#213B1B',
           field: '#33271C',
           sunColor: '#94A3B8',
           isNight: false,
@@ -122,11 +122,11 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
       case 'clearing_up':
       default:
         return {
-          gradientStart: '#53A8E2',
-          gradientMid: '#8BC9F5',
-          gradientEnd: '#D8ECF8',
-          hill1: '#4CB838',
-          hill2: '#69CF52',
+          gradientStart: '#4397E6',
+          gradientMid: '#7BC2F8',
+          gradientEnd: '#CFE8F9',
+          hill1: '#379E2A',
+          hill2: '#52C442',
           field: '#806042',
           sunColor: '#F59E0B',
           isNight: false,
@@ -143,23 +143,32 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
     ? '1.5s'
     : '3.6s';
 
-  // Raindrop simulation
+  // Raindrop & splash particles
   const raindrops = useMemo(() => {
-    return Array.from({ length: 42 }).map((_, i) => ({
+    return Array.from({ length: 48 }).map((_, i) => ({
       id: i,
-      x: (i * 9.5) % 390,
-      y: (i * 18) % 250,
-      delay: `${(i * 0.05) % 1.2}s`,
-      duration: `${0.4 + ((i % 5) * 0.05)}s`,
+      x: (i * 8.5) % 390,
+      y: (i * 16) % 240,
+      delay: `${(i * 0.04) % 1.2}s`,
+      duration: `${0.35 + ((i % 5) * 0.05)}s`,
+    }));
+  }, []);
+
+  const groundSplashes = useMemo(() => {
+    return Array.from({ length: 12 }).map((_, i) => ({
+      id: i,
+      cx: 30 + (i * 30) % 340,
+      cy: 220 + (i * 7) % 70,
+      delay: `${(i * 0.15) % 1.5}s`,
     }));
   }, []);
 
   // Fireflies for night scene
   const fireflies = useMemo(() => {
-    return Array.from({ length: 14 }).map((_, i) => ({
+    return Array.from({ length: 16 }).map((_, i) => ({
       id: i,
-      cx: 20 + (i * 26) % 360,
-      cy: 160 + (i * 15) % 110,
+      cx: 20 + (i * 24) % 360,
+      cy: 160 + (i * 12) % 110,
       r: 1.2 + (i % 3) * 0.5,
       delay: `${(i * 0.2) % 2}s`,
     }));
@@ -170,7 +179,7 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
   // Minimal Capsule View
   if (widgetMode === 'capsule') {
     return (
-      <div className="w-full px-4 pt-2 pb-1">
+      <div className="w-full px-4 pt-2 pb-1 select-none">
         <div className={`p-3.5 rounded-3xl transition-all flex items-center justify-between border ${
           isDarkMode 
             ? 'bg-[#000000] border-white/15 shadow-[0_4px_25px_rgba(0,0,0,0.9)]' 
@@ -192,7 +201,7 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
                 </span>
               </div>
               <p className={`text-[11px] font-semibold ${isDarkMode ? 'text-zinc-400' : 'text-stone-500'}`}>
-                H:{tempMax !== undefined ? formatTemp(tempMax) : '--'} L:{tempMin !== undefined ? formatTemp(tempMin) : '--'} • Live Farm Scene
+                H:{tempMax !== undefined ? formatTemp(tempMax) : '--'} L:{tempMin !== undefined ? formatTemp(tempMin) : '--'} • Live Farm Microclimate
               </p>
             </div>
           </div>
@@ -230,6 +239,11 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
             : `linear-gradient(180deg, ${skyConfig.gradientStart} 0%, ${skyConfig.gradientMid} 45%, ${skyConfig.gradientEnd} 100%)`,
         }}
       >
+        {/* Full Screen Storm Lightning Strobe Overlay */}
+        {sceneState === 'storm' && (
+          <div className="absolute inset-0 bg-sky-200/20 mix-blend-overlay pointer-events-none animate-lightning z-20" />
+        )}
+
         {/* Sky SVG illustration */}
         <svg 
           viewBox="0 0 400 320" 
@@ -245,6 +259,12 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
               <stop offset="100%" stopColor={skyConfig.sunColor} stopOpacity="0" />
             </radialGradient>
 
+            {/* Sun Crepuscular Ray Filter */}
+            <linearGradient id="godRay" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#FFF" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#FFF" stopOpacity="0" />
+            </linearGradient>
+
             {/* Moon Glow for OLED Black */}
             <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="#FFF" stopOpacity="0.9" />
@@ -252,6 +272,12 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
               <stop offset="70%" stopColor="#0EA5E9" stopOpacity="0.1" />
               <stop offset="100%" stopColor="#000" stopOpacity="0" />
             </radialGradient>
+
+            {/* Tractor Headlight Glow Beam */}
+            <linearGradient id="headlightCone" x1="0" y1="0" x2="1" y2="0.3">
+              <stop offset="0%" stopColor="#FEF08A" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#FEF08A" stopOpacity="0" />
+            </linearGradient>
 
             {/* Rainbow gradient */}
             <linearGradient id="rainbowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -281,20 +307,35 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
               <stop offset="0%" stopColor={skyConfig.field} />
               <stop offset="100%" stopColor={isNight ? '#000000' : '#4E3A26'} />
             </linearGradient>
+
+            {/* Atmospheric Fog Mask */}
+            <linearGradient id="fogGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#FFF" stopOpacity="0" />
+              <stop offset="50%" stopColor="#FFF" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#FFF" stopOpacity="0" />
+            </linearGradient>
           </defs>
 
           {/* CELESTIAL BODIES */}
           {!isNight ? (
-            /* Day Sun */
+            /* Day Sun with God Rays */
             <g className="transition-all duration-700 animate-float-drift" opacity={sceneState === 'rain_shower' ? 0.35 : sceneState === 'storm' ? 0.15 : 1}>
-              <circle cx="310" cy="75" r="58" fill="url(#sunGlow)" className="animate-breathing-glow" />
-              <circle cx="310" cy="75" r="26" fill={skyConfig.sunColor} />
-              <circle cx="310" cy="75" r="21" fill="#FEF08A" opacity="0.85" />
+              {/* Crepuscular Rays / God Rays */}
+              {(sceneState === 'sunny' || sceneState === 'clearing_up') && (
+                <g opacity="0.6">
+                  <polygon points="310,75 180,320 220,320" fill="url(#godRay)" />
+                  <polygon points="310,75 260,320 310,320" fill="url(#godRay)" />
+                  <polygon points="310,75 350,320 400,320" fill="url(#godRay)" />
+                </g>
+              )}
+              <circle cx="310" cy="75" r="62" fill="url(#sunGlow)" className="animate-breathing-glow" />
+              <circle cx="310" cy="75" r="28" fill={skyConfig.sunColor} />
+              <circle cx="310" cy="75" r="22" fill="#FEF08A" opacity="0.9" />
             </g>
           ) : (
-            /* OLED True Pitch Black Night Sky (Moon, Stars & Fireflies) */
+            /* OLED Pitch Black Night Sky (Moon, Twinkling Stars & Fireflies) */
             <g>
-              {/* Twinkling OLED Diamond Stars */}
+              {/* Twinkling Diamond Stars */}
               <circle cx="45" cy="40" r="1.6" fill="#FFF" opacity="0.9" className="animate-pulse" />
               <circle cx="110" cy="65" r="1.2" fill="#38BDF8" opacity="0.7" />
               <circle cx="170" cy="30" r="1.8" fill="#FFF" opacity="0.95" className="animate-pulse" />
@@ -305,17 +346,17 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
               <circle cx="215" cy="85" r="1.6" fill="#FFF" opacity="0.85" className="animate-pulse" />
               <circle cx="365" cy="110" r="1.4" fill="#38BDF8" opacity="0.75" />
 
-              {/* Luminous Crescent Moon with soft blue aura */}
+              {/* Luminous Crescent Moon */}
               <g className="animate-float-drift cursor-pointer" onClick={() => setShowSceneInfo(prev => !prev)}>
                 <circle cx="320" cy="70" r="46" fill="url(#moonGlow)" />
                 <path
                   d="M 312 55 A 20 20 0 0 0 328 87 A 18 18 0 1 1 312 55 Z"
                   fill="#FEF08A"
-                  filter="drop-shadow(0 0 10px rgba(254, 240, 138, 0.85))"
+                  filter="drop-shadow(0 0 12px rgba(254, 240, 138, 0.9))"
                 />
               </g>
 
-              {/* Dancing Fireflies over crops */}
+              {/* Fireflies over crops */}
               {fireflies.map(fly => (
                 <circle
                   key={fly.id}
@@ -335,7 +376,7 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
           {sceneState === 'clearing_up' && (
             <g className="transition-opacity duration-1000 ease-out">
               <path
-                d="M 150 210 A 150 150 0 0 1 395 180"
+                d="M 140 210 A 150 150 0 0 1 395 180"
                 fill="none"
                 stroke="url(#rainbowGrad)"
                 strokeWidth="18"
@@ -344,7 +385,7 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
                 filter="blur(1px)"
               />
               <path
-                d="M 152 210 A 146 146 0 0 1 393 180"
+                d="M 142 210 A 146 146 0 0 1 393 180"
                 fill="none"
                 stroke="url(#rainbowGrad)"
                 strokeWidth="12"
@@ -354,41 +395,41 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
             </g>
           )}
 
-          {/* CLOUDS (Automatically rendered based on weather) */}
+          {/* CLOUDS (Volumetric Multi-layered) */}
           {(sceneState === 'clouds_rolling_in' || sceneState === 'night_cloudy' || sceneState === 'rain_shower' || sceneState === 'storm') && (
             <g className="transition-all duration-700 ease-in-out">
-              {/* Back Cloud */}
+              {/* Back Cloud Layer */}
               <path
                 d="M 180 70 Q 195 50 220 55 Q 240 40 265 55 Q 285 50 295 70 Q 305 85 290 95 L 185 95 Q 170 85 180 70 Z"
-                fill={isNight ? '#0B0F14' : sceneState === 'rain_shower' ? '#52616B' : sceneState === 'storm' ? '#222B36' : '#E2E8F0'}
+                fill={isNight ? '#0B0F14' : sceneState === 'rain_shower' ? '#4A5863' : sceneState === 'storm' ? '#1F2731' : '#E2E8F0'}
                 opacity={sceneState === 'storm' ? 0.95 : 0.8}
               />
-              {/* Foreground Cloud */}
+              {/* Foreground Main Cloud */}
               <path
                 d="M 230 85 Q 248 60 275 65 Q 300 45 330 62 Q 355 58 370 80 Q 385 98 365 110 L 235 110 Q 215 100 230 85 Z"
-                fill={isNight ? '#121820' : sceneState === 'rain_shower' ? '#3B4854' : sceneState === 'storm' ? '#1B232E' : '#FFFFFF'}
+                fill={isNight ? '#121820' : sceneState === 'rain_shower' ? '#33404B' : sceneState === 'storm' ? '#171E27' : '#FFFFFF'}
                 opacity={0.95}
-                filter="drop-shadow(0 4px 6px rgba(0,0,0,0.25))"
+                filter="drop-shadow(0 6px 10px rgba(0,0,0,0.3))"
               />
-              {/* Left drifting cloud */}
+              {/* Left Drifting Cloud */}
               <path
-                d="M 30 90 Q 42 75 60 77 Q 75 67 95 77 Q 110 75 118 90 Q 128 103 110 109 L 35 109 Q 20 103 30 90 Z"
+                d="M 20 85 Q 35 68 55 70 Q 72 58 92 68 Q 110 65 120 82 Q 130 98 110 106 L 25 106 Q 10 98 20 85 Z"
                 fill={isNight ? '#0E141B' : '#FFFFFF'}
-                opacity={0.8}
+                opacity={0.85}
               />
             </g>
           )}
 
-          {/* WIND GUST STREAKS (Active in wind state or when tapped) */}
+          {/* WIND GUST STREAKS */}
           {(sceneState === 'wind_picking_up' || isTurbineBoosted) && (
             <g stroke={isNight ? '#38BDF8' : '#FFFFFF'} strokeWidth="2" strokeLinecap="round" opacity="0.75" className="animate-pulse">
-              <path d="M 50 80 Q 130 75 180 85" fill="none" strokeDasharray="30 10" />
-              <path d="M 110 105 Q 200 100 260 110" fill="none" strokeDasharray="40 12" />
-              <path d="M 70 135 Q 150 130 220 140" fill="none" strokeDasharray="25 8" />
+              <path d="M 40 80 Q 120 75 170 85" fill="none" strokeDasharray="30 10" />
+              <path d="M 100 105 Q 190 100 250 110" fill="none" strokeDasharray="40 12" />
+              <path d="M 60 135 Q 140 130 210 140" fill="none" strokeDasharray="25 8" />
             </g>
           )}
 
-          {/* RAIN DROPS (Active in rain/storm state) */}
+          {/* RAIN DROPS & GROUND RIPPLES */}
           {(sceneState === 'rain_shower' || sceneState === 'storm') && (
             <g>
               {raindrops.map(drop => (
@@ -404,18 +445,40 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
                   opacity="0.85"
                 />
               ))}
+
+              {/* Ground Splash Ripples */}
+              {groundSplashes.map(splash => (
+                <ellipse
+                  key={splash.id}
+                  cx={splash.cx}
+                  cy={splash.cy}
+                  rx="6"
+                  ry="2"
+                  fill="none"
+                  stroke={isNight ? '#38BDF8' : '#CBD5E1'}
+                  strokeWidth="1.2"
+                  opacity="0.6"
+                  className="animate-ping"
+                  style={{ animationDuration: '1.2s', animationDelay: splash.delay }}
+                />
+              ))}
             </g>
           )}
 
-          {/* LIGHTNING FLASH (In Storm state) */}
+          {/* LIGHTNING BOLT STRIKE */}
           {sceneState === 'storm' && (
             <g className="animate-lightning">
               <polygon
                 points="275,45 263,100 283,100 259,150 293,90 275,90"
                 fill="#FEF08A"
-                filter="drop-shadow(0 0 18px rgba(254, 240, 138, 1))"
+                filter="drop-shadow(0 0 20px rgba(254, 240, 138, 1))"
               />
             </g>
+          )}
+
+          {/* ATMOSPHERIC FOG MIST LAYER */}
+          {(sceneState === 'clouds_rolling_in' || sceneState === 'rain_shower') && (
+            <rect x="0" y="190" width="400" height="40" fill="url(#fogGrad)" className="animate-pulse" />
           )}
 
           {/* ROLLING HILLS (Background) */}
@@ -428,7 +491,7 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
             opacity="0.95"
           />
 
-          {/* Near hill */}
+          {/* Foreground Hill */}
           <path
             d="M -10 235 Q 110 200 240 220 Q 340 235 420 215 L 420 320 L -10 320 Z"
             fill={skyConfig.hill2}
@@ -437,7 +500,7 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
             strokeOpacity={isNight ? '0.25' : '0'}
           />
 
-          {/* WIND TURBINE (Interactive tap boosts speed!) */}
+          {/* WIND TURBINE */}
           <g transform="translate(65, 170)" className="cursor-pointer group snappy-touch" onClick={handleTurbineClick}>
             <polygon points="8,0 12,0 14,45 6,45" fill={isNight ? '#1E293B' : '#E2E8F0'} />
             <circle cx="10" cy="0" r="3.5" fill={isNight ? '#475569' : '#FFFFFF'} />
@@ -450,11 +513,11 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
 
           {/* RED BARN & SILO */}
           <g transform="translate(250, 145)">
-            {/* Barn Chimney Smoke (Animated puff) */}
+            {/* Barn Chimney Smoke Puffs */}
             <g className="animate-pulse">
-              <circle cx="20" cy="-8" r="4" fill={isNight ? '#334155' : '#CBD5E1'} opacity="0.6" />
-              <circle cx="22" cy="-16" r="6" fill={isNight ? '#334155' : '#CBD5E1'} opacity="0.4" />
-              <circle cx="25" cy="-26" r="8" fill={isNight ? '#334155' : '#CBD5E1'} opacity="0.2" />
+              <circle cx="20" cy="-8" r="4" fill={isNight ? '#334155' : '#E2E8F0'} opacity="0.6" />
+              <circle cx="22" cy="-16" r="6" fill={isNight ? '#334155' : '#E2E8F0'} opacity="0.4" />
+              <circle cx="25" cy="-26" r="8" fill={isNight ? '#334155' : '#E2E8F0'} opacity="0.2" />
             </g>
 
             {/* Silo */}
@@ -466,14 +529,14 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
               <line x1="0" y1="50" x2="24" y2="50" stroke={isNight ? '#1E293B' : '#CBD5E1'} strokeWidth="1" />
             </g>
 
-            {/* Barn */}
+            {/* Barn Body */}
             <polygon
               points="10,25 46,2 82,25 82,65 10,65"
               fill={isNight ? 'url(#barnWoodOLED)' : 'url(#barnWoodLight)'}
               stroke={isNight ? '#1A0505' : '#8B1818'}
               strokeWidth="1.5"
             />
-            {/* Roof Eaves */}
+            {/* Roof */}
             <polyline
               points="6,26 46,1 86,26"
               fill="none"
@@ -485,11 +548,11 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
             />
             <polygon points="7,25 46,2 85,25 82,27 46,5 10,27" fill={isNight ? '#05080E' : '#450A0A'} />
 
-            {/* Vane */}
+            {/* Weather Vane */}
             <line x1="46" y1="1" x2="46" y2="-8" stroke={isNight ? '#475569' : '#334155'} strokeWidth="1.5" />
             <polygon points="43,-8 49,-8 46,-12" fill={isNight ? '#38BDF8' : '#F59E0B'} />
 
-            {/* Illuminated Loft Window (Interactive toggle on tap) */}
+            {/* Illuminated Loft Window */}
             <rect
               x="38"
               y="16"
@@ -506,7 +569,7 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
             <line x1="46" y1="16" x2="46" y2="32" stroke={isNight ? '#78350F' : '#7F1D1D'} strokeWidth="1" />
             <line x1="38" y1="24" x2="54" y2="24" stroke={isNight ? '#78350F' : '#7F1D1D'} strokeWidth="1" />
 
-            {/* Doors */}
+            {/* Barn Doors */}
             <rect
               x="28"
               y="38"
@@ -549,13 +612,18 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
             </g>
           ))}
 
-          {/* RED FARM TRACTOR ON SOIL PATH (Interactive tap drives or revs) */}
+          {/* RED FARM TRACTOR WITH WORKING HEADLIGHTS */}
           <g 
             transform={`translate(${isTractorDriving ? '210' : '170'}, 245)`} 
             className="cursor-pointer snappy-touch transition-transform duration-1000 ease-in-out"
             onClick={handleTractorClick}
           >
             <title>Tap tractor to rev engine</title>
+            {/* Headlight Beam Cone in dark/overcast */}
+            {(isNight || sceneState === 'storm' || sceneState === 'rain_shower') && (
+              <polygon points="32,8 110,-5 110,25" fill="url(#headlightCone)" />
+            )}
+
             {/* Body */}
             <rect x="10" y="8" width="22" height="12" rx="2" fill="#DC2626" />
             <rect x="22" y="2" width="10" height="10" rx="1" fill="#991B1B" />
@@ -654,11 +722,11 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
           </div>
         </div>
 
-        {/* EXPLANATORY POPUP ON TAP: How Auto Weather Scene is mapped */}
+        {/* EXPLANATORY POPUP ON TAP */}
         {showSceneInfo && (
           <div 
             onClick={() => setShowSceneInfo(false)}
-            className="absolute inset-x-4 bottom-4 p-3 rounded-2xl bg-black/90 backdrop-blur-lg border border-white/20 text-white z-20 shadow-2xl animate-card-slide-fade text-xs select-text cursor-pointer"
+            className="absolute inset-x-4 bottom-4 p-3 rounded-2xl bg-black/90 backdrop-blur-lg border border-white/20 text-white z-30 shadow-2xl animate-card-slide-fade text-xs select-text cursor-pointer"
           >
             <div className="flex items-center justify-between font-bold text-sky-400 mb-1">
               <span className="flex items-center space-x-1">
@@ -668,7 +736,7 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
               <span className="text-[10px] text-zinc-400">Tap to dismiss</span>
             </div>
             <p className="text-[11px] text-zinc-300 leading-relaxed">
-              Scene State: <strong className="text-white capitalize">{sceneState.replace(/_/g, ' ')}</strong>. Automatically computed from live WMO weather codes, wind gusts, daylight elevation, and cloud canopy.
+              Scene State: <strong className="text-white capitalize">{sceneState.replace(/_/g, ' ')}</strong>. Computed in real-time from live WMO weather codes, wind gusts, daylight elevation, and cloud canopy.
             </p>
           </div>
         )}

@@ -13,7 +13,11 @@ import {
   Plus,
   Check,
   Search,
-  X
+  X,
+  Crosshair,
+  Navigation,
+  Clock,
+  Sparkles
 } from 'lucide-react';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { PhoneSimulator } from './components/PhoneSimulator';
@@ -32,7 +36,8 @@ import {
   DEFAULT_LOCATIONS, 
   fetchLiveWeather, 
   detectSevereWeatherAlerts,
-  searchLocations
+  searchLocations,
+  reverseGeocode
 } from './services/weatherApi';
 import { 
   CurrentWeatherMetrics, 
@@ -46,21 +51,25 @@ const STORAGE_SAVED_LOCATIONS_KEY = 'weatherapp_saved_locations';
 const STORAGE_ACTIVE_LOCATION_KEY = 'weatherapp_active_location';
 
 function MainWeatherApp() {
-  const { isDarkMode, toggleDarkMode, customAccentColor } = useTheme();
+  const { isDarkMode, toggleDarkMode, customAccentColor, formatTemp, formatWind } = useTheme();
 
   // Active Navigation Tab: 0 = Weather (Home), 1 = Radar, 2 = Air & Sun, 3 = Widgets, 4 = Settings
   const [activeTab, setActiveTab] = useState<number>(0);
 
-  // Quick Location Switcher Modal state (allows changing location directly inside Weather screen)
+  // Quick Location Switcher Modal state
   const [isLocationPickerOpen, setIsLocationPickerOpen] = useState<boolean>(false);
   const [quickSearchQuery, setQuickSearchQuery] = useState<string>('');
   const [quickSearchResults, setQuickSearchResults] = useState<LocationInfo[]>([]);
   const [isQuickSearching, setIsQuickSearching] = useState<boolean>(false);
 
+  // Live GPS Location Detector state
+  const [isLocating, setIsLocating] = useState<boolean>(false);
+  const [locationStatus, setLocationStatus] = useState<string | null>(null);
+
   // Manual Preview Override (null = automatic live sync from Open-Meteo)
   const [previewScene, setPreviewScene] = useState<WeatherSceneState | null>(null);
 
-  // Saved Locations & Active Location (Persisted in localStorage across all app restarts & Android sessions)
+  // Saved Locations & Active Location
   const [savedLocations, setSavedLocations] = useState<LocationInfo[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_SAVED_LOCATIONS_KEY);
@@ -192,7 +201,7 @@ function MainWeatherApp() {
     { time: '17:00', hour: '5 PM', temperature: 22, weatherCode: 3, rainProbability: 30 },
   ]);
 
-  // Severe Alerts (Derived from real weather conditions)
+  // Severe Alerts
   const alerts = detectSevereWeatherAlerts(metrics);
 
   // Fetch live weather data automatically for active location
@@ -211,12 +220,60 @@ function MainWeatherApp() {
     }
   }, []);
 
-  // Initial load: uses the remembered location from localStorage
-  useEffect(() => {
-    handleFetchWeather(activeLocation);
-  }, [activeLocation, handleFetchWeather]);
+  // GPS Live Location Detector function
+  const handleDetectLiveLocation = useCallback(() => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      setLocationStatus('Geolocation is not supported on this device.');
+      return;
+    }
+    setIsLocating(true);
+    setLocationStatus('Detecting GPS location...');
 
-  // Handle location selection: saves to state & localStorage
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const loc = await reverseGeocode(latitude, longitude);
+          setActiveLocation(loc);
+          setSavedLocations(prev => {
+            if (!prev.some(l => l.name === loc.name)) {
+              return [loc, ...prev];
+            }
+            return prev;
+          });
+          await handleFetchWeather(loc);
+          setLocationStatus(`GPS Location Active: ${loc.name}`);
+        } catch (err) {
+          console.warn('GPS reverse geocode error:', err);
+          setLocationStatus('GPS detected, loading weather...');
+        } finally {
+          setIsLocating(false);
+          setTimeout(() => setLocationStatus(null), 3500);
+        }
+      },
+      (error) => {
+        console.warn('Geolocation error:', error);
+        setIsLocating(false);
+        let errorMsg = 'GPS location permission denied.';
+        if (error.code === error.TIMEOUT) errorMsg = 'GPS detection timed out.';
+        setLocationStatus(errorMsg);
+        setTimeout(() => setLocationStatus(null), 4000);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  }, [handleFetchWeather]);
+
+  // Initial load: uses stored active location or triggers GPS auto-detect
+  useEffect(() => {
+    const storedActive = localStorage.getItem(STORAGE_ACTIVE_LOCATION_KEY);
+    if (!storedActive) {
+      handleDetectLiveLocation();
+    } else {
+      handleFetchWeather(activeLocation);
+    }
+  }, []);
+
+  // Handle location selection
   const handleSelectLocation = (loc: LocationInfo) => {
     setActiveLocation(loc);
     handleFetchWeather(loc);
@@ -258,27 +315,53 @@ function MainWeatherApp() {
 
   return (
     <PhoneSimulator>
-      {/* ANDROID TOP APP BAR */}
-      <header className={`w-full px-4 pt-2 pb-2 flex items-center justify-between shrink-0 select-none z-20 transition-colors ${
+      {/* ANDROID TOP APP BAR WITH APP ICON & GPS LIVE DETECTOR */}
+      <header className={`w-full px-3 pt-2 pb-2 flex items-center justify-between shrink-0 select-none z-20 transition-colors ${
         isDarkMode ? 'bg-[#000000] border-b border-white/10' : 'bg-[#F2F5FA] border-b border-slate-200'
       }`}>
-        {/* Center/Left: Direct Location Switcher */}
-        <button
-          onClick={() => setIsLocationPickerOpen(true)}
-          className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
-            isDarkMode
-              ? 'bg-[#141820] text-white hover:bg-[#1C222E] border border-white/15 shadow-xs'
-              : 'bg-white text-slate-800 hover:bg-slate-50 border border-slate-300/80 shadow-xs'
-          }`}
-          title="Change active weather location"
-        >
-          <MapPin size={14} style={{ color: customAccentColor }} className="shrink-0" />
-          <span className="truncate max-w-[150px] text-[13px] font-extrabold">{activeLocation.name}</span>
-          <ChevronDown size={14} className="opacity-60 shrink-0" />
-        </button>
+        {/* Left: App Logo Icon & Direct Location Switcher */}
+        <div className="flex items-center space-x-2">
+          {/* App Squircle Logo Image */}
+          <img 
+            src="/assets/weather_app_logo.svg" 
+            alt="Weather App Icon" 
+            className="w-8 h-8 rounded-xl shadow-xs shrink-0 object-cover border border-white/20"
+          />
 
-        {/* Right Actions: Severe Alert Badge, Dark Mode & Refresh */}
+          <button
+            onClick={() => setIsLocationPickerOpen(true)}
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+              isDarkMode
+                ? 'bg-[#141820] text-white hover:bg-[#1C222E] border border-white/15 shadow-xs'
+                : 'bg-white text-slate-800 hover:bg-slate-50 border border-slate-300/80 shadow-xs'
+            }`}
+            title="Change active weather location"
+          >
+            <MapPin size={13} style={{ color: customAccentColor }} className="shrink-0" />
+            <span className="truncate max-w-[120px] text-xs font-black">{activeLocation.name}</span>
+            <ChevronDown size={13} className="opacity-60 shrink-0" />
+          </button>
+        </div>
+
+        {/* Right Actions: GPS Auto-Detect Button, Severe Alert Badge, Dark Mode & Refresh */}
         <div className="flex items-center space-x-1.5">
+          {/* GPS LIVE AUTO DETECT BUTTON */}
+          <button
+            onClick={handleDetectLiveLocation}
+            disabled={isLocating}
+            className={`px-2.5 py-1.5 rounded-2xl flex items-center space-x-1 text-[11px] font-black transition-all cursor-pointer ${
+              isLocating
+                ? 'bg-teal-500/20 text-teal-400 border border-teal-500/40 animate-pulse'
+                : isDarkMode
+                ? 'bg-[#141820] text-teal-400 hover:bg-[#1C222E] border border-teal-500/30'
+                : 'bg-white text-teal-600 hover:bg-teal-50 border border-teal-300 shadow-xs'
+            }`}
+            title="Auto Detect GPS Location"
+          >
+            <Crosshair size={13} className={isLocating ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">GPS</span>
+          </button>
+
           {alerts.length > 0 && (
             <span 
               className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-500 text-white shadow-xs animate-pulse"
@@ -291,19 +374,19 @@ function MainWeatherApp() {
 
           <button
             onClick={toggleDarkMode}
-            className={`w-9 h-9 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
+            className={`w-8 h-8 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
               isDarkMode 
                 ? 'bg-[#141820] text-amber-300 hover:bg-[#1C222E] border border-white/10' 
                 : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 shadow-xs'
             }`}
             title="Toggle Dark / Light Theme"
           >
-            {isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
+            {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
           <button
             onClick={() => handleFetchWeather(activeLocation)}
-            className={`w-9 h-9 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
+            className={`w-8 h-8 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
               isLoading ? 'animate-spin text-teal-400' : ''
             } ${
               isDarkMode 
@@ -312,12 +395,25 @@ function MainWeatherApp() {
             }`}
             title="Refresh Live Weather"
           >
-            <RefreshCw size={15} />
+            <RefreshCw size={14} />
           </button>
         </div>
       </header>
 
-      {/* QUICK LOCATION PICKER OVERLAY MODAL (Choose location directly inside weather view) */}
+      {/* GPS LOCATION STATUS FEEDBACK TOAST BANNER */}
+      {locationStatus && (
+        <div className="w-full px-4 pt-1.5 select-none animate-fadeIn z-30">
+          <div className="p-2 px-3 rounded-xl bg-teal-500/20 border border-teal-500/40 text-teal-300 text-xs font-bold flex items-center justify-between shadow-md">
+            <div className="flex items-center space-x-2">
+              <Navigation size={14} className="animate-spin text-teal-400 shrink-0" />
+              <span>{locationStatus}</span>
+            </div>
+            <button onClick={() => setLocationStatus(null)} className="text-teal-200 text-xs font-bold p-0.5">✕</button>
+          </div>
+        </div>
+      )}
+
+      {/* QUICK LOCATION PICKER OVERLAY MODAL */}
       {isLocationPickerOpen && (
         <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md p-4 flex flex-col justify-end animate-card-slide-fade">
           <div className={`w-full rounded-3xl p-4 border max-h-[85vh] overflow-y-auto no-scrollbar shadow-2xl ${
@@ -335,6 +431,18 @@ function MainWeatherApp() {
                 <X size={16} />
               </button>
             </div>
+
+            {/* GPS Auto-Detect Button in Modal */}
+            <button
+              onClick={() => {
+                handleDetectLiveLocation();
+                setIsLocationPickerOpen(false);
+              }}
+              className="w-full mb-3 py-2.5 px-3 rounded-xl bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/40 text-teal-300 text-xs font-black flex items-center justify-center space-x-2 cursor-pointer shadow-xs"
+            >
+              <Crosshair size={15} />
+              <span>Use Current GPS Location</span>
+            </button>
 
             {/* Quick Search Input */}
             <form onSubmit={handleQuickSearch} className="relative mb-3">
@@ -414,12 +522,12 @@ function MainWeatherApp() {
         </div>
       )}
 
-      {/* ACTIVE SCREEN CONTENT */}
-      <div className="flex-1 w-full overflow-y-auto no-scrollbar relative flex flex-col pb-28">
+      {/* ACTIVE SCREEN CONTENT WITH SMOOTH TAB ANIMATION */}
+      <div className="flex-1 w-full overflow-y-auto no-scrollbar relative flex flex-col pb-28 animate-tab-switch">
         {/* TAB 0: HOME WEATHER (The iconic animated landscape house + live forecast) */}
         {activeTab === 0 && (
           <div className="w-full flex-col flex pb-4">
-            {/* The Animated Microclimate Landscape Hero (Changes automatically based on weather) */}
+            {/* The Animated Microclimate Landscape Hero */}
             <FarmWeatherHero
               sceneState={previewScene || metrics.sceneState}
               temperature={metrics.temperature}
@@ -431,7 +539,7 @@ function MainWeatherApp() {
               onRefresh={() => handleFetchWeather(activeLocation)}
             />
 
-            {/* Microclimate Scene Simulator Strip (Auto Live by default, interactive preview) */}
+            {/* Microclimate Scene Simulator Strip */}
             <div className="w-full px-4 pt-1.5 pb-0.5 flex items-center justify-between">
               <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-1">
                 <button
@@ -551,7 +659,7 @@ function MainWeatherApp() {
         )}
       </div>
 
-      {/* APPLE LIQUID GLASS FLOATING NAVIGATION DOCK (Remains fixed in place when scrolling) */}
+      {/* APPLE LIQUID GLASS FLOATING NAVIGATION DOCK - 85% LIQUID GLASS LIQUIDITY */}
       <nav 
         aria-label="Liquid Glass Dock"
         className={`absolute bottom-4 sm:bottom-5 inset-x-0 mx-auto w-[92%] max-w-[390px] h-16 px-2 flex items-center justify-around select-none z-40 rounded-full transition-all duration-200 shadow-2xl ${
