@@ -11,7 +11,6 @@ import {
   ChevronRight,
   Github,
   Sliders,
-  Check
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { LocationInfo } from '../types/weather';
@@ -37,7 +36,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   lastUpdated,
 }) => {
   const { 
-    isDarkMode, 
     tempUnit, 
     toggleTempUnit, 
     windUnit, 
@@ -78,20 +76,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   };
 
   return (
-    <div className="w-full px-4 pt-3 pb-24 select-none">
+    <div className="w-full px-4 pt-3 pb-32 select-none">
       {/* HEADER */}
       <div className="mb-3.5 px-1">
         <div className="flex items-center space-x-2">
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-            isDarkMode ? 'bg-[#18261E] text-[#10B981]' : 'bg-[#EAF5EF] text-[#1B4332]'
-          }`}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#FFF0E4] text-[#FF7900] border border-[#E9E7E1]">
             <Sliders size={18} />
           </div>
           <div>
-            <h1 className="text-xl font-black tracking-tight">
+            <h1 className="text-xl font-black tracking-tight text-[#171717]">
               Settings & Preferences
             </h1>
-            <p className={`text-xs mt-0.5 font-medium ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
+            <p className="text-xs mt-0.5 font-medium text-[#737873]">
               Measurement units, farm parcels & feedback
             </p>
           </div>
@@ -100,33 +96,25 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
       {/* 1. UNIT TOGGLES CARD */}
       <div className="mb-4">
-        <span className="text-[10px] font-black uppercase tracking-wider block mb-1.5 px-1 text-[#10B981]">
+        <span className="text-[10px] font-black uppercase tracking-wider block mb-1.5 px-1 text-[#FF7900]">
           Measurement Units
         </span>
 
-        <div className={`rounded-[26px] border shadow-xs divide-y transition-colors overflow-hidden ${
-          isDarkMode 
-            ? 'bg-[#121814] border-[#1E2821] divide-[#1E2821] text-[#F3F6F4]' 
-            : 'bg-[#FFFFFF] border-[#E8E6DF] divide-[#E8E6DF] text-[#121814]'
-        }`}>
+        <div className="rounded-[28px] border border-[#E9E7E1] bg-white shadow-xs divide-y divide-[#E9E7E1] overflow-hidden">
           {/* Temperature */}
           <div className="p-3.5 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Thermometer size={16} className="text-[#FF5C00]" />
+              <Thermometer size={16} className="text-[#FF7900]" />
               <div>
-                <span className="text-xs font-bold block">Temperature Unit</span>
-                <span className={`text-[10px] ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
+                <span className="text-xs font-bold block text-[#171717]">Temperature Unit</span>
+                <span className="text-[10px] text-[#737873]">
                   Celsius (°C) or Fahrenheit (°F)
                 </span>
               </div>
             </div>
             <button
               onClick={toggleTempUnit}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black cursor-pointer snappy-touch border ${
-                isDarkMode 
-                  ? 'bg-[#1E2821] text-[#10B981] border-[#2D3F34]' 
-                  : 'bg-[#EAF5EF] text-[#1B4332] border-[#C5E4D2]'
-              }`}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-black cursor-pointer snappy-touch border bg-[#FFF0E4] text-[#FF7900] border-[#FFE1CB]"
             >
               °{tempUnit}
             </button>
@@ -137,19 +125,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <div className="flex items-center space-x-3">
               <Wind size={16} className="text-[#10B981]" />
               <div>
-                <span className="text-xs font-bold block">Wind Velocity</span>
-                <span className={`text-[10px] ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
+                <span className="text-xs font-bold block text-[#171717]">Wind Velocity</span>
+                <span className="text-[10px] text-[#737873]">
                   Kilometers per hour (km/h) or Miles per hour (mph)
                 </span>
               </div>
             </div>
             <button
               onClick={toggleWindUnit}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black cursor-pointer snappy-touch border ${
-                isDarkMode 
-                  ? 'bg-[#1E2821] text-[#10B981] border-[#2D3F34]' 
-                  : 'bg-[#EAF5EF] text-[#1B4332] border-[#C5E4D2]'
-              }`}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-black cursor-pointer snappy-touch border bg-[#E5F5EC] text-[#10B981] border-[#CEEFDB]"
             >
               {windUnit}
             </button>
@@ -158,21 +142,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           {/* Pressure */}
           <div className="p-3.5 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Gauge size={16} className="text-amber-500" />
+              <Gauge size={16} className="text-[#7C3AED]" />
               <div>
-                <span className="text-xs font-bold block">Barometer Pressure</span>
-                <span className={`text-[10px] ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
+                <span className="text-xs font-bold block text-[#171717]">Barometer Pressure</span>
+                <span className="text-[10px] text-[#737873]">
                   Hectopascals (hPa) or Inches of Mercury (inHg)
                 </span>
               </div>
             </div>
             <button
               onClick={togglePressureUnit}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black cursor-pointer snappy-touch border ${
-                isDarkMode 
-                  ? 'bg-[#1E2821] text-[#10B981] border-[#2D3F34]' 
-                  : 'bg-[#EAF5EF] text-[#1B4332] border-[#C5E4D2]'
-              }`}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-black cursor-pointer snappy-touch border bg-[#EFECFF] text-[#7C3AED] border-[#DDD7FF]"
             >
               {pressureUnit}
             </button>
@@ -182,7 +162,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
       {/* 2. SAVED LOCATIONS & SEARCH */}
       <div className="mb-4">
-        <span className="text-[10px] font-black uppercase tracking-wider block mb-1.5 px-1 text-[#10B981]">
+        <span className="text-[10px] font-black uppercase tracking-wider block mb-1.5 px-1 text-[#FF7900]">
           Saved Farm Parcels
         </span>
 
@@ -193,45 +173,37 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             placeholder="Search worldwide city or agricultural district..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className={`w-full pl-9 pr-20 py-2.5 rounded-2xl text-xs font-bold border outline-none transition-all ${
-              isDarkMode 
-                ? 'bg-[#121814] border-[#1E2821] text-[#F3F6F4] focus:border-[#10B981]' 
-                : 'bg-white border-[#E8E6DF] text-[#121814] focus:border-[#1B4332]'
-            }`}
+            className="w-full pl-9 pr-20 py-2.5 rounded-2xl text-xs font-bold border border-[#E9E7E1] bg-white text-[#171717] focus:border-[#FF7900] outline-none transition-all shadow-xs"
           />
-          <Search size={15} className="absolute left-3 top-3 text-[#5D6861] dark:text-[#89998F]" />
+          <Search size={15} className="absolute left-3 top-3 text-[#737873]" />
           <button
             type="submit"
             disabled={isSearching}
-            className="absolute right-1.5 top-1.5 px-3 py-1 rounded-xl bg-[#1B4332] hover:bg-[#12281E] text-white text-xs font-bold cursor-pointer snappy-touch"
+            className="absolute right-1.5 top-1.5 px-3 py-1 rounded-xl bg-[#FF7900] text-white text-xs font-bold cursor-pointer snappy-touch shadow-xs"
           >
             {isSearching ? <Loader2 size={13} className="animate-spin" /> : 'Search'}
           </button>
         </form>
 
         {searchError && (
-          <p className="text-xs text-rose-500 mb-2 px-1 font-semibold">{searchError}</p>
+          <p className="text-xs text-rose-600 mb-2 px-1 font-semibold">{searchError}</p>
         )}
 
         {/* Search Results */}
         {searchResults.length > 0 && (
-          <div className={`mb-2 p-2 rounded-2xl border space-y-1 ${
-            isDarkMode ? 'bg-[#121814] border-[#1E2821]' : 'bg-white border-[#E8E6DF]'
-          }`}>
-            <span className="text-[10px] font-bold px-2 py-0.5 text-[#5D6861] dark:text-[#89998F] block">
+          <div className="mb-2 p-2 rounded-2xl border border-[#E9E7E1] bg-white space-y-1 shadow-xs">
+            <span className="text-[10px] font-bold px-2 py-0.5 text-[#737873] block">
               Search Results
             </span>
             {searchResults.map(result => (
               <div
                 key={result.id}
                 onClick={() => handleAddAndSelect(result)}
-                className={`p-2.5 rounded-xl flex items-center justify-between cursor-pointer snappy-touch transition-colors ${
-                  isDarkMode ? 'hover:bg-[#162019]' : 'hover:bg-[#F8F7F4]'
-                }`}
+                className="p-2.5 rounded-xl flex items-center justify-between cursor-pointer snappy-touch hover:bg-[#F7F6F2] transition-colors"
               >
                 <div className="flex items-center space-x-2">
-                  <MapPin size={14} className="text-[#FF5C00]" />
-                  <span className="text-xs font-bold">{result.name}, {result.country}</span>
+                  <MapPin size={14} className="text-[#FF7900]" />
+                  <span className="text-xs font-bold text-[#171717]">{result.name}, {result.country}</span>
                 </div>
                 <span className="text-xs font-black text-[#10B981] flex items-center space-x-1">
                   <Plus size={13} />
@@ -243,11 +215,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         )}
 
         {/* Saved List */}
-        <div className={`rounded-[26px] border divide-y overflow-hidden shadow-xs transition-colors ${
-          isDarkMode 
-            ? 'bg-[#121814] border-[#1E2821] divide-[#1E2821]' 
-            : 'bg-white border-[#E8E6DF] divide-[#E8E6DF]'
-        }`}>
+        <div className="rounded-[28px] border border-[#E9E7E1] bg-white divide-y divide-[#E9E7E1] overflow-hidden shadow-xs">
           {locations.map(loc => {
             const isSelected = loc.id === activeLocation.id;
             return (
@@ -255,18 +223,16 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 key={loc.id}
                 onClick={() => onSelectLocation(loc)}
                 className={`p-3.5 flex items-center justify-between cursor-pointer snappy-touch transition-colors ${
-                  isSelected 
-                    ? isDarkMode ? 'bg-[#162019]' : 'bg-[#F8F7F4]' 
-                    : isDarkMode ? 'hover:bg-[#162019]' : 'hover:bg-[#FAF9F6]'
+                  isSelected ? 'bg-[#FFF0E4]' : 'hover:bg-[#F7F6F2]'
                 }`}
               >
                 <div className="flex items-center space-x-2.5 min-w-0">
-                  <MapPin size={15} className={isSelected ? 'text-[#FF5C00]' : 'opacity-40'} />
+                  <MapPin size={15} className={isSelected ? 'text-[#FF7900]' : 'text-[#AAAFA9]'} />
                   <div className="min-w-0">
-                    <span className={`text-xs block truncate ${isSelected ? 'font-black' : 'font-semibold'}`}>
+                    <span className={`text-xs block truncate text-[#171717] ${isSelected ? 'font-black' : 'font-semibold'}`}>
                       {loc.name}
                     </span>
-                    <span className={`text-[10px] ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
+                    <span className="text-[10px] text-[#737873]">
                       {loc.country}
                     </span>
                   </div>
@@ -274,7 +240,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
                 <div className="flex items-center space-x-2">
                   {isSelected && (
-                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#10B981]/15 text-[#10B981]">
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-white text-[#FF7900] border border-[#FFE1CB]">
                       Active
                     </span>
                   )}
@@ -284,7 +250,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                         e.stopPropagation();
                         onDeleteLocation(loc.id);
                       }}
-                      className="p-1 text-[#5D6861] hover:text-rose-500 cursor-pointer"
+                      className="p-1 text-[#737873] hover:text-rose-600 cursor-pointer"
                       title="Remove Location"
                     >
                       <Trash2 size={14} />
@@ -308,25 +274,21 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           href="https://github.com/mahesh2008here-star/Wheather-pro"
           target="_blank"
           rel="noopener noreferrer"
-          className={`p-3.5 rounded-[22px] border flex items-center justify-between text-xs font-bold cursor-pointer transition-colors ${
-            isDarkMode ? 'bg-[#121814] border-[#1E2821] hover:bg-[#162019]' : 'bg-white border-[#E8E6DF] hover:bg-[#F8F7F4]'
-          }`}
+          className="p-3.5 rounded-[24px] border border-[#E9E7E1] bg-white hover:bg-[#F7F6F2] flex items-center justify-between text-xs font-bold cursor-pointer transition-colors shadow-xs"
         >
-          <div className="flex items-center space-x-2.5">
+          <div className="flex items-center space-x-2.5 text-[#171717]">
             <Github size={17} />
             <div>
               <span className="block font-black">mahesh2008here-star / Wheather-pro</span>
-              <span className={`text-[10px] block ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
+              <span className="text-[10px] block text-[#737873]">
                 Inspect GitHub repository and releases
               </span>
             </div>
           </div>
-          <ChevronRight size={15} className="opacity-50" />
+          <ChevronRight size={15} className="opacity-50 text-[#171717]" />
         </a>
 
-        <div className={`p-3 rounded-2xl text-center border text-[11px] ${
-          isDarkMode ? 'bg-[#162019] border-[#1E2821] text-[#89998F]' : 'bg-[#F8F7F4] border-[#E8E6DF] text-[#5D6861]'
-        }`}>
+        <div className="p-3 rounded-2xl text-center border border-[#E9E7E1] bg-white text-[#737873] text-[11px]">
           <span>Telemetry provided by <strong>Open-Meteo API</strong> • Synced {lastUpdated || 'recently'}</span>
         </div>
       </div>

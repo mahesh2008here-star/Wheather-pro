@@ -7,7 +7,6 @@ import {
   ShieldCheck, 
   MessageSquareQuote
 } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
 import { LocationInfo } from '../types/weather';
 
 interface RatingFeedbackProps {
@@ -43,7 +42,7 @@ const INITIAL_REVIEWS: ReviewItem[] = [
     name: 'Carlos Mendez',
     rating: 5,
     tags: ['🌾 Farm Telemetry', '☀️ Hourly Forecast'],
-    comment: 'Clear editorial design with massive legible weather numbers. Works fast on my phone during fieldwork.',
+    comment: 'Clear light design with heavy legible weather numbers. Works fast on my phone during fieldwork.',
     date: '1 day ago',
     likes: 24
   },
@@ -59,8 +58,6 @@ const INITIAL_REVIEWS: ReviewItem[] = [
 ];
 
 export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location }) => {
-  const { isDarkMode } = useTheme();
-
   // Form State
   const [rating, setRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -191,32 +188,28 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
   return (
     <section aria-label="Community Feedback & Reviews" className="select-none">
       <div className="flex items-center space-x-2 mb-2 px-1">
-        <MessageSquareQuote size={16} className="text-[#FF5C00]" />
-        <h3 className="text-xs font-black tracking-tight uppercase">
+        <MessageSquareQuote size={16} className="text-[#FF7900]" />
+        <h3 className="text-xs font-black tracking-tight uppercase text-[#171717]">
           User Feedback & Reviews
         </h3>
       </div>
 
       {/* FEEDBACK SUBMISSION CARD */}
-      <div className={`p-4 rounded-[26px] border shadow-xs transition-colors mb-4 ${
-        isDarkMode ? 'bg-[#121814] border-[#1E2821] text-[#F3F6F4]' : 'bg-[#FFFFFF] border-[#E8E6DF] text-[#121814]'
-      }`}>
+      <div className="p-4 rounded-[28px] border border-[#E9E7E1] bg-white shadow-xs mb-4">
         {submitSuccess ? (
           <div className="py-5 px-2 flex flex-col items-center text-center">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2.5 ${
-              isDarkMode ? 'bg-[#18261E] text-[#10B981]' : 'bg-[#EAF5EF] text-[#1B4332]'
-            }`}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-2.5 bg-[#E5F5EC] text-[#10B981]">
               <CheckCircle2 size={28} />
             </div>
-            <h4 className="text-sm font-black mb-1">
+            <h4 className="text-sm font-black mb-1 text-[#171717]">
               Feedback Received
             </h4>
-            <p className={`text-xs max-w-xs mb-3 ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
+            <p className="text-xs max-w-xs mb-3 text-[#737873]">
               Thank you for helping us improve Farm Weather. Your comments have been securely submitted.
             </p>
             <button
               onClick={() => setSubmitSuccess(false)}
-              className="text-xs font-bold text-[#10B981] underline cursor-pointer"
+              className="text-xs font-bold text-[#FF7900] underline cursor-pointer"
             >
               Write Another Note
             </button>
@@ -243,23 +236,21 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
                         className={`transition-colors ${
                           isFilled 
                             ? 'text-amber-400 fill-amber-400' 
-                            : isDarkMode ? 'text-zinc-700' : 'text-slate-300'
+                            : 'text-[#E9E7E1]'
                         }`}
                       />
                     </button>
                   );
                 })}
               </div>
-              <span className="text-[11px] font-bold text-amber-500">
+              <span className="text-[11px] font-bold text-[#FF7900]">
                 {ratingLabels[hoverRating || rating]}
               </span>
             </div>
 
             {/* Tags */}
             <div>
-              <label className={`text-[10px] font-bold uppercase tracking-wider block mb-1.5 ${
-                isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'
-              }`}>
+              <label className="text-[10px] font-bold uppercase tracking-wider block mb-1.5 text-[#737873]">
                 What stands out?
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -272,12 +263,8 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
                       onClick={() => toggleTag(tag)}
                       className={`text-[10px] font-bold px-2.5 py-1 rounded-full transition-all cursor-pointer snappy-touch ${
                         isSelected
-                          ? isDarkMode 
-                            ? 'bg-[#1E2821] text-[#10B981] border border-[#2D3F34]' 
-                            : 'bg-[#1B4332] text-white shadow-xs'
-                          : isDarkMode
-                            ? 'bg-[#162019] text-[#89998F] border border-[#1E2821]'
-                            : 'bg-[#F8F7F4] text-[#5D6861] border border-[#E8E6DF]'
+                          ? 'bg-[#FFF0E4] text-[#FF7900] border border-[#FFE1CB] shadow-xs'
+                          : 'bg-[#F7F6F2] text-[#737873] border border-[#E9E7E1]'
                       }`}
                     >
                       {tag}
@@ -289,9 +276,7 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
 
             {/* Comment Input */}
             <div>
-              <label className={`text-[10px] font-bold uppercase tracking-wider block mb-1 ${
-                isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'
-              }`}>
+              <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-[#737873]">
                 Your Field Feedback or Suggestions
               </label>
               <textarea
@@ -299,11 +284,7 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
                 onChange={e => setComment(e.target.value)}
                 placeholder="Share your experience or features you'd like added..."
                 rows={3}
-                className={`w-full text-xs p-3 rounded-2xl resize-none outline-none transition-colors border ${
-                  isDarkMode
-                    ? 'bg-[#162019] border-[#1E2821] text-white placeholder-zinc-600 focus:border-[#10B981]'
-                    : 'bg-[#F8F7F4] border-[#E8E6DF] text-[#121814] placeholder-slate-400 focus:border-[#1B4332]'
-                }`}
+                className="w-full text-xs p-3 rounded-2xl resize-none outline-none transition-colors border border-[#E9E7E1] bg-[#F7F6F2] text-[#171717] placeholder-[#AAAFA9] focus:border-[#FF7900]"
               />
             </div>
 
@@ -314,27 +295,19 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
                 value={userName}
                 onChange={e => setUserName(e.target.value)}
                 placeholder="Name (Optional)"
-                className={`w-full text-xs px-3 py-2 rounded-xl outline-none border ${
-                  isDarkMode
-                    ? 'bg-[#162019] border-[#1E2821] text-white placeholder-zinc-600'
-                    : 'bg-[#F8F7F4] border-[#E8E6DF] text-[#121814] placeholder-slate-400'
-                }`}
+                className="w-full text-xs px-3 py-2 rounded-xl outline-none border border-[#E9E7E1] bg-[#F7F6F2] text-[#171717] placeholder-[#AAAFA9]"
               />
               <input
                 type="email"
                 value={userEmail}
                 onChange={e => setUserEmail(e.target.value)}
                 placeholder="Email (Optional)"
-                className={`w-full text-xs px-3 py-2 rounded-xl outline-none border ${
-                  isDarkMode
-                    ? 'bg-[#162019] border-[#1E2821] text-white placeholder-zinc-600'
-                    : 'bg-[#F8F7F4] border-[#E8E6DF] text-[#121814] placeholder-slate-400'
-                }`}
+                className="w-full text-xs px-3 py-2 rounded-xl outline-none border border-[#E9E7E1] bg-[#F7F6F2] text-[#171717] placeholder-[#AAAFA9]"
               />
             </div>
 
             {validationError && (
-              <p className="text-xs text-rose-500 font-bold px-1">{validationError}</p>
+              <p className="text-xs text-rose-600 font-bold px-1">{validationError}</p>
             )}
 
             {/* Submit Button */}
@@ -342,7 +315,7 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-2.5 px-4 rounded-2xl bg-[#1B4332] hover:bg-[#12281E] text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer snappy-touch shadow-xs disabled:opacity-50"
+                className="w-full py-2.5 px-4 rounded-2xl bg-[#FF7900] text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer snappy-touch shadow-xs disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <span>Sending Feedback...</span>
@@ -354,7 +327,7 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
                 )}
               </button>
 
-              <div className="flex items-center justify-center space-x-1.5 mt-2 text-[10px] text-[#5D6861] dark:text-[#89998F] font-medium">
+              <div className="flex items-center justify-center space-x-1.5 mt-2 text-[10px] text-[#737873] font-medium">
                 <ShieldCheck size={12} className="text-[#10B981]" />
                 <span>Encrypted Developer Feedback • Private & Secure</span>
               </div>
@@ -370,29 +343,29 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
           return (
             <div
               key={item.id}
-              className={`p-3 rounded-2xl border transition-colors ${
+              className={`p-3.5 rounded-2xl border transition-colors ${
                 item.isUserReview
-                  ? isDarkMode ? 'bg-[#162019] border-[#223326]' : 'bg-[#EAF5EF] border-[#C5E4D2]'
-                  : isDarkMode ? 'bg-[#121814] border-[#1E2821]' : 'bg-white border-[#E8E6DF]'
+                  ? 'bg-[#FFF0E4] border-[#FFE1CB]'
+                  : 'bg-white border-[#E9E7E1]'
               }`}
             >
               <div className="flex items-start justify-between mb-1">
                 <div>
                   <div className="flex items-center space-x-1.5">
-                    <span className="text-xs font-bold">{item.name}</span>
+                    <span className="text-xs font-black text-[#171717]">{item.name}</span>
                     {item.isUserReview && (
-                      <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-[#10B981]/15 text-[#10B981] font-bold">
+                      <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-[#FF7900] text-white font-bold">
                         You
                       </span>
                     )}
-                    <span className="text-[10px] opacity-50">• {item.date}</span>
+                    <span className="text-[10px] text-[#737873]">• {item.date}</span>
                   </div>
                   <div className="flex items-center space-x-0.5 mt-0.5">
                     {[1, 2, 3, 4, 5].map(s => (
                       <Star
                         key={s}
                         size={11}
-                        className={s <= item.rating ? 'text-amber-400 fill-amber-400' : 'text-zinc-600'}
+                        className={s <= item.rating ? 'text-amber-400 fill-amber-400' : 'text-[#E9E7E1]'}
                       />
                     ))}
                   </div>
@@ -402,10 +375,8 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
                   onClick={() => handleLikeReview(item.id)}
                   className={`flex items-center space-x-1 px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
                     hasLiked
-                      ? 'bg-[#10B981]/20 text-[#10B981]'
-                      : isDarkMode
-                      ? 'bg-[#162019] text-[#89998F] hover:text-white'
-                      : 'bg-[#F8F7F4] text-[#5D6861] hover:text-black'
+                      ? 'bg-[#FFF0E4] text-[#FF7900]'
+                      : 'bg-[#F7F6F2] text-[#737873] hover:text-[#171717]'
                   }`}
                 >
                   <ThumbsUp size={10} />
@@ -413,9 +384,7 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
                 </button>
               </div>
 
-              <p className={`text-xs leading-relaxed my-1.5 font-medium ${
-                isDarkMode ? 'text-[#89998F]' : 'text-[#4A554E]'
-              }`}>
+              <p className="text-xs leading-relaxed my-1.5 font-medium text-[#737873]">
                 {item.comment}
               </p>
 
@@ -424,9 +393,7 @@ export const RatingFeedbackSection: React.FC<RatingFeedbackProps> = ({ location 
                   {item.tags.map((t, i) => (
                     <span
                       key={i}
-                      className={`text-[9px] font-semibold px-2 py-0.5 rounded-md ${
-                        isDarkMode ? 'bg-[#162019] text-[#89998F]' : 'bg-[#F8F7F4] text-[#5D6861]'
-                      }`}
+                      className="text-[9px] font-semibold px-2 py-0.5 rounded-md bg-[#F7F6F2] text-[#737873] border border-[#E9E7E1]"
                     >
                       {t}
                     </span>

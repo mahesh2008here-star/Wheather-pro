@@ -17,7 +17,7 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
   metrics,
   location,
 }) => {
-  const { isDarkMode, formatTemp } = useTheme();
+  const { formatTemp } = useTheme();
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [speechRate] = useState<number>(1.0);
 
@@ -82,22 +82,14 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
 
   return (
     <div className="w-full px-4 py-2 select-none">
-      <div 
-        className={`w-full p-4 rounded-[26px] border shadow-xs transition-colors ${
-          isDarkMode 
-            ? 'bg-[#121814] border-[#1E2821] text-[#F3F6F4]' 
-            : 'bg-[#FFFFFF] border-[#E8E6DF] text-[#121814]'
-        }`}
-      >
+      <div className="w-full p-4 rounded-[28px] border border-[#E9E7E1] bg-white shadow-xs">
         <div className="flex items-center justify-between mb-2 px-1">
           <div className="flex items-center space-x-2">
-            <div className={`w-7 h-7 rounded-xl flex items-center justify-center ${
-              isDarkMode ? 'bg-[#18261E] text-[#10B981]' : 'bg-[#EAF5EF] text-[#1B4332]'
-            }`}>
+            <div className="w-7 h-7 rounded-xl flex items-center justify-center bg-[#FFF0E4] text-[#FF7900]">
               <Sparkles size={16} />
             </div>
             <div>
-              <h3 className="text-xs font-black tracking-tight uppercase">
+              <h3 className="text-xs font-black tracking-tight uppercase text-[#171717]">
                 Field Audio Briefing
               </h3>
             </div>
@@ -108,10 +100,8 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
             aria-label={isPlaying ? 'Stop audio briefing' : 'Play audio briefing'}
             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer snappy-touch ${
               isPlaying
-                ? 'bg-rose-500 text-white shadow-sm'
-                : isDarkMode
-                ? 'bg-[#1A251F] hover:bg-[#23322A] text-[#10B981] border border-[#24362A]'
-                : 'bg-[#EAF5EF] hover:bg-[#D7EDE0] text-[#1B4332] border border-[#C5E4D2]'
+                ? 'bg-rose-500 text-white shadow-xs'
+                : 'bg-[#FFF0E4] hover:bg-[#FFE3D0] text-[#FF7900] border border-[#FFE1CB]'
             }`}
           >
             {isPlaying ? (
@@ -130,7 +120,7 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
 
         {/* Audio Playing Indicator */}
         {isPlaying && (
-          <div className="flex items-center space-x-2 my-2 py-1 px-2.5 rounded-xl bg-[#10B981]/10 text-[#10B981] text-[11px] font-bold">
+          <div className="flex items-center space-x-2 my-2 py-1 px-2.5 rounded-xl bg-[#FFF0E4] text-[#FF7900] text-[11px] font-bold">
             <span className="flex space-x-0.5 items-end h-3">
               <span className="w-1 bg-current rounded-full animate-bounce" style={{ animationDuration: '0.4s' }} />
               <span className="w-1 bg-current rounded-full animate-bounce" style={{ animationDuration: '0.6s' }} />
@@ -140,15 +130,13 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
           </div>
         )}
 
-        <p className={`text-xs leading-relaxed my-2 font-medium ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
+        <p className="text-xs leading-relaxed my-2 font-medium text-[#737873]">
           {briefing.summary}
         </p>
 
-        <div className={`p-2.5 rounded-2xl border text-[11px] font-semibold flex items-start space-x-2 ${
-          isDarkMode ? 'bg-[#162019] border-[#1E2821]' : 'bg-[#F8F7F4] border-[#E8E6DF]'
-        }`}>
-          <span className="text-[#10B981] font-black shrink-0">Fieldwork Note:</span>
-          <span>{briefing.fieldworkAdvice}</span>
+        <div className="p-2.5 rounded-2xl border border-[#E9E7E1] bg-[#F7F6F2] text-[11px] font-semibold flex items-start space-x-2">
+          <span className="text-[#FF7900] font-black shrink-0">Field Note:</span>
+          <span className="text-[#171717]">{briefing.fieldworkAdvice}</span>
         </div>
       </div>
     </div>

@@ -1,13 +1,12 @@
 import React from 'react';
-import { useTheme } from '../../context/ThemeContext';
 import { useWeather } from '../../context/WeatherContext';
 import { FarmWeatherHero } from '../FarmWeatherHero';
 import { WeatherAlertBanner } from '../WeatherAlertBanner';
 import { SmartWeatherBriefing } from '../SmartWeatherBriefing';
 import { NextHourRainChart } from '../NextHourRainChart';
-import { ConditionsGrid } from '../ConditionsGrid';
 import { MicroclimateAgriAdvisory } from '../MicroclimateAgriAdvisory';
 import { ForecastSection } from '../ForecastSection';
+import { WidgetDashboard } from '../widgets/WidgetDashboard';
 
 export const HomeScreen: React.FC = () => {
   const { 
@@ -20,8 +19,8 @@ export const HomeScreen: React.FC = () => {
   } = useWeather();
 
   return (
-    <div className="w-full flex-col flex pb-24 sm:pb-28">
-      {/* 1. Distinctive Current-Weather Hero Section with Atmospheric Condition Backdrop */}
+    <div className="w-full flex-col flex pb-32">
+      {/* 1. Distinctive Current-Weather Hero Section with Quick Metrics */}
       <FarmWeatherHero
         sceneState={metrics.sceneState}
         temperature={metrics.temperature}
@@ -45,7 +44,7 @@ export const HomeScreen: React.FC = () => {
         <WeatherAlertBanner alerts={alerts} />
       )}
 
-      {/* 3. 24-Hour Timeline & 7-Day Comparison Forecasts */}
+      {/* 3. 24-Hour Horizon Timeline & 7-Day Comparison Forecasts */}
       <ForecastSection
         daily={dailyForecast}
         hourly={hourlyForecast}
@@ -58,13 +57,13 @@ export const HomeScreen: React.FC = () => {
         currentPrecipRate={metrics.precipitationRate}
       />
 
-      {/* 5. Agricultural Weather Insights (Spray Window, Frost Index, ET0) */}
+      {/* 5. Complete Customizable Weather Widget Dashboard */}
+      <WidgetDashboard metrics={metrics} />
+
+      {/* 6. Agricultural Weather Insights (Spray Window, Frost Index, ET0) */}
       <MicroclimateAgriAdvisory metrics={metrics} />
 
-      {/* 6. Comprehensive Atmospheric Observations */}
-      <ConditionsGrid metrics={metrics} />
-
-      {/* 7. Field Voice Briefing Card */}
+      {/* 7. Field Voice Audio Briefing */}
       <SmartWeatherBriefing metrics={metrics} location={activeLocation} />
     </div>
   );

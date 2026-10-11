@@ -40,12 +40,12 @@ function MainAppContent() {
       {/* GPS Location Status Feedback Toast */}
       {locationStatus && (
         <div className="w-full px-4 pt-1.5 select-none animate-tab-switch z-30">
-          <div className="p-2 px-3 rounded-xl bg-[#059669]/15 border border-[#059669]/30 text-[#059669] dark:text-[#34D399] text-xs font-bold flex items-center justify-between shadow-xs">
+          <div className="p-2.5 px-3.5 rounded-2xl bg-[#E5F5EC] border border-[#CEEFDB] text-[#10B981] text-xs font-bold flex items-center justify-between shadow-xs">
             <div className="flex items-center space-x-2">
-              <Navigation size={14} className="animate-spin shrink-0" />
+              <Navigation size={14} className="animate-spin shrink-0 text-[#10B981]" />
               <span>{locationStatus}</span>
             </div>
-            <button onClick={clearLocationStatus} className="p-0.5 cursor-pointer font-bold">✕</button>
+            <button onClick={clearLocationStatus} className="p-0.5 cursor-pointer font-bold text-[#10B981]">✕</button>
           </div>
         </div>
       )}

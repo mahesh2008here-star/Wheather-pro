@@ -11,19 +11,35 @@ async function startServer() {
   app.post('/api/feedback', async (req, res) => {
     try {
       const targetEmail = process.env.FEEDBACK_GMAIL || 'mmmmahe46@gmail.com';
-      const { displayName, rating, feedbackText, selectedTags, userLocation, userEmail } = req.body;
+      const { 
+        displayName, 
+        rating, 
+        feedbackText, 
+        comment,
+        selectedTags, 
+        tags,
+        userLocation, 
+        location,
+        userEmail,
+        email 
+      } = req.body;
+
+      const finalComment = comment || feedbackText || 'No comment provided';
+      const finalTags = tags || selectedTags || [];
+      const finalLocation = location || userLocation || 'Unknown';
+      const finalEmail = email || userEmail || 'Anonymous (App User)';
 
       const emailPayload = {
-        _subject: `🌟 New Weather Pro Feedback (${rating} Stars) from ${displayName || 'User'}`,
+        _subject: `🌟 New Farm Weather Feedback (${rating} Stars) from ${displayName || 'User'}`,
         _captcha: 'false',
         rating: `${rating} / 5 Stars`,
-        reviewer_name: displayName || 'Weather User',
-        reviewer_email: userEmail || 'Anonymous (App User)',
-        comment: feedbackText || 'No comment provided',
-        selected_tags: Array.isArray(selectedTags) ? selectedTags.join(', ') : 'None',
-        user_location: userLocation || 'Unknown',
+        reviewer_name: displayName || 'Farm Weather User',
+        reviewer_email: finalEmail,
+        comment: finalComment,
+        selected_tags: Array.isArray(finalTags) ? finalTags.join(', ') : 'None',
+        user_location: finalLocation,
         timestamp: new Date().toLocaleString(),
-        app_version: 'WeatherPro Mobile App'
+        app_version: 'Farm Weather - Smart Agriculture & Climate'
       };
 
       await fetch(`https://formsubmit.co/ajax/${targetEmail}`, {

@@ -1,71 +1,65 @@
 import React from 'react';
 import { 
-  MapPin, 
   ChevronDown, 
   Crosshair, 
-  Sun, 
-  Moon, 
   RefreshCw,
-  Sprout
+  Sprout,
+  Sliders
 } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
 import { useWeather } from '../../context/WeatherContext';
 
 interface AppHeaderProps {
   onOpenLocationPicker: () => void;
+  onOpenSettings?: () => void;
 }
 
-export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker }) => {
-  const { isDarkMode, toggleDarkMode } = useTheme();
+export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker, onOpenSettings }) => {
   const { 
     activeLocation, 
     detectGpsLocation, 
     isLocating, 
     alerts, 
     isLoading, 
-    refreshWeather 
+    refreshWeather,
+    setActiveTab
   } = useWeather();
 
+  const handleSettingsClick = () => {
+    if (onOpenSettings) {
+      onOpenSettings();
+    } else {
+      setActiveTab(4); // Switch to Settings tab
+    }
+  };
+
   return (
-    <header className={`w-full px-4 pt-3 pb-2.5 flex items-center justify-between shrink-0 select-none z-20 transition-colors border-b ${
-      isDarkMode 
-        ? 'bg-[#0E1310] border-[#1C241F] text-[#F3F6F4]' 
-        : 'bg-[#F8F7F4] border-[#E8E6DF] text-[#121814]'
-    }`}>
+    <header className="w-full px-4 pt-3.5 pb-2.5 flex items-center justify-between shrink-0 select-none z-20 border-b border-[#E9E7E1] bg-[#F7F6F2] text-[#171717]">
       {/* Brand Identity & Location Selector */}
       <div className="flex items-center space-x-2.5 min-w-0">
-        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border transition-transform ${
-          isDarkMode 
-            ? 'bg-[#151D18] border-[#222E26] text-[#10B981]' 
-            : 'bg-[#FFFFFF] border-[#E2DFD7] text-[#1B4332] shadow-xs'
-        }`}>
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border border-[#E9E7E1] bg-white text-[#FF7900] shadow-xs">
           <Sprout size={18} strokeWidth={2.4} />
         </div>
 
         <button
           onClick={onOpenLocationPicker}
           aria-label={`Change weather location. Currently set to ${activeLocation.name}`}
-          className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-left transition-colors cursor-pointer snappy-touch min-w-0 ${
-            isDarkMode
-              ? 'hover:bg-[#151D18] text-[#F3F6F4]'
-              : 'hover:bg-[#EFECE5] text-[#121814]'
-          }`}
+          className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-left hover:bg-[#EAE8E1] transition-colors cursor-pointer snappy-touch min-w-0"
           title="Change location"
         >
           <div className="min-w-0">
             <div className="flex items-center space-x-1">
-              <span className="text-[10px] font-black uppercase tracking-wider text-[#FF5C00] leading-none">
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#FF7900] leading-none">
                 Farm Weather
               </span>
               {alerts.length > 0 && (
-                <span className="w-1.5 h-1.5 rounded-full bg-[#FF5C00] animate-ping inline-block" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FF7900] animate-ping inline-block" />
               )}
             </div>
             <div className="flex items-center space-x-1 mt-0.5">
-              <span className="text-xs font-black truncate max-w-[130px]">
+              <span className="text-xs font-black truncate max-w-[135px] text-[#171717]">
                 {activeLocation.name}
               </span>
-              <ChevronDown size={12} className="opacity-60 shrink-0" />
+              <ChevronDown size={12} className="text-[#737873] shrink-0" />
             </div>
           </div>
         </button>
@@ -79,10 +73,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker }) =>
           aria-label="Use current GPS location"
           className={`p-2 rounded-xl transition-all cursor-pointer snappy-touch ${
             isLocating
-              ? 'bg-[#FF5C00]/20 text-[#FF5C00] animate-pulse'
-              : isDarkMode
-              ? 'text-[#89998F] hover:text-[#FFFFFF] hover:bg-[#151D18]'
-              : 'text-[#5D6861] hover:text-[#121814] hover:bg-[#EFECE5]'
+              ? 'bg-[#FFF0E4] text-[#FF7900] animate-pulse'
+              : 'text-[#737873] hover:text-[#171717] hover:bg-white'
           }`}
           title="Locate with GPS"
         >
@@ -92,30 +84,21 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker }) =>
         <button
           onClick={refreshWeather}
           aria-label="Refresh live weather"
-          className={`p-2 rounded-xl transition-all cursor-pointer snappy-touch ${
-            isDarkMode
-              ? 'text-[#89998F] hover:text-[#FFFFFF] hover:bg-[#151D18]'
-              : 'text-[#5D6861] hover:text-[#121814] hover:bg-[#EFECE5]'
-          }`}
+          className="p-2 rounded-xl text-[#737873] hover:text-[#171717] hover:bg-white transition-all cursor-pointer snappy-touch"
           title="Refresh forecast"
         >
-          <RefreshCw size={16} className={isLoading ? 'animate-spin text-[#FF5C00]' : ''} />
+          <RefreshCw size={16} className={isLoading ? 'animate-spin text-[#FF7900]' : ''} />
         </button>
 
         <button
-          onClick={toggleDarkMode}
-          aria-label="Toggle dark and light mode"
-          className={`p-2 rounded-xl transition-all cursor-pointer snappy-touch ${
-            isDarkMode
-              ? 'text-[#FCD34D] hover:bg-[#151D18]'
-              : 'text-[#121814] hover:bg-[#EFECE5]'
-          }`}
-          title="Toggle theme"
+          onClick={handleSettingsClick}
+          aria-label="Open settings"
+          className="p-2 rounded-xl text-[#737873] hover:text-[#171717] hover:bg-white transition-all cursor-pointer snappy-touch"
+          title="Open settings"
         >
-          {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+          <Sliders size={16} />
         </button>
       </div>
     </header>
   );
 };
-

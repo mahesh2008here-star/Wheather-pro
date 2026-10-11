@@ -8,10 +8,9 @@ export interface ColorPreset {
 }
 
 export const ACCENT_PRESETS: ColorPreset[] = [
-  { id: 'bold_orange', name: 'Editorial Orange', hex: '#FF6B35', glow: 'rgba(255, 107, 53, 0.4)' },
-  { id: 'amber_glow', name: 'Harvest Amber', hex: '#F59E0B', glow: 'rgba(245, 158, 11, 0.4)' },
-  { id: 'forest_emerald', name: 'Field Emerald', hex: '#10B981', glow: 'rgba(16, 185, 129, 0.4)' },
-  { id: 'sky_azure', name: 'Sky Azure', hex: '#0284C7', glow: 'rgba(2, 132, 199, 0.4)' },
+  { id: 'main_orange', name: 'Farm Orange', hex: '#FF7900', glow: 'rgba(255, 121, 0, 0.4)' },
+  { id: 'pale_mint', name: 'Field Mint', hex: '#10B981', glow: 'rgba(16, 185, 129, 0.4)' },
+  { id: 'pale_blue', name: 'Sky Blue', hex: '#0284C7', glow: 'rgba(2, 132, 199, 0.4)' },
 ];
 
 export const MATERIAL_ACCENT_PRESETS = ACCENT_PRESETS;
@@ -38,10 +37,8 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('farmweather_dark_theme');
-    return saved !== null ? JSON.parse(saved) : false;
-  });
+  // Strict light theme requirement
+  const isDarkMode = false;
 
   const [tempUnit, setTempUnit] = useState<'C' | 'F'>(() => {
     return (localStorage.getItem('farmweather_temp_unit') as 'C' | 'F') || 'C';
@@ -59,28 +56,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return (localStorage.getItem('farmweather_precip_unit') as 'mm' | 'in') || 'mm';
   });
 
-  // Default Editorial Orange (#FF6B35)
-  const [customAccentColor, setCustomAccentColor] = useState<string>(() => {
-    return localStorage.getItem('farmweather_accent_color') || '#FF6B35';
-  });
+  const [customAccentColor, setCustomAccentColor] = useState<string>('#FF7900');
 
   useEffect(() => {
-    localStorage.setItem('farmweather_dark_theme', JSON.stringify(isDarkMode));
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      document.body.style.backgroundColor = '#171717';
-      document.body.style.color = '#F5F5F5';
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.body.style.backgroundColor = '#F7F7F5';
-      document.body.style.color = '#151515';
-    }
-  }, [isDarkMode]);
-
-  useEffect(() => {
-    localStorage.setItem('farmweather_accent_color', customAccentColor);
-    document.documentElement.style.setProperty('--app-accent', customAccentColor);
-  }, [customAccentColor]);
+    document.documentElement.classList.remove('dark');
+    document.body.style.backgroundColor = '#F7F6F2';
+    document.body.style.color = '#171717';
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('farmweather_temp_unit', tempUnit);
@@ -98,7 +80,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('farmweather_precip_unit', precipUnit);
   }, [precipUnit]);
 
-  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
+  const toggleDarkMode = () => {
+    // Light theme locked as per design brief
+  };
+
   const toggleTempUnit = () => setTempUnit(prev => (prev === 'C' ? 'F' : 'C'));
   const toggleWindUnit = () => setWindUnit(prev => (prev === 'kmh' ? 'mph' : 'kmh'));
   const togglePressureUnit = () => setPressureUnit(prev => (prev === 'hPa' ? 'inHg' : 'hPa'));

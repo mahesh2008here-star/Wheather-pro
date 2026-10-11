@@ -13,7 +13,6 @@ import {
   MapPin,
   Info
 } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
 import { LocationInfo } from '../types/weather';
 
 interface LiveRadarScreenProps {
@@ -21,7 +20,6 @@ interface LiveRadarScreenProps {
 }
 
 export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) => {
-  const { isDarkMode } = useTheme();
   const [activeLayer, setActiveLayer] = useState<'radar' | 'temp' | 'wind' | 'satellite'>('radar');
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [frameIndex, setFrameIndex] = useState<number>(3);
@@ -39,26 +37,26 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
   const timeFrames = ['-90m', '-60m', '-30m', 'Live', '+30m', '+60m'];
 
   return (
-    <div className="w-full px-4 pt-3 pb-24 select-none">
+    <div className="w-full px-4 pt-3 pb-32 select-none">
       {/* HEADER */}
       <div className="mb-3.5 px-1">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-black tracking-tight flex items-center space-x-2">
-              <Radar className="text-[#FF5C00]" size={22} />
+            <h1 className="text-xl font-black tracking-tight flex items-center space-x-2 text-[#171717]">
+              <Radar className="text-[#FF7900]" size={22} />
               <span>Precipitation Radar</span>
             </h1>
-            <p className={`text-xs mt-0.5 font-medium ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
+            <p className="text-xs mt-0.5 font-medium text-[#737873]">
               Doppler echo & satellite telemetry • {location.name}
             </p>
           </div>
 
-          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30">
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#E5F5EC] text-[#10B981] border border-[#CEEFDB]">
             ● Live Stream
           </span>
         </div>
 
-        {/* LAYER SELECTOR BUTTONS */}
+        {/* LAYER SELECTOR PILLS */}
         <div className="flex space-x-1.5 overflow-x-auto no-scrollbar pt-3 pb-1">
           {[
             { id: 'radar' as const, label: 'Precipitation', icon: CloudRain },
@@ -74,12 +72,8 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
                 onClick={() => setActiveLayer(tab.id)}
                 className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer snappy-touch ${
                   isActive
-                    ? isDarkMode
-                      ? 'bg-[#1E2821] text-[#10B981] border border-[#2D3F34] shadow-xs'
-                      : 'bg-[#1B4332] text-white shadow-xs'
-                    : isDarkMode
-                      ? 'bg-[#151D18] text-[#89998F] hover:text-[#F3F6F4] border border-[#1E2821]'
-                      : 'bg-[#FFFFFF] text-[#5D6861] hover:text-[#121814] border border-[#E8E6DF]'
+                    ? 'bg-[#FFF0E4] text-[#FF7900] border border-[#FFE1CB] shadow-xs'
+                    : 'bg-white text-[#737873] hover:text-[#171717] border border-[#E9E7E1]'
                 }`}
               >
                 <Icon size={13} className="shrink-0" />
@@ -92,11 +86,7 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
 
       {/* MAP CANVAS CARD */}
       <div className="mb-3.5">
-        <div 
-          className={`relative w-full h-[370px] rounded-[26px] overflow-hidden border transition-all ${
-            isDarkMode ? 'bg-[#080E0A] border-[#1E2821] shadow-xs' : 'bg-[#E5E9E2] border-[#D8DDD3] shadow-xs'
-          }`}
-        >
+        <div className="relative w-full h-[370px] rounded-[28px] overflow-hidden border border-[#E9E7E1] bg-[#E9EFE7] shadow-xs">
           {/* Topography & Geographical Grid Lines */}
           <svg className="w-full h-full absolute inset-0 select-none" viewBox="0 0 400 370">
             <g style={{ transform: `scale(${zoomLevel})`, transformOrigin: '200px 185px', transition: 'transform 0.3s ease' }}>
@@ -116,14 +106,14 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
                 </radialGradient>
               </defs>
 
-              {/* Geographical Range Rings (25km, 50km, 75km) */}
-              <circle cx="200" cy="185" r="55" fill="none" stroke={isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'} strokeWidth="1" strokeDasharray="3 3" />
-              <circle cx="200" cy="185" r="110" fill="none" stroke={isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'} strokeWidth="1" strokeDasharray="3 3" />
-              <circle cx="200" cy="185" r="160" fill="none" stroke={isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'} strokeWidth="1" />
+              {/* Geographical Range Rings */}
+              <circle cx="200" cy="185" r="55" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="1" strokeDasharray="3 3" />
+              <circle cx="200" cy="185" r="110" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="1" strokeDasharray="3 3" />
+              <circle cx="200" cy="185" r="160" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
 
               {/* Crosshairs */}
-              <line x1="200" y1="20" x2="200" y2="350" stroke={isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} strokeWidth="1" />
-              <line x1="30" y1="185" x2="370" y2="185" stroke={isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} strokeWidth="1" />
+              <line x1="200" y1="20" x2="200" y2="350" stroke="rgba(0,0,0,0.07)" strokeWidth="1" />
+              <line x1="30" y1="185" x2="370" y2="185" stroke="rgba(0,0,0,0.07)" strokeWidth="1" />
 
               {/* ACTIVE LAYER: PRECIPITATION RADAR */}
               {activeLayer === 'radar' && (
@@ -155,9 +145,9 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
                   <circle cx="150" cy="140" r="100" fill="#EF4444" opacity="0.35" filter="blur(20px)" />
                   <circle cx="270" cy="220" r="120" fill="#F59E0B" opacity="0.3" filter="blur(25px)" />
                   <circle cx="90" cy="270" r="80" fill="#38BDF8" opacity="0.3" filter="blur(20px)" />
-                  <text x="140" y="140" fill="#FFF" fontSize="12" fontWeight="bold">26°C</text>
-                  <text x="260" y="220" fill="#FFF" fontSize="12" fontWeight="bold">23°C</text>
-                  <text x="90" y="260" fill="#FFF" fontSize="12" fontWeight="bold">18°C</text>
+                  <text x="140" y="140" fill="#171717" fontSize="12" fontWeight="bold">26°C</text>
+                  <text x="260" y="220" fill="#171717" fontSize="12" fontWeight="bold">23°C</text>
+                  <text x="90" y="260" fill="#171717" fontSize="12" fontWeight="bold">18°C</text>
                 </g>
               )}
 
@@ -183,15 +173,15 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
 
               {/* ACTIVE LAYER: SATELLITE CLOUD */}
               {activeLayer === 'satellite' && (
-                <g fill="#FFFFFF" opacity="0.4" filter="blur(12px)">
+                <g fill="#FFFFFF" opacity="0.6" filter="blur(12px)">
                   <ellipse cx="180" cy="120" rx="120" ry="60" />
                   <ellipse cx="260" cy="200" rx="90" ry="70" />
                 </g>
               )}
 
               {/* Pinpoint Location Marker */}
-              <circle cx="200" cy="185" r="5" fill="#FF5C00" />
-              <circle cx="200" cy="185" r="14" fill="none" stroke="#FF5C00" strokeWidth="1.5" className="animate-ping" />
+              <circle cx="200" cy="185" r="5" fill="#FF7900" />
+              <circle cx="200" cy="185" r="14" fill="none" stroke="#FF7900" strokeWidth="1.5" className="animate-ping" />
             </g>
           </svg>
 
@@ -199,18 +189,14 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
           <div className="absolute right-3 top-3 flex flex-col space-y-1.5 z-20">
             <button
               onClick={() => setZoomLevel(prev => Math.min(1.4, prev + 0.15))}
-              className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm shadow-xs transition-all cursor-pointer snappy-touch ${
-                isDarkMode ? 'bg-[#121814]/90 text-white border border-[#1E2821]' : 'bg-white text-[#121814] border border-[#E8E6DF]'
-              }`}
+              className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm shadow-xs bg-white text-[#171717] border border-[#E9E7E1] cursor-pointer snappy-touch"
               title="Zoom In"
             >
               <Plus size={15} />
             </button>
             <button
               onClick={() => setZoomLevel(prev => Math.max(0.85, prev - 0.15))}
-              className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm shadow-xs transition-all cursor-pointer snappy-touch ${
-                isDarkMode ? 'bg-[#121814]/90 text-white border border-[#1E2821]' : 'bg-white text-[#121814] border border-[#E8E6DF]'
-              }`}
+              className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm shadow-xs bg-white text-[#171717] border border-[#E9E7E1] cursor-pointer snappy-touch"
               title="Zoom Out"
             >
               <Minus size={15} />
@@ -218,30 +204,26 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
           </div>
 
           {/* Location Badge */}
-          <div className="absolute left-3 top-3 px-2.5 py-1 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-white text-[11px] font-bold flex items-center space-x-1.5 shadow-xs">
-            <MapPin size={12} className="text-[#FF5C00]" />
+          <div className="absolute left-3 top-3 px-2.5 py-1 rounded-xl bg-white/90 backdrop-blur-md border border-[#E9E7E1] text-[#171717] text-[11px] font-bold flex items-center space-x-1.5 shadow-xs">
+            <MapPin size={12} className="text-[#FF7900]" />
             <span>{location.name}</span>
           </div>
 
           {/* Reflectivity Scale Legend */}
-          <div className="absolute left-3 right-3 bottom-3 px-3 py-1.5 rounded-xl bg-black/75 backdrop-blur-md border border-white/10 flex items-center justify-between text-[10px] text-white">
+          <div className="absolute left-3 right-3 bottom-3 px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-md border border-[#E9E7E1] flex items-center justify-between text-[10px] text-[#171717]">
             <span className="font-bold">Light (15 dBZ)</span>
-            <div className="flex-1 mx-3 h-1.5 rounded-full bg-gradient-to-r from-sky-400 via-emerald-400 via-amber-400 to-rose-500 overflow-hidden" />
-            <span className="font-bold text-rose-400">Severe (65 dBZ)</span>
+            <div className="flex-1 mx-3 h-2 rounded-full bg-gradient-to-r from-sky-400 via-emerald-400 via-amber-400 to-rose-500 overflow-hidden" />
+            <span className="font-bold text-rose-500">Severe (65 dBZ)</span>
           </div>
         </div>
       </div>
 
       {/* TIME SCRUBBER & PLAYBACK CONTROLLER */}
-      <div 
-        className={`p-3 rounded-[22px] flex items-center justify-between border shadow-xs transition-colors mb-3.5 ${
-          isDarkMode ? 'bg-[#121814] border-[#1E2821] text-[#F3F6F4]' : 'bg-[#FFFFFF] border-[#E8E6DF] text-[#121814]'
-        }`}
-      >
+      <div className="p-3 rounded-[24px] flex items-center justify-between border border-[#E9E7E1] bg-white shadow-xs mb-3.5">
         <button
           onClick={() => setIsPlaying(!isPlaying)}
           aria-label={isPlaying ? 'Pause radar loop' : 'Play radar loop'}
-          className="w-8 h-8 rounded-xl bg-[#1B4332] hover:bg-[#12281E] text-white flex items-center justify-center shadow-xs cursor-pointer snappy-touch"
+          className="w-8 h-8 rounded-xl bg-[#FFF0E4] text-[#FF7900] border border-[#FFE1CB] flex items-center justify-center shadow-xs cursor-pointer snappy-touch"
         >
           {isPlaying ? <Pause size={14} /> : <Play size={14} />}
         </button>
@@ -256,12 +238,12 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
                 onClick={() => setFrameIndex(idx)}
                 className={`flex flex-col items-center px-1 py-0.5 rounded-md transition-all cursor-pointer ${
                   isCurrent 
-                    ? 'text-[#FF5C00] font-black' 
-                    : isDarkMode ? 'text-[#89998F] hover:text-[#F3F6F4]' : 'text-[#5D6861] hover:text-[#121814]'
+                    ? 'text-[#FF7900] font-black' 
+                    : 'text-[#737873] hover:text-[#171717]'
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full mb-0.5 ${
-                  isCurrent ? 'bg-[#FF5C00]' : isDarkMode ? 'bg-[#1E2821]' : 'bg-[#E8E6DF]'
+                  isCurrent ? 'bg-[#FF7900]' : 'bg-[#E9E7E1]'
                 }`} />
                 <span className="text-[10px] font-mono-numbers">{frame}</span>
               </button>
@@ -271,9 +253,7 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
 
         <button
           onClick={() => setFrameIndex(3)}
-          className={`p-1.5 rounded-xl transition-all cursor-pointer snappy-touch ${
-            isDarkMode ? 'text-[#89998F] hover:text-white bg-[#1A231D]' : 'text-[#5D6861] hover:text-black bg-[#F8F7F4]'
-          }`}
+          className="p-1.5 rounded-xl transition-all cursor-pointer snappy-touch text-[#737873] hover:text-[#171717] bg-[#F7F6F2] border border-[#E9E7E1]"
           title="Reset to Live"
         >
           <RotateCcw size={14} />
@@ -281,12 +261,10 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
       </div>
 
       {/* Field Note */}
-      <div className={`p-3 rounded-2xl border text-xs flex items-start space-x-2 ${
-        isDarkMode ? 'bg-[#162019] border-[#1E2821]' : 'bg-[#F8F7F4] border-[#E8E6DF]'
-      }`}>
-        <Info size={14} className="text-[#10B981] shrink-0 mt-0.5" />
-        <p className={`text-[11px] leading-relaxed ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
-          Radar reflectivity exceeding <strong>35 dBZ (amber/red)</strong> typically indicates ground rainfall intensity greater than 4 mm/h. Delay open-field pesticide applications during active echo sweeps.
+      <div className="p-3 rounded-2xl border border-[#E9E7E1] bg-white text-xs flex items-start space-x-2 text-[#737873]">
+        <Info size={14} className="text-[#FF7900] shrink-0 mt-0.5" />
+        <p className="text-[11px] leading-relaxed">
+          Echoes exceeding <strong>35 dBZ (amber/red)</strong> indicate precipitation rates over 4 mm/h. Delay foliar spraying during active rain sweeps.
         </p>
       </div>
     </div>

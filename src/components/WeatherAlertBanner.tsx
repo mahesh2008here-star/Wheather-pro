@@ -1,25 +1,16 @@
 import React, { useState } from 'react';
 import { 
   AlertTriangle, 
-  Wind, 
-  Snowflake, 
-  CloudRain, 
-  Zap, 
-  ChevronRight, 
   X, 
-  CheckCircle2
 } from 'lucide-react';
 import { WeatherAlert } from '../types/weather';
-import { useTheme } from '../context/ThemeContext';
 
 interface WeatherAlertBannerProps {
   alerts: WeatherAlert[];
 }
 
 export const WeatherAlertBanner: React.FC<WeatherAlertBannerProps> = ({ alerts }) => {
-  const { isDarkMode } = useTheme();
   const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>([]);
-  const [selectedAlert, setSelectedAlert] = useState<WeatherAlert | null>(null);
 
   const activeAlerts = alerts.filter(a => !dismissedAlertIds.includes(a.id));
 
@@ -33,28 +24,26 @@ export const WeatherAlertBanner: React.FC<WeatherAlertBannerProps> = ({ alerts }
             key={alert.id}
             className={`p-3.5 rounded-2xl border flex items-start justify-between shadow-xs ${
               alert.severity === 'warning'
-                ? 'bg-rose-500/10 border-rose-500/30 text-rose-500'
-                : 'bg-amber-500/10 border-amber-500/30 text-amber-500'
+                ? 'bg-rose-50 border-rose-200 text-rose-800'
+                : 'bg-amber-50 border-amber-200 text-amber-800'
             }`}
           >
             <div className="flex items-start space-x-2.5">
-              <AlertTriangle size={18} className="shrink-0 mt-0.5" />
+              <AlertTriangle size={18} className="shrink-0 mt-0.5 text-rose-600" />
               <div>
                 <div className="flex items-center space-x-1.5">
                   <span className="text-xs font-black uppercase tracking-tight">
                     {alert.title}
                   </span>
-                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md bg-black/10 dark:bg-white/10">
+                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md bg-white/70">
                     {alert.severity}
                   </span>
                 </div>
-                <p className={`text-xs mt-1 leading-snug font-medium ${
-                  isDarkMode ? 'text-[#EEF5F0]' : 'text-[#132E20]'
-                }`}>
+                <p className="text-xs mt-1 leading-snug font-medium text-[#171717]">
                   {alert.message}
                 </p>
                 {alert.recommendation && (
-                  <p className="text-[11px] font-bold mt-1 text-[#059669] dark:text-[#34D399]">
+                  <p className="text-[11px] font-bold mt-1 text-[#10B981]">
                     Action: {alert.recommendation}
                   </p>
                 )}
