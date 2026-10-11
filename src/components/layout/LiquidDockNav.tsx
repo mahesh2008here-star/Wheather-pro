@@ -1,9 +1,11 @@
 import React from 'react';
 import { CloudSun, Radar, SunMedium, LayoutGrid, Sliders } from 'lucide-react';
 import { useWeather } from '../../context/WeatherContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export const LiquidDockNav: React.FC = () => {
   const { activeTab, setActiveTab } = useWeather();
+  const { customAccentColor, accentSurface, accentBorder } = useTheme();
 
   const tabs = [
     { id: 0, label: 'Weather', icon: CloudSun },
@@ -14,10 +16,21 @@ export const LiquidDockNav: React.FC = () => {
   ];
 
   return (
-    <div className="absolute bottom-3.5 left-0 right-0 z-40 flex justify-center pointer-events-none px-3">
+    <div 
+      className="absolute left-0 right-0 z-40 flex justify-center pointer-events-none px-3"
+      style={{
+        bottom: 'max(calc(env(safe-area-inset-bottom, 0px) + 6px), 14px)'
+      }}
+    >
       <nav 
         aria-label="Main Navigation Dock"
-        className="pointer-events-auto flex items-center justify-between gap-1 p-1.5 rounded-full bg-white/95 backdrop-blur-md border border-[#E9E7E1] shadow-[0_8px_24px_rgba(0,0,0,0.08)] select-none w-full max-w-[390px] transition-all"
+        className="pointer-events-auto flex items-center justify-between gap-1 p-1.5 rounded-full border shadow-[0_8px_32px_rgba(23,23,23,0.08)] select-none w-full max-w-[390px] transition-all"
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.80)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          borderColor: 'var(--md-sys-color-outline-variant, rgba(230, 229, 225, 0.85))',
+        }}
       >
         {tabs.map(tab => {
           const isActive = activeTab === tab.id;
@@ -33,17 +46,25 @@ export const LiquidDockNav: React.FC = () => {
               aria-label={`Navigate to ${tab.label}`}
               className={`flex items-center justify-center transition-all duration-200 cursor-pointer snappy-touch ${
                 isActive
-                  ? 'flex-auto bg-[#FFF0E4] text-[#FF7900] py-1.5 px-3 rounded-full shadow-xs'
-                  : 'flex-1 text-[#171717] opacity-65 hover:opacity-100 py-1.5 px-2 rounded-full hover:bg-[#F7F6F2]'
+                  ? 'flex-auto py-2 px-3.5 rounded-full shadow-xs border'
+                  : 'flex-1 py-2 px-2 rounded-full hover:bg-black/5 transition-colors'
               }`}
+              style={isActive ? {
+                backgroundColor: accentSurface || 'var(--md-sys-color-primary-container, #FFF0E4)',
+                color: customAccentColor || 'var(--md-sys-color-primary, #FF7900)',
+                borderColor: accentBorder || 'var(--md-sys-color-primary-border, #FFE1CB)',
+                boxShadow: `0 2px 8px ${accentBorder || 'rgba(0,0,0,0.06)'}`,
+              } : {
+                color: 'var(--md-sys-color-on-surface-variant, #444746)',
+              }}
             >
               <Icon 
                 size={19} 
-                strokeWidth={isActive ? 2.4 : 1.8} 
-                className="shrink-0"
+                strokeWidth={isActive ? 2.4 : 1.9} 
+                className="shrink-0 transition-transform duration-150"
               />
               {isActive && (
-                <span className="text-xs font-black tracking-tight ml-1.5 whitespace-nowrap">
+                <span className="text-xs font-bold tracking-tight ml-1.5 whitespace-nowrap font-display">
                   {tab.label}
                 </span>
               )}
@@ -54,3 +75,4 @@ export const LiquidDockNav: React.FC = () => {
     </div>
   );
 };
+

@@ -29,8 +29,8 @@ export interface AirQualityData {
   healthAdvice: string;
   primaryPollutant: string;
   treePollen: 'Low' | 'Moderate' | 'High' | 'Very High';
-  grassPollen: 'Low' | 'Moderate' | 'High';
-  weedPollen: 'Low' | 'Moderate' | 'High';
+  grassPollen: 'Low' | 'Moderate' | 'High' | 'Very High';
+  weedPollen: 'Low' | 'Moderate' | 'High' | 'Very High';
 }
 
 export interface AstronomyData {
@@ -93,6 +93,7 @@ export interface HourlyForecastItem {
   temperature: number;
   apparentTemp?: number;
   weatherCode: number;
+  conditionTitle?: string;
   rainProbability: number;
   precipitationAmount?: number;
   windSpeed?: number;

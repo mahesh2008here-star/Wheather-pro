@@ -66,20 +66,115 @@ export function generateMinuteCast(
 }
 
 /**
+ * In-memory & LocalStorage Cache for Weather Telemetry
+ */
+interface CachedWeatherEntry {
+  timestamp: number;
+  data: {
+    current: CurrentWeatherMetrics;
+    hourly: HourlyForecastItem[];
+    daily: DailyForecastItem[];
+  };
+}
+
+const WEATHER_CACHE_KEY_PREFIX = 'farmweather_cache_';
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache
+
+/**
+ * Fetch real Open-Meteo Air Quality telemetry (EPA AQI, PM2.5, PM10, Ozone, Pollen)
+ */
+export async function fetchLiveAirQuality(lat: number, lon: number): Promise<AirQualityData | null> {
+  const url = `${ENV.AIR_QUALITY_API_URL}?latitude=${lat}&longitude=${lon}&current=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide&hourly=us_aqi,pm2_5,pm10,ozone,alder_pollen,birch_pollen,grass_pollen,ragweed_pollen&timezone=auto`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const cur = data.current;
+    if (!cur) return null;
+
+    const aqi = Math.round(cur.us_aqi ?? 35);
+    let category: AirQualityData['category'] = 'Good';
+    let healthAdvice = 'Air quality is satisfactory and poses little to no risk.';
+    if (aqi > 200) {
+      category = 'Very Unhealthy';
+      healthAdvice = 'Health warnings of emergency conditions for the entire population.';
+    } else if (aqi > 150) {
+      category = 'Unhealthy';
+      healthAdvice = 'Everyone may begin to experience health effects; sensitive groups more.';
+    } else if (aqi > 100) {
+      category = 'Unhealthy for Sensitive';
+      healthAdvice = 'Members of sensitive groups may experience health effects.';
+    } else if (aqi > 50) {
+      category = 'Moderate';
+      healthAdvice = 'Air quality is acceptable for most; unusually sensitive individuals should take care.';
+    }
+
+    const treePollenVal = data.hourly?.birch_pollen?.[0] ?? data.hourly?.alder_pollen?.[0] ?? 0;
+    const grassPollenVal = data.hourly?.grass_pollen?.[0] ?? 0;
+    const weedPollenVal = data.hourly?.ragweed_pollen?.[0] ?? 0;
+
+    const toPollenLevel = (val: number): 'Low' | 'Moderate' | 'High' | 'Very High' => {
+      if (val > 50) return 'Very High';
+      if (val > 20) return 'High';
+      if (val > 5) return 'Moderate';
+      return 'Low';
+    };
+
+    return {
+      aqi,
+      category,
+      pm25: Math.round(cur.pm2_5 ?? 8),
+      pm10: Math.round(cur.pm10 ?? 14),
+      ozone: Math.round(cur.ozone ?? 35),
+      no2: Math.round(cur.nitrogen_dioxide ?? 12),
+      healthAdvice,
+      primaryPollutant: (cur.pm2_5 ?? 0) > (cur.pm10 ?? 0) ? 'PM2.5' : 'Ozone',
+      treePollen: toPollenLevel(treePollenVal),
+      grassPollen: toPollenLevel(grassPollenVal),
+      weedPollen: toPollenLevel(weedPollenVal),
+    };
+  } catch (e) {
+    console.debug('Air quality fetch note:', e);
+    return null;
+  }
+}
+
+/**
  * Fetch live weather metrics and forecasts from Open-Meteo
  */
 export async function fetchLiveWeather(
   lat: number = DEFAULT_LOCATIONS[0].latitude, 
-  lon: number = DEFAULT_LOCATIONS[0].longitude
+  lon: number = DEFAULT_LOCATIONS[0].longitude,
+  forceRefresh: boolean = false
 ): Promise<{
   current: CurrentWeatherMetrics;
   hourly: HourlyForecastItem[];
   daily: DailyForecastItem[];
 }> {
+  const cacheKey = `${WEATHER_CACHE_KEY_PREFIX}${lat.toFixed(2)}_${lon.toFixed(2)}`;
+  
+  // 1. Check valid cached response unless forced refresh
+  if (!forceRefresh) {
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed: CachedWeatherEntry = JSON.parse(cached);
+        if (Date.now() - parsed.timestamp < CACHE_TTL_MS) {
+          return parsed.data;
+        }
+      }
+    } catch {}
+  }
+
   const url = `${ENV.OPEN_METEO_API_URL}?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,surface_pressure,visibility,wind_speed_10m,relative_humidity_2m,uv_index,soil_temperature_0cm,soil_moisture_0_to_1cm&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,daylight_duration,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant,et0_fao_evapotranspiration&timezone=auto`;
 
   try {
-    const res = await fetch(url);
+    // Parallel fetch: Open-Meteo Forecast + Open-Meteo Air Quality
+    const [res, airQualityResult] = await Promise.all([
+      fetch(url),
+      fetchLiveAirQuality(lat, lon)
+    ]);
+
     if (!res.ok) {
       throw new Error(`Weather service returned HTTP ${res.status}`);
     }
@@ -152,7 +247,8 @@ export async function fetchLiveWeather(
       healthAdvice = 'Acceptable air quality for most individuals.';
     }
 
-    const airQuality: AirQualityData = {
+    // Use real measured Open-Meteo Air Quality telemetry when available, fallback gracefully
+    const airQuality: AirQualityData = airQualityResult || {
       aqi: aqiBase,
       category: aqiCategory,
       pm25: Math.round(aqiBase * 0.28),
@@ -236,6 +332,7 @@ export async function fetchLiveWeather(
         temperature: Math.round(hTemps[i] ?? temp),
         apparentTemp: Math.round(hApparent[i] ?? temp),
         weatherCode: hCodes[i] ?? 0,
+        conditionTitle: mapWmoCode(hCodes[i] ?? 0).title,
         rainProbability: Math.round(hProbs[i] ?? 0),
         precipitationAmount: Number((hPrecip[i] ?? 0).toFixed(1)),
         windSpeed: Math.round(hWind[i] ?? windSpd),
@@ -286,11 +383,21 @@ export async function fetchLiveWeather(
       });
     }
 
-    return {
+    const result = {
       current: currentMetrics,
       hourly: hourlyItems,
       daily: dailyItems,
     };
+
+    // Store in localStorage cache
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify({
+        timestamp: Date.now(),
+        data: result
+      }));
+    } catch {}
+
+    return result;
   } catch (err) {
     console.error('fetchLiveWeather error:', err);
     throw err;

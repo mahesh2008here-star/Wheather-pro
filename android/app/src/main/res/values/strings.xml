@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Farm Weather</string>
+    <string name="title_activity_main">Farm Weather - Smart Agriculture &amp; Climate</string>
+    <string name="package_name">com.liveweather.app</string>
+    <string name="custom_url_scheme">com.liveweather.app</string>
+</resources>

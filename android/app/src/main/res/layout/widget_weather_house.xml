@@ -1,106 +1,145 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_house_landscape"
-    android:padding="12dp">
+    android:background="@drawable/widget_surface_white"
+    android:orientation="vertical"
+    android:padding="14dp">
 
-    <!-- Top Badge Row: Iconic Farm Scene & Auto-refresh status -->
+    <!-- Top Row: Location & Live Status Badge -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:orientation="horizontal"
         android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/widget_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Farm Weather"
+            android:textColor="#171717"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/widget_badge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#66000000"
+            android:background="@drawable/badge_live_green"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
             android:paddingTop="3dp"
             android:paddingBottom="3dp"
-            android:text="🏡 Farm Weather"
-            android:textColor="#FFFFFF"
-            android:textSize="10sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/widget_sync_tag"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="end"
-            android:text="● Auto Sync"
-            android:textColor="#00D284"
+            android:text="● Farm Live"
+            android:textColor="#159B69"
             android:textSize="10sp"
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Bottom Semi-translucent Glass Panel -->
+    <!-- Condition & Summary -->
+    <TextView
+        android:id="@+id/widget_condition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Partly Cloudy • Favorable Spray Window"
+        android:textColor="#737873"
+        android:textSize="11sp"
+        android:layout_marginTop="2dp" />
+
+    <!-- Center Hero Row: Large Temperature & High/Low -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:background="#D9090D16"
-        android:padding="10dp"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="8dp">
 
-        <!-- Top Row: Location & Weather Condition -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/widget_temperature"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:text="24°"
+            android:textColor="#F57C00"
+            android:textSize="36sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/widget_location"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="WeatherPro"
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/widget_condition"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Partly Cloudy"
-                android:textColor="#00D284"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <!-- Bottom Row: Temperature & High / Low details -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="2dp">
-
-            <TextView
-                android:id="@+id/widget_temperature"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="24°"
-                android:textColor="#FFFFFF"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+            android:layout_weight="1"
+            android:layout_marginStart="14dp"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/widget_details"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:text="Tap to open live scenery"
-                android:textColor="#CBD5E1"
-                android:textSize="11sp" />
+                android:text="H:28°  L:16° • Feels 23°"
+                android:textColor="#171717"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_agri_summary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Soil: 21°C • ET₀ 3.4 mm/d"
+                android:textColor="#159B69"
+                android:textSize="11sp"
+                android:layout_marginTop="2dp" />
         </LinearLayout>
     </LinearLayout>
-</RelativeLayout>
+
+    <!-- Bottom Telemetry Chips -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/widget_humidity"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/chip_bg_neutral"
+            android:padding="6dp"
+            android:gravity="center"
+            android:text="Humidity: 65%"
+            android:textColor="#171717"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_wind"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/chip_bg_neutral"
+            android:padding="6dp"
+            android:gravity="center"
+            android:text="Wind: 14 km/h W"
+            android:textColor="#171717"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_rain"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/chip_bg_blue"
+            android:padding="6dp"
+            android:gravity="center"
+            android:text="Rain: 15%"
+            android:textColor="#1687C9"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</LinearLayout>

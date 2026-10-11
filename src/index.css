@@ -2,16 +2,59 @@
 
 @layer base {
   :root {
-    --bg-app: #F7F6F2;
-    --surface-white: #FFFFFF;
-    --text-primary: #171717;
-    --text-secondary: #737873;
-    --accent-orange: #FF7900;
-    --surface-pale-orange: #FFF0E4;
-    --surface-pale-blue: #E8F4FF;
-    --surface-pale-lavender: #EFECFF;
-    --surface-pale-mint: #E5F5EC;
-    --border-card: #E9E7E1;
+    /* === Formal Material Design 3 Color Tokens === */
+    /* MD3 Primary & Containers (Dynamic Brand Theme Accent) */
+    --md-sys-color-primary: #FF7900;
+    --md-sys-color-on-primary: #FFFFFF;
+    --md-sys-color-primary-container: #FFF0E4;
+    --md-sys-color-on-primary-container: #532300;
+    --md-sys-color-primary-border: #FFE1CB;
+
+    /* MD3 Secondary (Weather & Troposphere Blue) */
+    --md-sys-color-secondary: #0284C7;
+    --md-sys-color-on-secondary: #FFFFFF;
+    --md-sys-color-secondary-container: #E8F4FF;
+    --md-sys-color-on-secondary-container: #003554;
+    --md-sys-color-secondary-border: #BAE6FD;
+
+    /* MD3 Tertiary (Agri & Crops Green) */
+    --md-sys-color-tertiary: #10B981;
+    --md-sys-color-on-tertiary: #FFFFFF;
+    --md-sys-color-tertiary-container: #E5F5EC;
+    --md-sys-color-on-tertiary-container: #00391F;
+    --md-sys-color-tertiary-border: #CEEFDB;
+
+    /* MD3 Atmospheric & Solar Accent (UV & Ephemeris Lavender) */
+    --md-sys-color-lavender: #7C3AED;
+    --md-sys-color-lavender-container: #EFECFF;
+    --md-sys-color-lavender-border: #DDD7FF;
+
+    /* MD3 Neutral Surface & Background Tokens */
+    --md-sys-color-background: #F7F6F2;
+    --md-sys-color-on-background: #171717;
+    --md-sys-color-surface: #FFFFFF;
+    --md-sys-color-on-surface: #171717;
+    --md-sys-color-surface-variant: #F1EFEA;
+    --md-sys-color-on-surface-variant: #737873;
+    --md-sys-color-outline: #E9E7E1;
+    --md-sys-color-outline-variant: #E6E5E1;
+
+    /* === Application Semantic Aliases === */
+    --bg-app: var(--md-sys-color-background);
+    --surface-white: var(--md-sys-color-surface);
+    --text-primary: var(--md-sys-color-on-surface);
+    --text-secondary: var(--md-sys-color-on-surface-variant);
+    --accent-orange: var(--md-sys-color-primary);
+    --surface-pale-orange: var(--md-sys-color-primary-container);
+    --border-pale-orange: var(--md-sys-color-primary-border);
+    --brand-primary: var(--md-sys-color-primary);
+    --brand-surface: var(--md-sys-color-primary-container);
+    --brand-border: var(--md-sys-color-primary-border);
+    --brand-glow: rgba(255, 121, 0, 0.38);
+    --surface-pale-blue: var(--md-sys-color-secondary-container);
+    --surface-pale-lavender: var(--md-sys-color-lavender-container);
+    --surface-pale-mint: var(--md-sys-color-tertiary-container);
+    --border-card: var(--md-sys-color-outline);
     --muted-disabled: #AAAFA9;
   }
 

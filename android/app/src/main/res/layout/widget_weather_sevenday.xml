@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_sevenday_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_surface_white"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="7-Day Agricultural Outlook"
+            android:textColor="#171717"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_sevenday_city"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Live Field"
+            android:textColor="#1687C9"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Daily Items List -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp">
+        <TextView
+            android:id="@+id/d1_name"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="Today"
+            android:textColor="#171717"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/d1_cond"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Partly Cloudy"
+            android:textColor="#737873"
+            android:textSize="10sp" />
+        <TextView
+            android:id="@+id/d1_range"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="H:28° L:16°"
+            android:textColor="#171717"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp">
+        <TextView
+            android:id="@+id/d2_name"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="Tomorrow"
+            android:textColor="#171717"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/d2_cond"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Sunny"
+            android:textColor="#737873"
+            android:textSize="10sp" />
+        <TextView
+            android:id="@+id/d2_range"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="H:29° L:17°"
+            android:textColor="#171717"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp">
+        <TextView
+            android:id="@+id/d3_name"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="Wednesday"
+            android:textColor="#171717"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/d3_cond"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Light Rain (40%)"
+            android:textColor="#1687C9"
+            android:textSize="10sp" />
+        <TextView
+            android:id="@+id/d3_range"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="H:24° L:15°"
+            android:textColor="#171717"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp">
+        <TextView
+            android:id="@+id/d4_name"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="Thursday"
+            android:textColor="#171717"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/d4_cond"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Clear Skies"
+            android:textColor="#737873"
+            android:textSize="10sp" />
+        <TextView
+            android:id="@+id/d4_range"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="H:27° L:16°"
+            android:textColor="#171717"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</LinearLayout>

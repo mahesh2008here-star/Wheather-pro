@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_compact_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_surface_blue"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <!-- Top Row: Location & Condition -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/widget_compact_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Farm Weather"
+            android:textColor="#1687C9"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_compact_live_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="● Live"
+            android:textColor="#1687C9"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/widget_compact_condition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Partly Cloudy"
+        android:textColor="#737873"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:layout_marginTop="2dp" />
+
+    <!-- Main Temperature & High/Low -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            android:id="@+id/widget_compact_temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="24°"
+            android:textColor="#171717"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/widget_compact_high_low"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="H:28° L:16°"
+                android:textColor="#171717"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_compact_feels"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Feels 23°"
+                android:textColor="#737873"
+                android:textSize="10sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Bottom Footer Timestamp -->
+    <TextView
+        android:id="@+id/widget_compact_updated"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Updated 10:42 AM"
+        android:textColor="#737873"
+        android:textSize="9sp"
+        android:layout_marginTop="4dp" />
+</LinearLayout>

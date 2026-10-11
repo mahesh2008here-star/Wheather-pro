@@ -183,15 +183,62 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
   const alerts = detectSevereWeatherAlerts(metrics);
 
   // Fetch Weather Callback
-  const handleFetchWeather = useCallback(async (loc: LocationInfo = activeLocation) => {
+  const handleFetchWeather = useCallback(async (loc: LocationInfo = activeLocation, forceRefresh: boolean = false) => {
     setIsLoading(true);
     setError(null);
     setPreviewScene(null);
     try {
-      const data = await fetchLiveWeather(loc.latitude, loc.longitude);
+      const data = await fetchLiveWeather(loc.latitude, loc.longitude, forceRefresh);
       setMetrics(data.current);
       if (data.daily.length > 0) setDailyForecast(data.daily);
       if (data.hourly.length > 0) setHourlyForecast(data.hourly);
+
+      // Sync to Native Android Home Screen Widgets via Capacitor bridge
+      if (typeof window !== 'undefined' && (window as any).AndroidWidgetBridge) {
+        try {
+          const bridge = (window as any).AndroidWidgetBridge;
+          // Legacy string call for backwards compatibility
+          bridge.updateWidgetData?.(
+            loc.name,
+            `${data.current.temperature}°`,
+            data.current.conditionTitle,
+            `H:${data.current.tempMaxToday}° L:${data.current.tempMinToday}° • Feels ${data.current.apparentTemperature}°`
+          );
+
+          // Structured payload for all Material 3 widgets
+          bridge.updateStructuredWidgetData?.(
+            JSON.stringify({
+              location: loc.name,
+              temp: data.current.temperature,
+              apparentTemp: data.current.apparentTemperature,
+              tempMin: data.current.tempMinToday,
+              tempMax: data.current.tempMaxToday,
+              condition: data.current.conditionTitle,
+              humidity: data.current.humidity,
+              windSpeed: data.current.windSpeed,
+              windDirection: data.current.windDirectionCardinal,
+              rainChance: data.current.rainChance,
+              precipitation: data.current.precipitationAmount,
+              soilTemp: data.current.soilTemperature,
+              soilMoisture: data.current.soilMoisture,
+              et0: data.current.evapotranspiration,
+              uvIndex: data.current.uvIndex,
+              uvLevel: data.current.uvLevel,
+              aqi: data.current.airQuality.aqi,
+              aqiCategory: data.current.airQuality.category,
+              lastUpdated: data.current.lastUpdated || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              forecast: data.hourly.slice(0, 4).map(h => ({
+                time: h.time,
+                temp: h.temperature,
+                condition: h.conditionTitle || 'Clear',
+                rainChance: h.rainProbability
+              }))
+            })
+          );
+        } catch (bridgeErr) {
+          console.debug('Android widget sync note:', bridgeErr);
+        }
+      }
     } catch (err: any) {
       console.warn('Weather fetch fallback:', err);
       setError(err?.message || 'Failed to sync live weather telemetry');
@@ -277,7 +324,7 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
         selectLocation,
         addLocation,
         deleteLocation,
-        refreshWeather: () => handleFetchWeather(activeLocation),
+        refreshWeather: () => handleFetchWeather(activeLocation, true),
         detectGpsLocation,
         clearLocationStatus: () => setLocationStatus(null),
       }}

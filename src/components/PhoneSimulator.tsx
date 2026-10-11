@@ -13,3 +13,4 @@ export const PhoneSimulator: React.FC<AndroidContainerProps> = ({ children }) =>
     </div>
   );
 };
+

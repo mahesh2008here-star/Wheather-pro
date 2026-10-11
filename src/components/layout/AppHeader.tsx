@@ -7,6 +7,7 @@ import {
   Sliders
 } from 'lucide-react';
 import { useWeather } from '../../context/WeatherContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface AppHeaderProps {
   onOpenLocationPicker: () => void;
@@ -24,6 +25,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker, onOp
     setActiveTab
   } = useWeather();
 
+  const { customAccentColor, accentSurface, accentBorder } = useTheme();
+
   const handleSettingsClick = () => {
     if (onOpenSettings) {
       onOpenSettings();
@@ -33,10 +36,22 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker, onOp
   };
 
   return (
-    <header className="w-full px-4 pt-3.5 pb-2.5 flex items-center justify-between shrink-0 select-none z-20 border-b border-[#E9E7E1] bg-[#F7F6F2] text-[#171717]">
+    <header 
+      className="w-full px-4 pb-2.5 flex items-center justify-between shrink-0 select-none z-20 border-b border-[#E9E7E1] bg-[#F7F6F2] text-[#171717] transition-all"
+      style={{
+        paddingTop: 'max(env(safe-area-inset-top, 0px), 8px)'
+      }}
+    >
       {/* Brand Identity & Location Selector */}
       <div className="flex items-center space-x-2.5 min-w-0">
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border border-[#E9E7E1] bg-white text-[#FF7900] shadow-xs">
+        <div 
+          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border shadow-xs transition-colors"
+          style={{
+            borderColor: accentBorder,
+            backgroundColor: accentSurface,
+            color: customAccentColor
+          }}
+        >
           <Sprout size={18} strokeWidth={2.4} />
         </div>
 
@@ -48,11 +63,17 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker, onOp
         >
           <div className="min-w-0">
             <div className="flex items-center space-x-1">
-              <span className="text-[10px] font-black uppercase tracking-wider text-[#FF7900] leading-none">
+              <span 
+                className="text-[10px] font-black uppercase tracking-wider leading-none transition-colors"
+                style={{ color: customAccentColor }}
+              >
                 Farm Weather
               </span>
               {alerts.length > 0 && (
-                <span className="w-1.5 h-1.5 rounded-full bg-[#FF7900] animate-ping inline-block" />
+                <span 
+                  className="w-1.5 h-1.5 rounded-full animate-ping inline-block"
+                  style={{ backgroundColor: customAccentColor }}
+                />
               )}
             </div>
             <div className="flex items-center space-x-1 mt-0.5">
@@ -73,9 +94,13 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker, onOp
           aria-label="Use current GPS location"
           className={`p-2 rounded-xl transition-all cursor-pointer snappy-touch ${
             isLocating
-              ? 'bg-[#FFF0E4] text-[#FF7900] animate-pulse'
+              ? 'animate-pulse'
               : 'text-[#737873] hover:text-[#171717] hover:bg-white'
           }`}
+          style={isLocating ? {
+            backgroundColor: accentSurface,
+            color: customAccentColor
+          } : undefined}
           title="Locate with GPS"
         >
           <Crosshair size={16} className={isLocating ? 'animate-spin' : ''} />
@@ -87,7 +112,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker, onOp
           className="p-2 rounded-xl text-[#737873] hover:text-[#171717] hover:bg-white transition-all cursor-pointer snappy-touch"
           title="Refresh forecast"
         >
-          <RefreshCw size={16} className={isLoading ? 'animate-spin text-[#FF7900]' : ''} />
+          <RefreshCw 
+            size={16} 
+            className={isLoading ? 'animate-spin' : ''} 
+            style={isLoading ? { color: customAccentColor } : undefined}
+          />
         </button>
 
         <button
@@ -102,3 +131,4 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker, onOp
     </header>
   );
 };
+

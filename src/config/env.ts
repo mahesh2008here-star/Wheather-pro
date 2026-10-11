@@ -7,6 +7,7 @@ import { LocationInfo } from '../types/weather';
 
 export const ENV = {
   OPEN_METEO_API_URL: import.meta.env.VITE_OPEN_METEO_API_URL || 'https://api.open-meteo.com/v1/forecast',
+  AIR_QUALITY_API_URL: import.meta.env.VITE_AIR_QUALITY_API_URL || 'https://air-quality-api.open-meteo.com/v1/air-quality',
   GEOCODING_API_URL: import.meta.env.VITE_GEOCODING_API_URL || 'https://geocoding-api.open-meteo.com/v1/search',
   REVERSE_GEOCODE_API_URL: import.meta.env.VITE_REVERSE_GEOCODE_API_URL || 'https://api.bigdatacloud.net/data/reverse-geocode-client',
   TTS_VOICE_API_URL: 'https://api.streamelements.com/kappa/v2/speech',

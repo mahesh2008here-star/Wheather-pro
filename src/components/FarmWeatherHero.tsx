@@ -51,17 +51,17 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
   weatherCode = 0,
   isDaytime = true
 }) => {
-  const { formatTemp } = useTheme();
+  const { formatTemp, customAccentColor } = useTheme();
 
   // Dynamic icon mapping based on weather code and daytime
   const getWeatherIcon = () => {
     if (weatherCode === 0 || weatherCode === 1) {
       return isDaytime 
-        ? <Sun size={36} className="text-[#FF7900] shrink-0" strokeWidth={2.2} />
+        ? <Sun size={36} style={{ color: customAccentColor }} className="shrink-0" strokeWidth={2.2} />
         : <Moon size={34} className="text-[#F59E0B] shrink-0" strokeWidth={2.2} />;
     }
     if (weatherCode === 2) {
-      return <CloudSun size={36} className="text-[#FF7900] shrink-0" strokeWidth={2.2} />;
+      return <CloudSun size={36} style={{ color: customAccentColor }} className="shrink-0" strokeWidth={2.2} />;
     }
     if (weatherCode === 3) {
       return <Cloud size={36} className="text-[#737873] shrink-0" strokeWidth={2.2} />;
@@ -79,9 +79,9 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
       return <Snowflake size={36} className="text-[#38BDF8] shrink-0" strokeWidth={2.2} />;
     }
     if ([95, 96, 99].includes(weatherCode)) {
-      return <CloudLightning size={36} className="text-[#FF7900] shrink-0" strokeWidth={2.2} />;
+      return <CloudLightning size={36} style={{ color: customAccentColor }} className="shrink-0" strokeWidth={2.2} />;
     }
-    return <CloudSun size={36} className="text-[#FF7900] shrink-0" strokeWidth={2.2} />;
+    return <CloudSun size={36} style={{ color: customAccentColor }} className="shrink-0" strokeWidth={2.2} />;
   };
 
   // Concise weather summary based on actual meteorological data
@@ -136,7 +136,10 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
             <span className="hero-temperature text-7xl sm:text-8xl font-black text-[#171717] tracking-tighter">
               {temperature}
             </span>
-            <span className="text-4xl font-black text-[#FF7900] ml-0.5">
+            <span 
+              className="text-4xl font-black ml-0.5 transition-colors"
+              style={{ color: customAccentColor }}
+            >
               °
             </span>
           </div>
@@ -145,7 +148,7 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
             <div className="flex items-center space-x-2 text-xs font-black font-mono-numbers">
               {tempMax !== undefined && (
                 <span className="flex items-center text-[#171717]">
-                  <ArrowUp size={13} className="text-[#FF7900] mr-0.5" />
+                  <ArrowUp size={13} style={{ color: customAccentColor }} className="mr-0.5" />
                   <span>{formatTemp(tempMax)}</span>
                 </span>
               )}

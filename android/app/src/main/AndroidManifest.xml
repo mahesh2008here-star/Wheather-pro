@@ -34,10 +34,10 @@
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
 
-        <!-- Android Home Screen Weather House Widget -->
+        <!-- Android Home Screen: 1. Farm Weather Full Scene -->
         <receiver
             android:name=".WeatherHouseWidgetProvider"
-            android:label="Weather House Scene"
+            android:label="Farm Weather Scene"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -47,10 +47,23 @@
                 android:resource="@xml/weather_house_widget_info" />
         </receiver>
 
-        <!-- Android Home Screen Forecast Widget -->
+        <!-- Android Home Screen: Widget A. Compact Current Weather -->
+        <receiver
+            android:name=".WeatherCompactWidgetProvider"
+            android:label="Farm Weather: Compact Weather"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/weather_compact_widget_info" />
+        </receiver>
+
+        <!-- Android Home Screen: Widget B. Hourly Forecast Strip -->
         <receiver
             android:name=".WeatherForecastWidgetProvider"
-            android:label="Weather Forecast Glass"
+            android:label="Farm Weather: Hourly Forecast"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -60,30 +73,56 @@
                 android:resource="@xml/weather_forecast_widget_info" />
         </receiver>
 
-        <!-- Android Home Screen At a Glance Widget -->
+        <!-- Android Home Screen: Widget C. Seven-Day Outlook -->
         <receiver
-            android:name=".WeatherGlanceWidgetProvider"
-            android:label="Weather At a Glance"
+            android:name=".WeatherSevenDayWidgetProvider"
+            android:label="Farm Weather: 7-Day Outlook"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/weather_glance_widget_info" />
+                android:resource="@xml/weather_sevenday_widget_info" />
         </receiver>
 
-        <!-- Android Home Screen Minimal Pill Widget -->
+        <!-- Android Home Screen: Widget D. Farm Field Conditions -->
         <receiver
-            android:name=".WeatherMinimalWidgetProvider"
-            android:label="Weather Compact Pill"
+            android:name=".WeatherFarmWidgetProvider"
+            android:label="Farm Weather: Field Telemetry"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/weather_minimal_widget_info" />
+                android:resource="@xml/weather_farm_widget_info" />
+        </receiver>
+
+        <!-- Android Home Screen: Widget E. Rain & Irrigation Outlook -->
+        <receiver
+            android:name=".WeatherIrrigationWidgetProvider"
+            android:label="Farm Weather: Irrigation Outlook"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/weather_irrigation_widget_info" />
+        </receiver>
+
+        <!-- Android Home Screen: Widget F. Air Quality & UV -->
+        <receiver
+            android:name=".WeatherAirUvWidgetProvider"
+            android:label="Farm Weather: Air Quality &amp; UV"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/weather_air_uv_widget_info" />
         </receiver>
     </application>
 

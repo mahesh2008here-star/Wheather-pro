@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#F57C00</color>
+    <color name="colorPrimaryDark">#E65100</color>
+    <color name="colorAccent">#159B69</color>
+    <color name="statusBarColor">#F7F6F2</color>
+    <color name="navigationBarColor">#FFFFFF</color>
+    <color name="surfaceLight">#FFFFFF</color>
+    <color name="backgroundApp">#F7F6F2</color>
+    
+    <!-- Material 3 Widget Color Tokens -->
+    <color name="md_weather_blue_surface">#E5F2FF</color>
+    <color name="md_weather_blue_accent">#1687C9</color>
+    <color name="md_agri_green_surface">#E4F5E9</color>
+    <color name="md_agri_green_accent">#159B69</color>
+    <color name="md_solar_orange_surface">#FFF0E1</color>
+    <color name="md_solar_orange_accent">#F57C00</color>
+    <color name="md_uv_lavender_surface">#EFECFF</color>
+    <color name="md_uv_lavender_accent">#7563C9</color>
+    <color name="md_text_primary">#171717</color>
+    <color name="md_text_secondary">#737873</color>
+    <color name="md_neutral_border">#E6E5E1</color>
+</resources>
