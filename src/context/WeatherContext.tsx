@@ -182,13 +182,17 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
   // Calculate severe alerts
   const alerts = detectSevereWeatherAlerts(metrics);
 
+  const activeLocationRef = React.useRef(activeLocation);
+  activeLocationRef.current = activeLocation;
+
   // Fetch Weather Callback
-  const handleFetchWeather = useCallback(async (loc: LocationInfo = activeLocation, forceRefresh: boolean = false) => {
+  const handleFetchWeather = useCallback(async (loc?: LocationInfo, forceRefresh: boolean = false) => {
+    const targetLoc = loc || activeLocationRef.current;
     setIsLoading(true);
     setError(null);
     setPreviewScene(null);
     try {
-      const data = await fetchLiveWeather(loc.latitude, loc.longitude, forceRefresh);
+      const data = await fetchLiveWeather(targetLoc.latitude, targetLoc.longitude, forceRefresh);
       setMetrics(data.current);
       if (data.daily.length > 0) setDailyForecast(data.daily);
       if (data.hourly.length > 0) setHourlyForecast(data.hourly);
@@ -199,7 +203,7 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
           const bridge = (window as any).AndroidWidgetBridge;
           // Legacy string call for backwards compatibility
           bridge.updateWidgetData?.(
-            loc.name,
+            targetLoc.name,
             `${data.current.temperature}°`,
             data.current.conditionTitle,
             `H:${data.current.tempMaxToday}° L:${data.current.tempMinToday}° • Feels ${data.current.apparentTemperature}°`
@@ -208,7 +212,7 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
           // Structured payload for all Material 3 widgets
           bridge.updateStructuredWidgetData?.(
             JSON.stringify({
-              location: loc.name,
+              location: targetLoc.name,
               temp: data.current.temperature,
               apparentTemp: data.current.apparentTemperature,
               tempMin: data.current.tempMinToday,
@@ -245,7 +249,7 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
     } finally {
       setIsLoading(false);
     }
-  }, [activeLocation]);
+  }, []);
 
   // Universal GPS & IP Live Location Detector
   const detectGpsLocation = useCallback(async () => {
@@ -284,7 +288,7 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const selectLocation = (loc: LocationInfo) => {
     setActiveLocation(loc);
-    handleFetchWeather(loc);
+    handleFetchWeather(loc, true);
   };
 
   const addLocation = (loc: LocationInfo) => {
@@ -292,6 +296,7 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
       setSavedLocations(prev => [loc, ...prev]);
     }
     setActiveLocation(loc);
+    handleFetchWeather(loc, true);
   };
 
   const deleteLocation = (id: string) => {
@@ -299,6 +304,7 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
       const filtered = prev.filter(l => l.id !== id);
       if (activeLocation.id === id && filtered.length > 0) {
         setActiveLocation(filtered[0]);
+        handleFetchWeather(filtered[0], true);
       }
       return filtered;
     });

@@ -46,12 +46,11 @@ function MainAppContent() {
 
   return (
     <PhoneSimulator>
-      {/* Main container with safe-area-inset-top padding to prevent Android status bar overlap */}
+      {/* Main container respecting safe-area-inset-bottom */}
       <div 
         id="app-main-container"
         className="w-full h-full flex flex-col relative overflow-hidden"
         style={{
-          paddingTop: 'env(safe-area-inset-top, 0px)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}
       >
@@ -78,7 +77,7 @@ function MainAppContent() {
         />
 
         {/* Screen Views with ErrorBoundary Protection */}
-        <div className="flex-1 w-full overflow-y-auto no-scrollbar relative flex flex-col animate-tab-switch">
+        <div className="flex-1 w-full overflow-y-auto overflow-x-hidden no-scrollbar relative flex flex-col animate-tab-switch">
           <ErrorBoundary fallbackTitle="Screen Error">
             {activeTab === 0 && <HomeScreen />}
 

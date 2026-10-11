@@ -37,7 +37,7 @@ export const LiveRadarScreen: React.FC<LiveRadarScreenProps> = ({ location }) =>
   const timeFrames = ['-90m', '-60m', '-30m', 'Live', '+30m', '+60m'];
 
   return (
-    <div className="w-full px-4 pt-3 pb-32 select-none">
+    <div className="w-full px-4 pt-3 pb-36 sm:pb-40 select-none">
       {/* HEADER */}
       <div className="mb-3.5 px-1">
         <div className="flex items-center justify-between">

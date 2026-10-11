@@ -39,7 +39,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker, onOp
     <header 
       className="w-full px-4 pb-2.5 flex items-center justify-between shrink-0 select-none z-20 border-b border-[#E9E7E1] bg-[#F7F6F2] text-[#171717] transition-all"
       style={{
-        paddingTop: 'max(env(safe-area-inset-top, 0px), 8px)'
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 8px)'
       }}
     >
       {/* Brand Identity & Location Selector */}

@@ -47,7 +47,7 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
   return (
     <div className="w-full px-4 py-2 space-y-3.5 select-none">
       {/* 1. 24-HOUR HOURLY TIMELINE STRIP */}
-      <div className="w-full p-4 rounded-[28px] border border-[#E9E7E1] bg-white shadow-xs">
+      <div className="w-full p-4 rounded-[28px] border border-[#E9E7E1] bg-white shadow-xs relative">
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center space-x-2">
             <Clock size={15} className="text-[#FF7900]" />
@@ -55,55 +55,62 @@ export const ForecastSection: React.FC<ForecastSectionProps> = ({
               24-Hour Horizon
             </h3>
           </div>
-          <span className="text-[10px] font-bold text-[#737873]">
-            Next 24 Hours
+          <span className="text-[10px] font-bold text-[#737873] flex items-center space-x-1">
+            <span>Scroll 24h</span>
+            <span className="text-[#FF7900] font-black">→</span>
           </span>
         </div>
 
-        <div className="flex space-x-2 overflow-x-auto no-scrollbar py-1">
-          {hourly.slice(0, 24).map((hourItem, idx) => {
-            const isNow = idx === 0 || hourItem.isCurrent;
-            return (
-              <div 
-                key={idx}
-                className={`flex flex-col items-center py-2.5 px-2.5 rounded-2xl min-w-[58px] shrink-0 transition-all border ${
-                  isNow 
-                    ? 'bg-[#FFF0E4] border-[#FFE1CB] text-[#FF7900]' 
-                    : 'bg-[#F7F6F2] border-[#E9E7E1] text-[#171717]'
-                }`}
-              >
-                <div className="flex items-center space-x-1 mb-1">
-                  {isNow && <span className="w-1.5 h-1.5 rounded-full bg-[#FF7900]" />}
-                  <span className={`text-[11px] ${
-                    isNow ? 'font-black text-[#FF7900]' : 'font-semibold text-[#737873]'
-                  }`}>
-                    {isNow ? 'Now' : hourItem.hour}
+        <div className="relative w-full">
+          <div className="flex gap-2.5 overflow-x-auto no-scrollbar py-1 scroll-smooth pr-6">
+            {hourly.slice(0, 24).map((hourItem, idx) => {
+              const isNow = idx === 0 || hourItem.isCurrent;
+              return (
+                <div 
+                  key={idx}
+                  className={`flex flex-col items-center py-2.5 px-2 rounded-2xl w-[68px] min-w-[68px] shrink-0 text-center transition-all border ${
+                    isNow 
+                      ? 'bg-[#FFF0E4] border-[#FFE1CB] text-[#FF7900]' 
+                      : 'bg-[#F7F6F2] border-[#E9E7E1] text-[#171717]'
+                  }`}
+                >
+                  <div className="flex items-center space-x-1 mb-1">
+                    {isNow && <span className="w-1.5 h-1.5 rounded-full bg-[#FF7900]" />}
+                    <span className={`text-[11px] ${
+                      isNow ? 'font-black text-[#FF7900]' : 'font-semibold text-[#737873]'
+                    }`}>
+                      {isNow ? 'Now' : hourItem.hour}
+                    </span>
+                  </div>
+
+                  <div className="my-1.5">
+                    {renderWeatherIcon(hourItem.weatherCode, 18)}
+                  </div>
+
+                  <span className="text-xs font-black font-mono-numbers my-1 text-[#171717]">
+                    {formatTemp(hourItem.temperature)}
                   </span>
+
+                  {hourItem.rainProbability > 0 ? (
+                    <span className={`text-[10px] font-bold flex items-center justify-center space-x-0.5 mt-0.5 ${
+                      hourItem.rainProbability >= 30 ? 'text-[#FF7900]' : 'text-[#0284C7]'
+                    }`}>
+                      <Droplets size={10} className="shrink-0" />
+                      <span>{hourItem.rainProbability}%</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] opacity-25 font-mono-numbers mt-0.5 text-[#737873]">
+                      -
+                    </span>
+                  )}
                 </div>
+              );
+            })}
+            <div className="w-3 shrink-0" aria-hidden="true" />
+          </div>
 
-                <div className="my-1.5">
-                  {renderWeatherIcon(hourItem.weatherCode, 18)}
-                </div>
-
-                <span className="text-xs font-black font-mono-numbers my-1 text-[#171717]">
-                  {formatTemp(hourItem.temperature)}
-                </span>
-
-                {hourItem.rainProbability > 0 ? (
-                  <span className={`text-[10px] font-bold flex items-center space-x-0.5 mt-0.5 ${
-                    hourItem.rainProbability >= 30 ? 'text-[#FF7900]' : 'text-[#0284C7]'
-                  }`}>
-                    <Droplets size={10} className="shrink-0" />
-                    <span>{hourItem.rainProbability}%</span>
-                  </span>
-                ) : (
-                  <span className="text-[10px] opacity-25 font-mono-numbers mt-0.5 text-[#737873]">
-                    -
-                  </span>
-                )}
-              </div>
-            );
-          })}
+          {/* Right edge fade affordance clearly indicating more forecast hours are available */}
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white via-white/80 to-transparent rounded-r-2xl" />
         </div>
       </div>
 

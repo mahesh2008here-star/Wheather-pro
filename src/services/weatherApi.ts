@@ -216,10 +216,24 @@ export async function fetchLiveWeather(
     else if (uvMax <= 10) uvLevel = 'Very High';
     else uvLevel = 'Extreme';
 
+    // Format sunrise/sunset in location's local time from ISO string "YYYY-MM-DDTHH:mm"
+    const formatLocalTimeStr = (isoTimeStr?: string, fallback: string = '6:00 AM') => {
+      if (!isoTimeStr) return fallback;
+      try {
+        const hr = parseInt(isoTimeStr.slice(11, 13), 10);
+        const mn = isoTimeStr.slice(14, 16);
+        const ampm = hr >= 12 ? 'PM' : 'AM';
+        const hr12 = hr % 12 || 12;
+        return `${hr12}:${mn} ${ampm}`;
+      } catch {
+        return fallback;
+      }
+    };
+
     const sunriseRaw = data.daily?.sunrise?.[0];
     const sunsetRaw = data.daily?.sunset?.[0];
-    const sunriseTime = sunriseRaw ? new Date(sunriseRaw).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '6:24 AM';
-    const sunsetTime = sunsetRaw ? new Date(sunsetRaw).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '6:58 PM';
+    const sunriseTime = formatLocalTimeStr(sunriseRaw, '6:24 AM');
+    const sunsetTime = formatLocalTimeStr(sunsetRaw, '6:58 PM');
 
     const moon = calculateMoonPhase();
 
@@ -276,6 +290,23 @@ export async function fetchLiveWeather(
     const soilMoist = soilMoistRaw !== undefined ? Math.round(soilMoistRaw * 100) : Math.min(85, Math.max(20, Math.round(hum * 0.65)));
     const et0 = et0Raw !== undefined ? Number(et0Raw.toFixed(1)) : Number((0.0023 * (temp + 17.8) * Math.sqrt(Math.max(1, windSpd)) * 1.8).toFixed(1));
 
+    // Formatted timestamp in selected location's local time zone
+    const locationTimeFormatted = (() => {
+      try {
+        if (data.timezone) {
+          return new Intl.DateTimeFormat('en-US', {
+            timeZone: data.timezone,
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+          }).format(new Date());
+        }
+      } catch (tzErr) {
+        console.debug('Timezone formatting note:', tzErr);
+      }
+      return new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    })();
+
     const currentMetrics: CurrentWeatherMetrics = {
       temperature: temp,
       apparentTemperature: appTemp,
@@ -301,7 +332,7 @@ export async function fetchLiveWeather(
       conditionDescription: wmo.description,
       sceneState: scene,
       isDaytime: isDay,
-      lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      lastUpdated: locationTimeFormatted,
       isLive: true,
       airQuality,
       astronomy,
@@ -322,23 +353,46 @@ export async function fetchLiveWeather(
     const hHum = data.hourly?.relative_humidity_2m || [];
     const hUv = data.hourly?.uv_index || [];
 
-    const currentHour = new Date().getHours();
-    for (let i = 0; i < Math.min(24, hTimes.length); i++) {
-      const d = new Date(hTimes[i]);
-      const hr = d.getHours();
+    // Find the starting index for current hour in location's timeline
+    const curTimePrefix = (cur.time || '').slice(0, 13); // e.g. "2026-10-11T10"
+    let startIndex = hTimes.findIndex((t: string) => t.slice(0, 13) === curTimePrefix);
+    if (startIndex === -1 && cur.time) {
+      startIndex = hTimes.findIndex((t: string) => t >= cur.time);
+    }
+    if (startIndex === -1 || startIndex >= hTimes.length) {
+      startIndex = 0;
+    }
+
+    const maxForecastHours = Math.min(startIndex + 24, hTimes.length);
+    for (let i = startIndex; i < maxForecastHours; i++) {
+      const isCurrentObservation = i === startIndex;
+      const timeStr = hTimes[i] || '';
+      const hour24 = parseInt(timeStr.slice(11, 13), 10);
+      const ampm = hour24 >= 12 ? 'PM' : 'AM';
+      const hour12 = hour24 % 12 || 12;
+      const hourLabel = isCurrentObservation ? 'Now' : `${hour12} ${ampm}`;
+
+      // Shared weather observation consistency:
+      // When representing the current observation ("Now"), the forecast temperature
+      // MUST agree with the current temperature.
+      const itemTemp = isCurrentObservation ? temp : Math.round(hTemps[i] ?? temp);
+      const itemApparent = isCurrentObservation ? appTemp : Math.round(hApparent[i] ?? temp);
+      const itemCode = isCurrentObservation ? wCode : (hCodes[i] ?? 0);
+      const itemRainProb = isCurrentObservation ? currentRainProb : Math.round(hProbs[i] ?? 0);
+
       hourlyItems.push({
-        time: hTimes[i],
-        hour: hr === currentHour ? 'Now' : `${hr % 12 || 12} ${hr >= 12 ? 'PM' : 'AM'}`,
-        temperature: Math.round(hTemps[i] ?? temp),
-        apparentTemp: Math.round(hApparent[i] ?? temp),
-        weatherCode: hCodes[i] ?? 0,
-        conditionTitle: mapWmoCode(hCodes[i] ?? 0).title,
-        rainProbability: Math.round(hProbs[i] ?? 0),
+        time: timeStr,
+        hour: hourLabel,
+        temperature: itemTemp,
+        apparentTemp: itemApparent,
+        weatherCode: itemCode,
+        conditionTitle: mapWmoCode(itemCode).title,
+        rainProbability: itemRainProb,
         precipitationAmount: Number((hPrecip[i] ?? 0).toFixed(1)),
         windSpeed: Math.round(hWind[i] ?? windSpd),
         humidity: Math.round(hHum[i] ?? hum),
         uvIndex: Math.round(hUv[i] ?? 0),
-        isCurrent: hr === currentHour,
+        isCurrent: isCurrentObservation,
       });
     }
 
@@ -365,13 +419,16 @@ export async function fetchLiveWeather(
       const pProb = Math.round(dProb[i] ?? 10);
       const windDirDeg = Math.round(dWindDir[i] ?? 0);
 
+      const itemMin = i === 0 ? tempMinToday : Math.round(dMin[i] ?? temp - 6);
+      const itemMax = i === 0 ? tempMaxToday : Math.round(dMax[i] ?? temp + 4);
+
       dailyItems.push({
         date: dTimes[i],
         dayName,
         weatherCode: code,
         conditionDescription: wInfo.title,
-        tempMin: Math.round(dMin[i] ?? temp - 6),
-        tempMax: Math.round(dMax[i] ?? temp + 4),
+        tempMin: itemMin,
+        tempMax: itemMax,
         rainProbability: pProb,
         precipitationSum: pSum,
         uvIndexMax: Math.round(dUv[i] ?? 5),
