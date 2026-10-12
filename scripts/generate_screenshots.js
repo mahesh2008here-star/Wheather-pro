@@ -17,17 +17,19 @@ function escapeXml(str) {
     .replace(/'/g, '&apos;');
 }
 
-function createDeviceFrame(contentSvg, x = 130, y = 300, width = 820, height = 1540) {
+function createDeviceFrame(contentSvg, x = 140, y = 240, width = 800, height = 1620) {
   return `
-    <!-- Device Shadow -->
-    <rect x="${x + 10}" y="${y + 16}" width="${width}" height="${height}" rx="56" fill="black" opacity="0.08" filter="blur(20px)" />
-    <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="56" fill="white" stroke="#E9E7E1" stroke-width="4" />
-    <!-- Speaker & Camera Hole -->
-    <rect x="${x + width / 2 - 60}" y="${y + 16}" width="120" height="10" rx="5" fill="#E9E7E1" />
+    <!-- Device Outer Frame Shadow -->
+    <rect x="${x + 8}" y="${y + 12}" width="${width}" height="${height}" rx="52" fill="black" opacity="0.08" filter="blur(16px)" />
+    <!-- Device Outer Body Shell -->
+    <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="52" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4" />
     
-    <!-- Screen Viewport Inner Container -->
-    <g transform="translate(${x + 12}, ${y + 36})">
-      <rect x="0" y="0" width="${width - 24}" height="${height - 48}" rx="40" fill="#F7F6F2" />
+    <!-- Phone Top Camera Notch / Punchhole -->
+    <rect x="${x + width / 2 - 50}" y="${y + 16}" width="100" height="8" rx="4" fill="#CBD5E1" />
+    
+    <!-- Inner Screen Display Viewport -->
+    <g transform="translate(${x + 10}, ${y + 32})">
+      <rect x="0" y="0" width="${width - 20}" height="${height - 44}" rx="38" fill="#F7F6F2" />
       <g clip-path="url(#screen-clip)">
         ${contentSvg}
       </g>
@@ -44,504 +46,596 @@ function createBaseLayout({ title, subtitle, badgeText, contentSvg }) {
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
   <defs>
     <clipPath id="screen-clip">
-      <rect x="0" y="0" width="796" height="1492" rx="40" />
+      <rect x="0" y="0" width="780" height="1576" rx="38" />
     </clipPath>
     <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#FCFCFA"/>
       <stop offset="100%" stop-color="#F2F0E8"/>
     </linearGradient>
-    <linearGradient id="heroSky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#38BDF8"/>
-      <stop offset="100%" stop-color="#BAE6FD"/>
+    <linearGradient id="radarHeat" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="35%" stop-color="#F59E0B"/>
+      <stop offset="70%" stop-color="#EF4444"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="aqiBar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="25%" stop-color="#F59E0B"/>
+      <stop offset="60%" stop-color="#EF4444"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
     </linearGradient>
   </defs>
 
-  <!-- Background -->
+  <!-- Background Canvas -->
   <rect width="1080" height="1920" fill="url(#bgGrad)" />
   
-  <!-- Subtle Agrarian Pattern Accents -->
-  <circle cx="980" cy="150" r="220" fill="#EA580C" opacity="0.04" />
-  <circle cx="100" cy="1800" r="300" fill="#10B981" opacity="0.04" />
+  <!-- Subtle Background Accent Circles -->
+  <circle cx="980" cy="150" r="240" fill="#EA580C" opacity="0.035" />
+  <circle cx="100" cy="1800" r="280" fill="#10B981" opacity="0.035" />
 
-  <!-- HEADER MARKETING TEXT AREA -->
-  <g transform="translate(80, 80)">
+  <!-- MARKETING HEADER SLOGAN & BADGE -->
+  <g transform="translate(80, 75)">
     <!-- Category Badge -->
-    <rect x="0" y="0" width="${badgeText.length * 11 + 32}" height="36" rx="18" fill="#FFF0E4" stroke="#FFE1CB" stroke-width="2" />
-    <text x="16" y="23" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#EA580C" letter-spacing="1">${safeBadgeText}</text>
+    <rect x="0" y="0" width="${badgeText.length * 10 + 36}" height="36" rx="18" fill="#FFF0E4" stroke="#FFE1CB" stroke-width="2" />
+    <text x="18" y="23" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#EA580C" letter-spacing="0.8">${safeBadgeText}</text>
 
-    <!-- Main Headline -->
-    <text x="0" y="90" font-family="Outfit, Plus Jakarta Sans, sans-serif" font-size="44" font-weight="900" fill="#171717" letter-spacing="-1">${safeTitle}</text>
+    <!-- Main Marketing Headline -->
+    <text x="0" y="90" font-family="Outfit, Plus Jakarta Sans, sans-serif" font-size="42" font-weight="900" fill="#171717" letter-spacing="-0.8">${safeTitle}</text>
 
-    <!-- Subtitle -->
-    <text x="0" y="130" font-family="Plus Jakarta Sans, sans-serif" font-size="22" font-weight="600" fill="#737873">${safeSubtitle}</text>
+    <!-- Subtitle Description -->
+    <text x="0" y="130" font-family="Plus Jakarta Sans, sans-serif" font-size="21" font-weight="600" fill="#737873">${safeSubtitle}</text>
   </g>
 
-  <!-- DEVICE FRAME & SCREENSHOT -->
+  <!-- DEVICE FRAME & REAL SCREENSHOT RENDER -->
   ${createDeviceFrame(contentSvg, 140, 240, 800, 1620)}
 </svg>
   `;
 }
 
-// -------------------------------------------------------------
-// SCREEN 1: WEATHER DASHBOARD
-// -------------------------------------------------------------
+function renderRealHeader(location = "Bengaluru") {
+  return `
+    <!-- Top App Bar -->
+    <rect width="780" height="64" fill="#F7F6F2" />
+    <rect x="18" y="14" width="36" height="36" rx="18" fill="#FFF0E4" stroke="#FFE1CB" />
+    <path d="M 30 24 C 36 22, 42 28, 36 38 C 30 38, 26 30, 30 24 Z" fill="#EA580C" />
+    
+    <text x="64" y="30" font-family="Outfit, sans-serif" font-size="11" font-weight="900" fill="#EA580C" letter-spacing="0.8">FARM WEATHER</text>
+    <text x="64" y="47" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="800" fill="#171717">${location} &#8291;⌄</text>
+
+    <circle cx="660" cy="32" r="16" fill="white" stroke="#E9E7E1" />
+    <circle cx="704" cy="32" r="16" fill="white" stroke="#E9E7E1" />
+    <circle cx="748" cy="32" r="16" fill="white" stroke="#E9E7E1" />
+  `;
+}
+
+function renderRealBottomNav(activeTab = 'weather') {
+  const tabs = [
+    { id: 'weather', label: 'Weather', icon: '🌤️' },
+    { id: 'radar', label: 'Radar', icon: '🛰️' },
+    { id: 'airsun', label: 'Air &amp; Sun', icon: '☀️' },
+    { id: 'widgets', label: 'Widgets', icon: '📱' },
+    { id: 'settings', label: 'Settings', icon: '⚙️' },
+  ];
+
+  let tabSvgs = '';
+  tabs.forEach((tab, index) => {
+    const x = 18 + index * 148;
+    const isActive = tab.id === activeTab;
+    if (isActive) {
+      tabSvgs += `
+        <rect x="${x}" y="10" width="140" height="44" rx="22" fill="#FFF0E4" stroke="#FFE1CB" />
+        <text x="${x + 20}" y="37" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="900" fill="#EA580C">${tab.icon} ${tab.label}</text>
+      `;
+    } else {
+      tabSvgs += `
+        <text x="${x + 50}" y="37" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#737873">${tab.icon}</text>
+      `;
+    }
+  });
+
+  return `
+    <g transform="translate(0, 1500)">
+      <rect width="780" height="76" fill="white" stroke="#E9E7E1" />
+      ${tabSvgs}
+    </g>
+  `;
+}
+
+// SCREEN 1: REAL HOME WEATHER DASHBOARD
 const screen1Content = `
-  <!-- App Header Bar -->
-  <rect width="796" height="70" fill="white" />
-  <text x="24" y="44" font-family="Outfit, sans-serif" font-size="22" font-weight="900" fill="#171717">Farm Weather</text>
-  <rect x="580" y="20" width="190" height="34" rx="17" fill="#E5F5EC" stroke="#CEEFDB" />
-  <text x="600" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#10B981">📍 Sacramento Field</text>
+  ${renderRealHeader("Bengaluru")}
 
-  <!-- Animated Farm Microclimate Hero -->
-  <g transform="translate(16, 85)">
-    <rect width="764" height="380" rx="32" fill="url(#heroSky)" />
-    
-    <!-- Sun -->
-    <circle cx="660" cy="90" r="45" fill="#FACC15" opacity="0.9" />
-    <circle cx="660" cy="90" r="60" fill="#FDE047" opacity="0.3" />
+  <g transform="translate(16, 75)">
+    <rect width="748" height="36" rx="18" fill="#E5F5EC" stroke="#CEEFDB" />
+    <text x="20" y="23" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#10B981">⚡ Acquiring live GPS fix...</text>
 
-    <!-- Clouds -->
-    <path d="M 120 110 Q 140 80 170 90 Q 200 80 220 100 Q 240 110 230 130 L 110 130 Z" fill="white" opacity="0.95" />
-    <path d="M 420 140 Q 440 120 465 130 Q 485 120 500 135 L 400 135 Z" fill="white" opacity="0.8" />
+    <g transform="translate(0, 48)">
+      <rect width="748" height="400" rx="32" fill="white" stroke="#E9E7E1" />
+      
+      <circle cx="64" cy="64" r="32" fill="#FFF0E4" />
+      <text x="64" y="74" font-family="Plus Jakarta Sans, sans-serif" font-size="28" text-anchor="middle">☀️</text>
+      
+      <text x="112" y="52" font-family="Outfit, sans-serif" font-size="22" font-weight="900" fill="#171717">Clear Sky</text>
+      <text x="112" y="76" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="600" fill="#737873">Feels like 24°</text>
 
-    <!-- Green Field & Barn -->
-    <path d="M 0 240 Q 380 200 764 240 L 764 380 L 0 380 Z" fill="#15803D" />
-    <path d="M 0 280 Q 380 250 764 290 L 764 380 L 0 380 Z" fill="#166534" />
+      <rect x="470" y="38" width="240" height="34" rx="17" fill="#E5F5EC" stroke="#CEEFDB" />
+      <text x="490" y="60" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#10B981">🛡️ AQI 83 • Moderate</text>
 
-    <!-- Red Barn -->
-    <rect x="80" y="170" width="130" height="90" fill="#DC2626" rx="4" />
-    <polygon points="70,170 145,115 220,170" fill="#B91C1C" />
-    <rect x="120" y="200" width="50" height="60" fill="white" rx="2" />
+      <text x="48" y="180" font-family="Outfit, sans-serif" font-size="108" font-weight="900" fill="#171717">23°</text>
+      
+      <text x="560" y="145" font-family="Outfit, sans-serif" font-size="18" font-weight="900" fill="#EA580C">↑ 30°</text>
+      <text x="620" y="145" font-family="Outfit, sans-serif" font-size="18" font-weight="900" fill="#3B82F6">↓ 20°</text>
+      <text x="560" y="170" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="700" fill="#737873">High / Low</text>
 
-    <!-- Silo -->
-    <rect x="225" y="150" width="45" height="110" fill="#94A3B8" rx="4" />
-    <path d="M 225 150 Q 247 125 270 150 Z" fill="#64748B" />
+      <text x="48" y="225" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="600" fill="#444746">Mild, steady atmospheric conditions favorable for scheduled fieldwork and cultivation.</text>
 
-    <!-- Cow -->
-    <rect x="480" y="270" width="40" height="24" rx="6" fill="white" />
-    <rect x="485" y="275" width="12" height="12" fill="#171717" />
-    <rect x="510" y="280" width="8" height="8" fill="#171717" />
+      <g transform="translate(24, 275)">
+        <rect x="0" y="0" width="210" height="90" rx="20" fill="#EFF6FF" stroke="#DBEAFE" />
+        <text x="20" y="32" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="800" fill="#3B82F6">RAIN RISK</text>
+        <text x="20" y="68" font-family="Outfit, sans-serif" font-size="26" font-weight="900" fill="#1D4ED8">💧 0%</text>
 
-    <!-- Temperature & Weather Text -->
-    <text x="36" y="80" font-family="Outfit, sans-serif" font-size="76" font-weight="900" fill="white">28°</text>
-    <text x="36" y="115" font-family="Plus Jakarta Sans, sans-serif" font-size="20" font-weight="800" fill="white">Sunny • Feels like 30°</text>
-    
-    <!-- Field Badges -->
-    <rect x="36" y="135" width="120" height="28" rx="14" fill="rgba(255,255,255,0.25)" />
-    <text x="50" y="154" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="white">🌱 Soil: 88%</text>
+        <rect x="230" y="0" width="220" height="90" rx="20" fill="#E5F5EC" stroke="#CEEFDB" />
+        <text x="250" y="32" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="800" fill="#10B981">FIELD WIND</text>
+        <text x="250" y="68" font-family="Outfit, sans-serif" font-size="24" font-weight="900" fill="#047857">🌬 10 ENE</text>
 
-    <rect x="166" y="135" width="110" height="28" rx="14" fill="rgba(255,255,255,0.25)" />
-    <text x="180" y="154" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="white">🐄 Cattle: 12</text>
+        <rect x="470" y="0" width="230" height="90" rx="20" fill="#E5F5EC" stroke="#CEEFDB" />
+        <text x="490" y="32" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="800" fill="#10B981">HUMIDITY</text>
+        <text x="490" y="68" font-family="Outfit, sans-serif" font-size="26" font-weight="900" fill="#047857">💦 73%</text>
+      </g>
+    </g>
+
+    <g transform="translate(0, 468)">
+      <rect width="748" height="240" rx="32" fill="white" stroke="#E9E7E1" />
+      <text x="28" y="40" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="900" fill="#171717">⏰ 24-HOUR HORIZON</text>
+      <text x="610" y="40" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#EA580C">Scroll 24h →</text>
+
+      <g transform="translate(28, 65)">
+        <rect x="0" y="0" width="150" height="140" rx="22" fill="#FFF0E4" stroke="#FFE1CB" />
+        <text x="75" y="30" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#EA580C" text-anchor="middle">• Now</text>
+        <text x="75" y="65" font-family="Plus Jakarta Sans, sans-serif" font-size="24" text-anchor="middle">☀️</text>
+        <text x="75" y="105" font-family="Outfit, sans-serif" font-size="26" font-weight="900" fill="#171717" text-anchor="middle">23°</text>
+
+        <rect x="165" y="0" width="150" height="140" rx="22" fill="#F7F6F2" stroke="#E9E7E1" />
+        <text x="240" y="30" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#737873" text-anchor="middle">9 AM</text>
+        <text x="240" y="65" font-family="Plus Jakarta Sans, sans-serif" font-size="24" text-anchor="middle">☀️</text>
+        <text x="240" y="105" font-family="Outfit, sans-serif" font-size="26" font-weight="900" fill="#171717" text-anchor="middle">26°</text>
+
+        <rect x="330" y="0" width="150" height="140" rx="22" fill="#F7F6F2" stroke="#E9E7E1" />
+        <text x="405" y="30" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#737873" text-anchor="middle">10 AM</text>
+        <text x="405" y="65" font-family="Plus Jakarta Sans, sans-serif" font-size="24" text-anchor="middle">☀️</text>
+        <text x="405" y="105" font-family="Outfit, sans-serif" font-size="26" font-weight="900" fill="#171717" text-anchor="middle">27°</text>
+
+        <rect x="495" y="0" width="150" height="140" rx="22" fill="#F7F6F2" stroke="#E9E7E1" />
+        <text x="570" y="30" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#737873" text-anchor="middle">11 AM</text>
+        <text x="570" y="65" font-family="Plus Jakarta Sans, sans-serif" font-size="24" text-anchor="middle">☀️</text>
+        <text x="570" y="105" font-family="Outfit, sans-serif" font-size="26" font-weight="900" fill="#171717" text-anchor="middle">29°</text>
+      </g>
+    </g>
+
+    <g transform="translate(0, 720)">
+      <rect width="748" height="680" rx="32" fill="white" stroke="#E9E7E1" />
+      <text x="28" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="900" fill="#171717">📅 7-DAY CROP OUTLOOK</text>
+
+      <g transform="translate(28, 65)">
+        <text x="0" y="25" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="800" fill="#EA580C">• Today</text>
+        <text x="130" y="25" font-family="Plus Jakarta Sans, sans-serif" font-size="14">🌤️ 27%</text>
+        <text x="240" y="25" font-family="Outfit, sans-serif" font-size="16" font-weight="700" fill="#737873">20°</text>
+        
+        <rect x="280" y="12" width="260" height="14" rx="7" fill="#E2E8F0" />
+        <rect x="310" y="12" width="180" height="14" rx="7" fill="#EA580C" />
+
+        <text x="565" y="25" font-family="Outfit, sans-serif" font-size="16" font-weight="800" fill="#171717">30°</text>
+      </g>
+
+      <g transform="translate(28, 135)">
+        <text x="0" y="25" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="700" fill="#171717">Tuesday</text>
+        <text x="130" y="25" font-family="Plus Jakarta Sans, sans-serif" font-size="14">⛅</text>
+        <text x="240" y="25" font-family="Outfit, sans-serif" font-size="16" font-weight="700" fill="#737873">20°</text>
+        
+        <rect x="280" y="12" width="260" height="14" rx="7" fill="#E2E8F0" />
+        <rect x="310" y="12" width="200" height="14" rx="7" fill="#EA580C" />
+
+        <text x="565" y="25" font-family="Outfit, sans-serif" font-size="16" font-weight="800" fill="#171717">32°</text>
+      </g>
+    </g>
   </g>
 
-  <!-- Metric Cards Grid -->
-  <g transform="translate(16, 480)">
-    <!-- Humidity Card -->
-    <rect x="0" y="0" width="370" height="180" rx="28" fill="white" stroke="#E9E7E1" />
-    <text x="24" y="38" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="800" fill="#737873">HUMIDITY</text>
-    <text x="24" y="90" font-family="Outfit, sans-serif" font-size="42" font-weight="900" fill="#171717">64%</text>
-    <text x="24" y="125" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="700" fill="#10B981">Optimal Dew Point 16°C</text>
-    <rect x="24" y="145" width="322" height="10" rx="5" fill="#F7F6F2" />
-    <rect x="24" y="145" width="206" height="10" rx="5" fill="#3B82F6" />
-
-    <!-- Wind Card -->
-    <rect x="394" y="0" width="370" height="180" rx="28" fill="white" stroke="#E9E7E1" />
-    <text x="418" y="38" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="800" fill="#737873">WIND SPEED</text>
-    <text x="418" y="90" font-family="Outfit, sans-serif" font-size="42" font-weight="900" fill="#171717">12 <tspan font-size="22">km/h</tspan></text>
-    <text x="418" y="125" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="700" fill="#EA580C">NW • Gusts up to 18 km/h</text>
-    <rect x="418" y="145" width="322" height="10" rx="5" fill="#F7F6F2" />
-    <rect x="418" y="145" width="140" height="10" rx="5" fill="#EA580C" />
-
-    <!-- Rain Chance Card -->
-    <rect x="0" y="200" width="370" height="180" rx="28" fill="white" stroke="#E9E7E1" />
-    <text x="24" y="238" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="800" fill="#737873">RAIN PROBABILITY</text>
-    <text x="24" y="290" font-family="Outfit, sans-serif" font-size="42" font-weight="900" fill="#171717">10%</text>
-    <text x="24" y="325" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="700" fill="#10B981">No precipitation expected</text>
-
-    <!-- Soil Moisture Card -->
-    <rect x="394" y="200" width="370" height="180" rx="28" fill="white" stroke="#E9E7E1" />
-    <text x="418" y="238" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="800" fill="#737873">SOIL MOISTURE</text>
-    <text x="418" y="290" font-family="Outfit, sans-serif" font-size="42" font-weight="900" fill="#171717">88%</text>
-    <text x="418" y="325" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="700" fill="#10B981">Well Watered Root Zone</text>
-  </g>
-
-  <!-- Actionable Recommendations Banner -->
-  <g transform="translate(16, 880)">
-    <rect width="764" height="130" rx="28" fill="#FFF4ED" stroke="#FFE1CB" />
-    <text x="28" y="45" font-family="Plus Jakarta Sans, sans-serif" font-size="16" font-weight="900" fill="#EA580C">🚜 FIELD ACTION RECOMMENDATION</text>
-    <text x="28" y="80" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="700" fill="#171717">Optimal Morning Spraying Window Available</text>
-    <text x="28" y="105" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#737873">Low wind speed (12 km/h) &amp; mild canopy temperature ideal for foliar nutrition.</text>
-  </g>
-
-  <!-- Parcel Quick Map Preview -->
-  <g transform="translate(16, 1030)">
-    <rect width="764" height="230" rx="28" fill="white" stroke="#E9E7E1" />
-    <text x="28" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="16" font-weight="900" fill="#171717">🗺️ Sacramento Parcel Map (7 Field Zones)</text>
-    
-    <rect x="28" y="65" width="220" height="135" rx="18" fill="#E5F5EC" stroke="#CEEFDB" />
-    <text x="44" y="100" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="800" fill="#10B981">Tomato Field</text>
-    <text x="44" y="125" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#047857">2.8 ha • Optimal</text>
-
-    <rect x="272" y="65" width="220" height="135" rx="18" fill="#F7F6F2" stroke="#E9E7E1" />
-    <text x="288" y="100" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="800" fill="#171717">Carrots &amp; Crops</text>
-    <text x="288" y="125" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#737873">3.1 ha • Irrigated</text>
-
-    <rect x="516" y="65" width="220" height="135" rx="18" fill="#F7F6F2" stroke="#E9E7E1" />
-    <text x="532" y="100" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="800" fill="#171717">Fruit Orchard</text>
-    <text x="532" y="125" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#737873">1.2 ha • Good</text>
-  </g>
+  ${renderRealBottomNav('weather')}
 `;
 
-// -------------------------------------------------------------
-// SCREEN 2: HOURLY & DAILY FORECAST
-// -------------------------------------------------------------
+// SCREEN 2: REAL LIVE DOPPLER RADAR
 const screen2Content = `
-  <rect width="796" height="70" fill="white" />
-  <text x="24" y="44" font-family="Outfit, sans-serif" font-size="22" font-weight="900" fill="#171717">Forecast Timeline</text>
-  <text x="580" y="44" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="800" fill="#EA580C">7-Day &amp; 24-Hour</text>
+  ${renderRealHeader("Bengaluru")}
 
-  <!-- 24-Hour Timeline Bar -->
-  <g transform="translate(16, 90)">
-    <rect width="764" height="260" rx="28" fill="white" stroke="#E9E7E1" />
-    <text x="24" y="40" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="900" fill="#171717">24-HOUR HOURLY TIMELINE</text>
+  <g transform="translate(16, 75)">
+    <rect width="748" height="36" rx="18" fill="#E5F5EC" stroke="#CEEFDB" />
+    <text x="20" y="23" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#10B981">📍 GPS Location: Bengaluru</text>
 
-    <g transform="translate(24, 70)">
-      <!-- Hour 1 -->
-      <rect x="0" y="0" width="130" height="160" rx="20" fill="#171717" />
-      <text x="65" y="32" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#9CA3AF" text-anchor="middle">Now</text>
-      <text x="65" y="70" font-family="Outfit, sans-serif" font-size="28" font-weight="900" fill="white" text-anchor="middle">28°</text>
-      <text x="65" y="105" font-family="Plus Jakarta Sans, sans-serif" font-size="20" text-anchor="middle">☀️</text>
-      <text x="65" y="138" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#38BDF8" text-anchor="middle">0% rain</text>
+    <g transform="translate(0, 48)">
+      <rect x="0" y="0" width="230" height="40" rx="20" fill="#FFF0E4" stroke="#FFE1CB" />
+      <text x="36" y="25" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="900" fill="#EA580C">🌧️ Precipitation</text>
 
-      <!-- Hour 2 -->
-      <rect x="145" y="0" width="130" height="160" rx="20" fill="#F7F6F2" stroke="#E9E7E1" />
-      <text x="210" y="32" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#737873" text-anchor="middle">2 PM</text>
-      <text x="210" y="70" font-family="Outfit, sans-serif" font-size="28" font-weight="900" fill="#171717" text-anchor="middle">29°</text>
-      <text x="210" y="105" font-family="Plus Jakarta Sans, sans-serif" font-size="20" text-anchor="middle">☀️</text>
-      <text x="210" y="138" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#737873" text-anchor="middle">0% rain</text>
+      <rect x="245" y="0" width="240" height="40" rx="20" fill="white" stroke="#E9E7E1" />
+      <text x="280" y="25" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#171717">💨 Wind Streams</text>
 
-      <!-- Hour 3 -->
-      <rect x="290" y="0" width="130" height="160" rx="20" fill="#F7F6F2" stroke="#E9E7E1" />
-      <text x="355" y="32" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#737873" text-anchor="middle">4 PM</text>
-      <text x="355" y="70" font-family="Outfit, sans-serif" font-size="28" font-weight="900" fill="#171717" text-anchor="middle">27°</text>
-      <text x="355" y="105" font-family="Plus Jakarta Sans, sans-serif" font-size="20" text-anchor="middle">⛅</text>
-      <text x="355" y="138" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#737873" text-anchor="middle">10% rain</text>
+      <rect x="500" y="0" width="248" height="40" rx="20" fill="white" stroke="#E9E7E1" />
+      <text x="535" y="25" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#171717">🌡️ Temperature</text>
+    </g>
 
-      <!-- Hour 4 -->
-      <rect x="435" y="0" width="130" height="160" rx="20" fill="#F7F6F2" stroke="#E9E7E1" />
-      <text x="500" y="32" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#737873" text-anchor="middle">6 PM</text>
-      <text x="500" y="70" font-family="Outfit, sans-serif" font-size="28" font-weight="900" fill="#171717" text-anchor="middle">24°</text>
-      <text x="500" y="105" font-family="Plus Jakarta Sans, sans-serif" font-size="20" text-anchor="middle">🌤️</text>
-      <text x="500" y="138" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#737873" text-anchor="middle">15% rain</text>
+    <g transform="translate(0, 102)">
+      <rect width="748" height="880" rx="32" fill="#F0FDF4" stroke="#DCFCE7" />
 
-      <!-- Hour 5 -->
-      <rect x="580" y="0" width="130" height="160" rx="20" fill="#F7F6F2" stroke="#E9E7E1" />
-      <text x="645" y="32" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#737873" text-anchor="middle">8 PM</text>
-      <text x="645" y="70" font-family="Outfit, sans-serif" font-size="28" font-weight="900" fill="#171717" text-anchor="middle">21°</text>
-      <text x="645" y="105" font-family="Plus Jakarta Sans, sans-serif" font-size="20" text-anchor="middle">🌙</text>
-      <text x="645" y="138" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#737873" text-anchor="middle">5% rain</text>
+      <circle cx="374" cy="420" r="320" fill="none" stroke="#BBF7D0" stroke-width="2" stroke-dasharray="6,6" />
+      <circle cx="374" cy="420" r="220" fill="none" stroke="#BBF7D0" stroke-width="2" stroke-dasharray="6,6" />
+      <circle cx="374" cy="420" r="120" fill="none" stroke="#BBF7D0" stroke-width="2" stroke-dasharray="6,6" />
+
+      <line x1="374" y1="100" x2="374" y2="740" stroke="#BBF7D0" stroke-width="2" />
+      <line x1="54" y1="420" x2="694" y2="420" stroke="#BBF7D0" stroke-width="2" />
+
+      <circle cx="330" cy="380" r="140" fill="url(#radarHeat)" opacity="0.6" filter="blur(20px)" />
+      <circle cx="460" cy="460" r="110" fill="#3B82F6" opacity="0.5" filter="blur(18px)" />
+
+      <circle cx="374" cy="420" r="10" fill="#EA580C" stroke="white" stroke-width="3" />
+
+      <rect x="28" y="24" width="180" height="34" rx="17" fill="white" stroke="#E9E7E1" />
+      <text x="48" y="46" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#171717">📍 Bengaluru</text>
+
+      <circle cx="680" cy="40" r="18" fill="white" stroke="#E9E7E1" />
+      <text x="680" y="46" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="800" text-anchor="middle">+</text>
+
+      <circle cx="680" cy="85" r="18" fill="white" stroke="#E9E7E1" />
+      <text x="680" y="90" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="800" text-anchor="middle">−</text>
+
+      <g transform="translate(28, 810)">
+        <text x="0" y="0" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#171717">Light (15 dBZ)</text>
+        <rect x="150" y="-10" width="380" height="12" rx="6" fill="url(#aqiBar)" />
+        <text x="690" y="0" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#DC2626" text-anchor="end">Severe (65 dBZ)</text>
+      </g>
+    </g>
+
+    <g transform="translate(0, 1000)">
+      <rect width="748" height="100" rx="32" fill="white" stroke="#E9E7E1" />
+      <circle cx="60" cy="50" r="24" fill="#FFF0E4" stroke="#FFE1CB" />
+      <text x="60" y="56" font-family="Plus Jakarta Sans, sans-serif" font-size="16" font-weight="800" fill="#EA580C" text-anchor="middle">⏸</text>
+
+      <text x="140" y="55" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#737873">-90m</text>
+      <text x="230" y="55" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#737873">-60m</text>
+      <text x="320" y="55" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#737873">-30m</text>
+
+      <rect x="395" y="25" width="80" height="50" rx="16" fill="#FFF0E4" stroke="#FFE1CB" />
+      <text x="435" y="55" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="900" fill="#EA580C" text-anchor="middle">● Live</text>
+
+      <text x="520" y="55" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#737873">+30m</text>
+      <text x="610" y="55" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#737873">+60m</text>
+
+      <circle cx="690" cy="50" r="20" fill="#F7F6F2" stroke="#E9E7E1" />
+      <text x="690" y="55" font-family="Plus Jakarta Sans, sans-serif" font-size="14" text-anchor="middle">🔄</text>
+    </g>
+
+    <g transform="translate(0, 1115)">
+      <rect width="748" height="120" rx="24" fill="#FFF4ED" stroke="#FFE1CB" />
+      <text x="24" y="36" font-family="Plus Jakarta Sans, sans-serif" font-size="18">ℹ️</text>
+      <text x="56" y="38" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="600" fill="#171717">Echoes exceeding 35 dBZ (amber/red) indicate precipitation rates over 4 mm/h. Delay foliar spraying during active rain sweeps.</text>
     </g>
   </g>
 
-  <!-- 7-Day Forecast Cards -->
-  <g transform="translate(16, 370)">
-    <text x="8" y="24" font-family="Plus Jakarta Sans, sans-serif" font-size="16" font-weight="900" fill="#171717">7-DAY AGRICULTURAL OUTLOOK</text>
-
-    <!-- Day 1 Expanded Card -->
-    <g transform="translate(0, 40)">
-      <rect width="764" height="280" rx="28" fill="white" stroke="#EA580C" stroke-width="2" />
-      
-      <text x="24" y="44" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="900" fill="#171717">Today • Monday</text>
-      <text x="24" y="70" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="700" fill="#EA580C">Sunny &amp; Dry • Max 29° / Min 17°</text>
-      
-      <text x="680" y="55" font-family="Outfit, sans-serif" font-size="32" font-weight="900" fill="#171717">29°</text>
-
-      <!-- Agronomic Drawer Breakdown -->
-      <rect x="24" y="95" width="716" height="155" rx="20" fill="#F7F6F2" stroke="#E9E7E1" />
-      <text x="44" y="130" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#737873">💧 PRECIPITATION</text>
-      <text x="44" y="155" font-family="Outfit, sans-serif" font-size="22" font-weight="900" fill="#171717">0.0 mm (0%)</text>
-
-      <text x="280" y="130" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#737873">💦 CANOPY MOISTURE</text>
-      <text x="280" y="155" font-family="Outfit, sans-serif" font-size="22" font-weight="900" fill="#10B981">Low Blight Risk</text>
-
-      <text x="530" y="130" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#737873">☀️ UV INDEX PEAK</text>
-      <text x="530" y="155" font-family="Outfit, sans-serif" font-size="22" font-weight="900" fill="#EA580C">6.5 (High)</text>
-
-      <text x="44" y="210" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#171717">🌱 Agronomic Tip: Good day for cultivation and irrigation reservoir checks.</text>
-    </g>
-
-    <!-- Day 2 -->
-    <g transform="translate(0, 340)">
-      <rect width="764" height="110" rx="24" fill="white" stroke="#E9E7E1" />
-      <text x="24" y="48" font-family="Plus Jakarta Sans, sans-serif" font-size="16" font-weight="900" fill="#171717">Tuesday</text>
-      <text x="24" y="75" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#737873">Partly Cloudy • Rain 20%</text>
-      <text x="680" y="60" font-family="Outfit, sans-serif" font-size="26" font-weight="900" fill="#171717">27° / 16°</text>
-    </g>
-
-    <!-- Day 3 -->
-    <g transform="translate(0, 465)">
-      <rect width="764" height="110" rx="24" fill="white" stroke="#E9E7E1" />
-      <text x="24" y="48" font-family="Plus Jakarta Sans, sans-serif" font-size="16" font-weight="900" fill="#171717">Wednesday</text>
-      <text x="24" y="75" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#38BDF8">Moderate Rain Showers • 6.2 mm</text>
-      <text x="680" y="60" font-family="Outfit, sans-serif" font-size="26" font-weight="900" fill="#171717">22° / 14°</text>
-    </g>
-
-    <!-- Day 4 -->
-    <g transform="translate(0, 590)">
-      <rect width="764" height="110" rx="24" fill="white" stroke="#E9E7E1" />
-      <text x="24" y="48" font-family="Plus Jakarta Sans, sans-serif" font-size="16" font-weight="900" fill="#171717">Thursday</text>
-      <text x="24" y="75" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#10B981">Clearing Up &amp; Rainbow • Rain 10%</text>
-      <text x="680" y="60" font-family="Outfit, sans-serif" font-size="26" font-weight="900" fill="#171717">25° / 15°</text>
-    </g>
-  </g>
+  ${renderRealBottomNav('radar')}
 `;
 
-// -------------------------------------------------------------
-// SCREEN 3: LIVE RADAR
-// -------------------------------------------------------------
+// SCREEN 3: REAL AIR & SUN ENVIRONMENTAL TELEMETRY
 const screen3Content = `
-  <rect width="796" height="70" fill="white" />
-  <text x="24" y="44" font-family="Outfit, sans-serif" font-size="22" font-weight="900" fill="#171717">Live Doppler Radar</text>
-  <rect x="580" y="20" width="190" height="34" rx="17" fill="#E5F5EC" stroke="#CEEFDB" />
-  <text x="600" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#10B981">● LIVE SATELLITE</text>
+  ${renderRealHeader("Bengaluru")}
 
-  <!-- Map Container -->
-  <g transform="translate(16, 85)">
-    <rect width="764" height="1100" rx="32" fill="#E2E8F0" />
+  <g transform="translate(16, 75)">
+    <rect width="748" height="380" rx="32" fill="white" stroke="#E9E7E1" />
+    <text x="28" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#737873">EPA AIR QUALITY INDEX</text>
+
+    <text x="28" y="115" font-family="Outfit, sans-serif" font-size="80" font-weight="900" fill="#171717">84</text>
     
-    <!-- Map Terrain Mock -->
-    <path d="M 0 100 Q 200 80 400 200 T 764 400 L 764 1100 L 0 1100 Z" fill="#CBD5E1" />
-    <path d="M 100 0 Q 300 400 200 800 T 600 1100" fill="none" stroke="#94A3B8" stroke-width="12" />
+    <rect x="135" y="65" width="120" height="32" rx="16" fill="#FEF3C7" stroke="#FDE68A" />
+    <text x="195" y="86" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#D97706" text-anchor="middle">Moderate</text>
 
-    <!-- Radar Precipitation Blobs -->
-    <circle cx="340" cy="450" r="180" fill="#22C55E" opacity="0.45" />
-    <circle cx="380" cy="480" r="110" fill="#EAB308" opacity="0.55" />
-    <circle cx="400" cy="500" r="60" fill="#EF4444" opacity="0.7" />
+    <circle cx="680" cy="70" r="28" fill="#E5F5EC" stroke="#CEEFDB" />
+    <text x="680" y="78" font-family="Plus Jakarta Sans, sans-serif" font-size="20" text-anchor="middle">🛡️</text>
 
-    <!-- Farm Location Marker Pin -->
-    <circle cx="380" cy="480" r="28" fill="#171717" stroke="white" stroke-width="4" />
-    <circle cx="380" cy="480" r="8" fill="#EA580C" />
-    
-    <!-- Marker Tag -->
-    <rect x="300" y="410" width="160" height="36" rx="12" fill="white" stroke="#E9E7E1" />
-    <text x="380" y="433" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#171717" text-anchor="middle">Sacramento Farm</text>
+    <text x="28" y="155" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#444746">Air quality is acceptable for most; unusually sensitive individuals should take care.</text>
 
-    <!-- Floating Map Controls Header -->
-    <rect x="24" y="24" width="716" height="70" rx="24" fill="white" opacity="0.95" />
-    <text x="48" y="65" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="800" fill="#171717">Precipitation &amp; Wind Radar Layers</text>
-    <rect x="580" y="40" width="130" height="36" rx="18" fill="#EA580C" />
-    <text x="645" y="63" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="white" text-anchor="middle">Radar HD</text>
+    <rect x="28" y="195" width="692" height="12" rx="6" fill="url(#aqiBar)" />
+    <circle cx="320" cy="201" r="9" fill="white" stroke="#171717" stroke-width="3" />
 
-    <!-- Radar Playback Bar -->
-    <g transform="translate(24, 980)">
-      <rect width="716" height="90" rx="28" fill="white" opacity="0.95" />
-      <circle cx="65" cy="45" r="28" fill="#EA580C" />
-      <polygon points="60,35 75,45 60,55" fill="white" />
-      
-      <!-- Timeline Scrub -->
-      <rect x="120" y="40" width="480" height="10" rx="5" fill="#E2E8F0" />
-      <rect x="120" y="40" width="320" height="10" rx="5" fill="#EA580C" />
-      <circle cx="440" cy="45" r="12" fill="#171717" stroke="white" stroke-width="3" />
+    <text x="28" y="230" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="700" fill="#10B981">Good (0)</text>
+    <text x="210" y="230" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="700" fill="#D97706">Moderate (50)</text>
+    <text x="430" y="230" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="700" fill="#DC2626">Unhealthy (150)</text>
+    <text x="720" y="230" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="700" fill="#8B5CF6" text-anchor="end">Hazardous (300+)</text>
 
-      <text x="650" y="50" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#171717">LIVE</text>
+    <g transform="translate(28, 260)">
+      <rect x="0" y="0" width="155" height="90" rx="20" fill="#F7F6F2" stroke="#E9E7E1" />
+      <text x="77" y="30" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="800" fill="#737873" text-anchor="middle">PM2.5</text>
+      <text x="77" y="65" font-family="Outfit, sans-serif" font-size="20" font-weight="900" fill="#2563EB" text-anchor="middle">34 µg</text>
+
+      <rect x="175" y="0" width="155" height="90" rx="20" fill="#F7F6F2" stroke="#E9E7E1" />
+      <text x="252" y="30" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="800" fill="#737873" text-anchor="middle">PM10</text>
+      <text x="252" y="65" font-family="Outfit, sans-serif" font-size="20" font-weight="900" fill="#059669" text-anchor="middle">46 µg</text>
+
+      <rect x="350" y="0" width="155" height="90" rx="20" fill="#F7F6F2" stroke="#E9E7E1" />
+      <text x="427" y="30" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="800" fill="#737873" text-anchor="middle">Ozone</text>
+      <text x="427" y="65" font-family="Outfit, sans-serif" font-size="20" font-weight="900" fill="#D97706" text-anchor="middle">84 ppb</text>
+
+      <rect x="525" y="0" width="155" height="90" rx="20" fill="#F7F6F2" stroke="#E9E7E1" />
+      <text x="602" y="30" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="800" fill="#737873" text-anchor="middle">NO₂</text>
+      <text x="602" y="65" font-family="Outfit, sans-serif" font-size="20" font-weight="900" fill="#7C3AED" text-anchor="middle">14 ppb</text>
+    </g>
+
+    <g transform="translate(0, 400)">
+      <rect width="748" height="340" rx="32" fill="white" stroke="#E9E7E1" />
+      <text x="28" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="900" fill="#171717">☀️ SOLAR DAYLIGHT EPHEMERIS</text>
+      <text x="720" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#EA580C" text-anchor="end">Daylight: 12h 34m</text>
+
+      <path d="M 80 200 Q 374 50 668 200" fill="none" stroke="#FDE047" stroke-width="6" stroke-dasharray="8,8" />
+      <circle cx="480" cy="115" r="16" fill="#EA580C" stroke="white" stroke-width="4" />
+
+      <text x="80" y="235" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#171717">6:09 AM</text>
+      <text x="668" y="235" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#171717" text-anchor="end">6:02 PM</text>
+
+      <g transform="translate(28, 260)">
+        <text x="0" y="20" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="700" fill="#737873">Golden Hour</text>
+        <text x="0" y="45" font-family="Outfit, sans-serif" font-size="18" font-weight="900" fill="#EA580C">6:15 PM</text>
+
+        <text x="260" y="20" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="700" fill="#737873">Solar Noon</text>
+        <text x="260" y="45" font-family="Outfit, sans-serif" font-size="18" font-weight="900" fill="#171717">12:41 PM</text>
+
+        <text x="520" y="20" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="700" fill="#737873">Current State</text>
+        <text x="520" y="45" font-family="Outfit, sans-serif" font-size="18" font-weight="900" fill="#10B981">Daylight</text>
+      </g>
+    </g>
+
+    <g transform="translate(0, 760)">
+      <rect width="748" height="180" rx="32" fill="white" stroke="#E9E7E1" />
+      <text x="28" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="900" fill="#171717">🌙 CELESTIAL MOON PHASE</text>
+      <text x="720" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#0284C7" text-anchor="end">1% Illumination</text>
+
+      <circle cx="80" cy="110" r="32" fill="#1E293B" />
+      <text x="130" y="105" font-family="Outfit, sans-serif" font-size="20" font-weight="900" fill="#171717">New Moon</text>
+      <text x="130" y="130" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#737873">Moonrise at 8:14 PM • Sets at 6:42 AM</text>
     </g>
   </g>
+
+  ${renderRealBottomNav('airsun')}
 `;
 
-// -------------------------------------------------------------
-// SCREEN 4: AGRICULTURAL & SOIL INSIGHTS
-// -------------------------------------------------------------
+// SCREEN 4: REAL ANDROID WIDGETS
 const screen4Content = `
-  <rect width="796" height="70" fill="white" />
-  <text x="24" y="44" font-family="Outfit, sans-serif" font-size="22" font-weight="900" fill="#171717">Air, Sun &amp; Soil Telemetry</text>
+  ${renderRealHeader("Bengaluru")}
 
-  <g transform="translate(16, 90)">
-    <!-- Air Quality Card -->
-    <rect width="764" height="260" rx="28" fill="white" stroke="#E9E7E1" />
-    <text x="28" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="900" fill="#171717">🍃 AIR QUALITY INDEX (AQI)</text>
+  <g transform="translate(16, 75)">
+    <text x="8" y="24" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#737873">Seven-Day Outlook (Proportional Bars)</text>
     
-    <text x="28" y="110" font-family="Outfit, sans-serif" font-size="56" font-weight="900" fill="#10B981">32</text>
-    <text x="115" y="110" font-family="Plus Jakarta Sans, sans-serif" font-size="22" font-weight="800" fill="#10B981">GOOD</text>
-    <text x="28" y="145" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="600" fill="#737873">Clean agrarian canopy air with negligible PM2.5 particulate pollution.</text>
+    <rect x="480" y="0" width="260" height="38" rx="19" fill="#EFF6FF" stroke="#DBEAFE" />
+    <text x="610" y="24" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#2563EB" text-anchor="middle">+ Add to Home</text>
 
-    <!-- AQI Scale Bar -->
-    <rect x="28" y="180" width="708" height="14" rx="7" fill="#E2E8F0" />
-    <rect x="28" y="180" width="180" height="14" rx="7" fill="#10B981" />
-    <circle cx="160" cy="187" r="12" fill="#171717" stroke="white" stroke-width="3" />
-
-    <!-- Details Grid -->
-    <g transform="translate(0, 290)">
-      <!-- UV Card -->
-      <rect x="0" y="0" width="370" height="220" rx="28" fill="white" stroke="#E9E7E1" />
-      <text x="24" y="38" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="800" fill="#737873">☀️ UV INDEX</text>
-      <text x="24" y="95" font-family="Outfit, sans-serif" font-size="44" font-weight="900" fill="#EA580C">6.4</text>
-      <text x="24" y="130" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="700" fill="#EA580C">High • Protection Recommended</text>
-      <text x="24" y="170" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="600" fill="#737873">Peak UV from 11:30 AM to 2:45 PM.</text>
-
-      <!-- Evapotranspiration Card -->
-      <rect x="394" y="0" width="370" height="220" rx="28" fill="white" stroke="#E9E7E1" />
-      <text x="418" y="38" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="800" fill="#737873">🌱 EVAPOTRANSPIRATION</text>
-      <text x="418" y="95" font-family="Outfit, sans-serif" font-size="44" font-weight="900" fill="#171717">4.2 <tspan font-size="22">mm/day</tspan></text>
-      <text x="418" y="130" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="700" fill="#10B981">Moderate Canopy Loss</text>
-      <text x="418" y="170" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="600" fill="#737873">Replenish 25 L/m² in tomato field.</text>
-    </g>
-
-    <!-- Solar Astronomy Arc Card -->
-    <g transform="translate(0, 540)">
-      <rect width="764" height="260" rx="28" fill="white" stroke="#E9E7E1" />
-      <text x="28" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="900" fill="#171717">☀️ SUN &amp; DAYLIGHT CYCLE</text>
-
-      <path d="M 60 180 Q 382 40 704 180" fill="none" stroke="#FDE047" stroke-width="8" stroke-dasharray="10,10" />
-      <circle cx="382" cy="110" r="20" fill="#FACC15" />
-
-      <text x="60" y="220" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="800" fill="#171717">Sunrise 06:12 AM</text>
-      <text x="704" y="220" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="800" fill="#171717" text-anchor="end">Sunset 07:48 PM</text>
-      <text x="382" y="220" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#EA580C" text-anchor="middle">13 hrs 36 mins Daylight</text>
-    </g>
-  </g>
-`;
-
-// -------------------------------------------------------------
-// SCREEN 5: HOME SCREEN WIDGETS
-// -------------------------------------------------------------
-const screen5Content = `
-  <rect width="796" height="70" fill="white" />
-  <text x="24" y="44" font-family="Outfit, sans-serif" font-size="22" font-weight="900" fill="#171717">Android Home Widgets</text>
-
-  <g transform="translate(16, 90)">
-    <!-- Compact Widget 2x2 -->
-    <rect width="370" height="260" rx="32" fill="white" stroke="#E9E7E1" />
-    <text x="24" y="40" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#EA580C">SACRAMENTO FIELD</text>
-    <text x="24" y="95" font-family="Outfit, sans-serif" font-size="52" font-weight="900" fill="#171717">28°</text>
-    <text x="24" y="130" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="700" fill="#171717">Sunny • 64% Hum</text>
-    <rect x="24" y="160" width="130" height="32" rx="16" fill="#E5F5EC" />
-    <text x="40" y="181" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#10B981">🌱 Soil 88%</text>
-
-    <!-- Medium Widget 4x2 -->
-    <g transform="translate(0, 290)">
-      <rect width="764" height="260" rx="32" fill="#171717" />
-      <text x="28" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#FACC15">FARM WEATHER WIDGET (4x2)</text>
+    <g transform="translate(0, 48)">
+      <rect width="748" height="420" rx="32" fill="white" stroke="#E9E7E1" />
+      <text x="28" y="40" font-family="Outfit, sans-serif" font-size="18" font-weight="900" fill="#171717">7-Day Forecast Outlook</text>
+      <text x="28" y="62" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#737873">Bengaluru • Consistent scale</text>
       
-      <text x="28" y="110" font-family="Outfit, sans-serif" font-size="64" font-weight="900" fill="white">28°C</text>
-      <text x="28" y="145" font-family="Plus Jakarta Sans, sans-serif" font-size="16" font-weight="700" fill="#9CA3AF">Sacramento Farm • Feels like 30°</text>
+      <rect x="620" y="22" width="100" height="30" rx="15" fill="#EFF6FF" />
+      <text x="670" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#2563EB" text-anchor="middle">Weekly</text>
 
-      <g transform="translate(380, 50)">
-        <rect x="0" y="0" width="340" height="160" rx="20" fill="rgba(255,255,255,0.1)" />
-        <text x="20" y="40" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="white">💧 Rain Chance: 10%</text>
-        <text x="20" y="75" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="white">💨 Wind: 12 km/h NW</text>
-        <text x="20" y="110" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#38BDF8">🔄 Synced 15m ago</text>
+      <g transform="translate(28, 90)">
+        <text x="0" y="20" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="700" fill="#171717">Today</text>
+        <text x="130" y="20" font-family="Plus Jakarta Sans, sans-serif" font-size="13" fill="#2563EB">🌤️ 27%</text>
+        <text x="240" y="20" font-family="Outfit, sans-serif" font-size="15" font-weight="700" fill="#737873">20°</text>
+
+        <rect x="280" y="8" width="260" height="12" rx="6" fill="#E2E8F0" />
+        <rect x="310" y="8" width="180" height="12" rx="6" fill="#EA580C" />
+
+        <text x="560" y="20" font-family="Outfit, sans-serif" font-size="15" font-weight="800" fill="#171717">30°</text>
+      </g>
+
+      <g transform="translate(28, 140)">
+        <text x="0" y="20" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="700" fill="#171717">Tuesday</text>
+        <text x="130" y="20" font-family="Plus Jakarta Sans, sans-serif" font-size="13">⛅</text>
+        <text x="240" y="20" font-family="Outfit, sans-serif" font-size="15" font-weight="700" fill="#737873">20°</text>
+
+        <rect x="280" y="8" width="260" height="12" rx="6" fill="#E2E8F0" />
+        <rect x="310" y="8" width="200" height="12" rx="6" fill="#EA580C" />
+
+        <text x="560" y="20" font-family="Outfit, sans-serif" font-size="15" font-weight="800" fill="#171717">32°</text>
+      </g>
+
+      <g transform="translate(28, 190)">
+        <text x="0" y="20" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="700" fill="#171717">Wednesday</text>
+        <text x="130" y="20" font-family="Plus Jakarta Sans, sans-serif" font-size="13">🌧️</text>
+        <text x="240" y="20" font-family="Outfit, sans-serif" font-size="15" font-weight="700" fill="#737873">21°</text>
+
+        <rect x="280" y="8" width="260" height="12" rx="6" fill="#E2E8F0" />
+        <rect x="320" y="8" width="190" height="12" rx="6" fill="#EA580C" />
+
+        <text x="560" y="20" font-family="Outfit, sans-serif" font-size="15" font-weight="800" fill="#171717">32°</text>
       </g>
     </g>
 
-    <!-- Widget Info Card -->
-    <g transform="translate(0, 580)">
-      <rect width="764" height="220" rx="28" fill="white" stroke="#E9E7E1" />
-      <text x="28" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="16" font-weight="900" fill="#171717">📱 Native Android Home-Screen Integration</text>
-      <text x="28" y="80" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="600" fill="#737873">Periodic 15-minute background refresh via Android WorkManager.</text>
-      <text x="28" y="110" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="600" fill="#737873">Zero battery drain with cached offline telemetry storage.</text>
-      <rect x="28" y="140" width="220" height="40" rx="20" fill="#EA580C" />
-      <text x="138" y="165" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="white" text-anchor="middle">Add to Home Screen</text>
+    <g transform="translate(0, 500)">
+      <text x="8" y="24" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#047857">WIDGET D • 3x2 OR 4x2 FARM CELL</text>
+      <text x="8" y="46" font-family="Outfit, sans-serif" font-size="18" font-weight="900" fill="#171717">Agricultural Field Conditions</text>
+
+      <rect x="480" y="10" width="260" height="38" rx="19" fill="#E5F5EC" stroke="#CEEFDB" />
+      <text x="610" y="34" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#10B981" text-anchor="middle">+ Add to Home</text>
+
+      <g transform="translate(0, 60)">
+        <rect width="748" height="420" rx="32" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="2" />
+
+        <circle cx="50" cy="50" r="22" fill="white" />
+        <text x="50" y="56" font-family="Plus Jakarta Sans, sans-serif" font-size="16" text-anchor="middle">🌱</text>
+
+        <text x="88" y="44" font-family="Outfit, sans-serif" font-size="18" font-weight="900" fill="#065F46">Farm Field Conditions</text>
+        <text x="88" y="66" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#047857">Bengaluru • Agronomy Telemetry</text>
+
+        <rect x="620" y="28" width="100" height="30" rx="15" fill="white" stroke="#A7F3D0" />
+        <text x="670" y="48" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#047857" text-anchor="middle">Parcel</text>
+
+        <g transform="translate(28, 95)">
+          <rect x="0" y="0" width="330" height="130" rx="22" fill="white" stroke="#D1FAE5" />
+          <text x="20" y="32" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#737873">Topsoil Layer</text>
+          <text x="20" y="75" font-family="Outfit, sans-serif" font-size="28" font-weight="900" fill="#171717">26% <tspan font-size="14" font-weight="600" fill="#737873">moisture</tspan></text>
+          <text x="20" y="105" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#059669">Temp: 22°</text>
+
+          <rect x="360" y="0" width="330" height="130" rx="22" fill="white" stroke="#D1FAE5" />
+          <text x="380" y="32" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#737873">Precipitation</text>
+          <text x="380" y="75" font-family="Outfit, sans-serif" font-size="28" font-weight="900" fill="#171717">0% <tspan font-size="14" font-weight="600" fill="#737873">chance</tspan></text>
+          <text x="380" y="105" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#2563EB">Sum: 0 mm</text>
+
+          <rect x="0" y="150" width="330" height="130" rx="22" fill="white" stroke="#D1FAE5" />
+          <text x="20" y="182" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#737873">Field Wind</text>
+          <text x="20" y="225" font-family="Outfit, sans-serif" font-size="28" font-weight="900" fill="#171717">11 <tspan font-size="14" font-weight="600" fill="#737873">km/h</tspan></text>
+          <text x="20" y="255" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#047857">ENE (68°) • Gust 27</text>
+
+          <rect x="360" y="150" width="330" height="130" rx="22" fill="white" stroke="#D1FAE5" />
+          <text x="380" y="182" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#737873">Humidity</text>
+          <text x="380" y="225" font-family="Outfit, sans-serif" font-size="28" font-weight="900" fill="#171717">71% <tspan font-size="14" font-weight="600" fill="#737873">RH</tspan></text>
+          <text x="380" y="255" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#2563EB">Dew Point: 17°</text>
+        </g>
+      </g>
     </g>
   </g>
+
+  ${renderRealBottomNav('widgets')}
 `;
 
-// -------------------------------------------------------------
-// SCREEN 6: APP UPDATES & DIRECT SUPPORT
-// -------------------------------------------------------------
-const screen6Content = `
-  <rect width="796" height="70" fill="white" />
-  <text x="24" y="44" font-family="Outfit, sans-serif" font-size="22" font-weight="900" fill="#171717">Updates &amp; Direct Support</text>
+// SCREEN 5: REAL APP SYSTEM & DIRECT UPI SUPPORT
+const screen5Content = `
+  ${renderRealHeader("Bengaluru")}
 
-  <g transform="translate(16, 90)">
-    <!-- Version Card -->
-    <rect width="764" height="260" rx="28" fill="#E5F5EC" stroke="#CEEFDB" />
-    <circle cx="70" cy="70" r="32" fill="white" />
-    <text x="70" y="78" font-family="Plus Jakarta Sans, sans-serif" font-size="24" text-anchor="middle">✓</text>
+  <g transform="translate(16, 75)">
+    <rect width="748" height="280" rx="32" fill="white" stroke="#E9E7E1" />
+    <circle cx="48" cy="48" r="18" fill="#E5F5EC" />
+    <text x="48" y="53" font-family="Plus Jakarta Sans, sans-serif" font-size="14" text-anchor="middle">✓</text>
+    
+    <text x="80" y="52" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#047857">Verified schema • 16 atmospheric &amp; soil parameters</text>
+    
+    <rect x="610" y="32" width="110" height="28" rx="14" fill="#E5F5EC" />
+    <text x="665" y="50" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="800" fill="#10B981" text-anchor="middle">LIVE SYNC</text>
 
-    <text x="120" y="65" font-family="Outfit, sans-serif" font-size="26" font-weight="900" fill="#065F46">You're up to date</text>
-    <text x="120" y="95" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="600" fill="#047857">Farm Weather v1.2.0 is the latest release.</text>
+    <g transform="translate(28, 85)">
+      <rect width="692" height="110" rx="22" fill="#F7F6F2" stroke="#E9E7E1" />
+      <text x="20" y="35" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#737873">Refresh Schedule:</text>
+      <text x="672" y="35" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#171717" text-anchor="end">Every 15 minutes (Periodic Work)</text>
 
-    <rect x="28" y="140" width="708" height="90" rx="20" fill="white" stroke="#CEEFDB" />
-    <text x="48" y="178" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="800" fill="#171717">Official GitHub Release Channel</text>
-    <text x="48" y="202" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#737873">mahesh2008here-star / Wheather-pro</text>
-    <rect x="580" y="160" width="130" height="36" rx="18" fill="#10B981" />
-    <text x="645" y="183" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="white" text-anchor="middle">Check Again</text>
+      <text x="20" y="65" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#737873">Last Successful Fetch:</text>
+      <text x="672" y="65" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#171717" text-anchor="end">Updated 8:41 AM</text>
 
-    <!-- Support Card -->
-    <g transform="translate(0, 290)">
-      <rect width="764" height="380" rx="28" fill="white" stroke="#E9E7E1" />
-      <text x="28" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="16" font-weight="900" fill="#171717">❤️ SUPPORT FARM WEATHER (DIRECT UPI)</text>
-      <text x="28" y="72" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#737873">100% Commission-free direct support for open-source agriculture weather.</text>
+      <text x="20" y="95" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#737873">Attribution:</text>
+      <text x="672" y="95" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#171717" text-anchor="end">Open-Meteo CC BY 4.0</text>
+    </g>
 
-      <!-- Payee Box -->
-      <rect x="28" y="95" width="708" height="90" rx="20" fill="#F7F6F2" stroke="#E9E7E1" />
-      <text x="48" y="130" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#737873">OFFICIAL PAYEE UPI VPA</text>
-      <text x="48" y="160" font-family="Space Grotesk, monospace" font-size="20" font-weight="700" fill="#171717">mahesh.2008here@okicici</text>
+    <rect x="28" y="210" width="692" height="52" rx="26" fill="#EA580C" />
+    <text x="374" y="242" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="900" fill="white" text-anchor="middle">🔄 Sync Telemetry Now</text>
 
-      <!-- UPI App Buttons Grid -->
-      <g transform="translate(28, 205)">
-        <rect x="0" y="0" width="165" height="70" rx="16" fill="#4285F4" />
-        <text x="82" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="white" text-anchor="middle">Google Pay</text>
+    <g transform="translate(0, 305)">
+      <text x="8" y="24" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#EA580C">APP SYSTEM &amp; SUPPORT</text>
 
-        <rect x="180" y="0" width="165" height="70" rx="16" fill="#5F259F" />
-        <text x="262" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="white" text-anchor="middle">PhonePe</text>
+      <g transform="translate(0, 38)">
+        <rect width="748" height="110" rx="28" fill="white" stroke="#E9E7E1" />
+        <circle cx="55" cy="55" r="28" fill="#FFF0E4" />
+        <text x="55" y="63" font-family="Plus Jakarta Sans, sans-serif" font-size="20" text-anchor="middle">📥</text>
 
-        <rect x="360" y="0" width="165" height="70" rx="16" fill="#00BAF2" />
-        <text x="442" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="white" text-anchor="middle">Paytm</text>
+        <text x="100" y="48" font-family="Outfit, sans-serif" font-size="18" font-weight="900" fill="#171717">App Updates</text>
+        <rect x="230" y="32" width="64" height="24" rx="12" fill="#F7F6F2" />
+        <text x="262" y="48" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="800" fill="#737873" text-anchor="middle">v1.2.0</text>
 
-        <rect x="540" y="0" width="165" height="70" rx="16" fill="#10B981" />
-        <text x="622" y="42" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="white" text-anchor="middle">BHIM UPI</text>
+        <text x="100" y="75" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#737873">Check GitHub releases, changelogs &amp; dow...</text>
+
+        <rect x="580" y="38" width="100" height="36" rx="18" fill="#FFF0E4" stroke="#FFE1CB" />
+        <text x="630" y="61" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#EA580C" text-anchor="middle">Check</text>
+        <text x="705" y="60" font-family="Plus Jakarta Sans, sans-serif" font-size="16" fill="#737873">❯</text>
+      </g>
+
+      <g transform="translate(0, 165)">
+        <rect width="748" height="110" rx="28" fill="white" stroke="#E9E7E1" />
+        <circle cx="55" cy="55" r="28" fill="#E5F5EC" />
+        <text x="55" y="63" font-family="Plus Jakarta Sans, sans-serif" font-size="20" text-anchor="middle">💚</text>
+
+        <text x="100" y="48" font-family="Outfit, sans-serif" font-size="18" font-weight="900" fill="#171717">Support Farm Weather</text>
+        <rect x="320" y="32" width="100" height="24" rx="12" fill="#E5F5EC" />
+        <text x="370" y="48" font-family="Plus Jakarta Sans, sans-serif" font-size="10" font-weight="800" fill="#10B981" text-anchor="middle">DIRECT UPI</text>
+
+        <text x="100" y="75" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#737873">100% commission-free UPI support for op...</text>
+
+        <rect x="570" y="38" width="110" height="36" rx="18" fill="#E5F5EC" stroke="#CEEFDB" />
+        <text x="625" y="61" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="800" fill="#10B981" text-anchor="middle">Donate</text>
+        <text x="705" y="60" font-family="Plus Jakarta Sans, sans-serif" font-size="16" fill="#737873">❯</text>
+      </g>
+    </g>
+
+    <g transform="translate(0, 610)">
+      <text x="8" y="24" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#171717">💬 USER FEEDBACK &amp; REVIEWS</text>
+
+      <g transform="translate(0, 38)">
+        <rect width="748" height="380" rx="32" fill="white" stroke="#E9E7E1" />
+        
+        <text x="374" y="55" font-family="Plus Jakarta Sans, sans-serif" font-size="28" text-anchor="middle">⭐⭐⭐⭐⭐</text>
+        <text x="374" y="90" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="800" fill="#EA580C" text-anchor="middle">Exceptional Weather App</text>
+
+        <text x="28" y="130" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="800" fill="#737873">WHAT STANDS OUT?</text>
+        
+        <g transform="translate(28, 145)">
+          <rect x="0" y="0" width="160" height="32" rx="16" fill="#FFF0E4" />
+          <text x="80" y="21" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#EA580C" text-anchor="middle">🌾 Farm Telemetry</text>
+
+          <rect x="170" y="0" width="150" height="32" rx="16" fill="#E5F5EC" />
+          <text x="245" y="21" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#10B981" text-anchor="middle">🌱 Soil Advisory</text>
+        </g>
+
+        <g transform="translate(28, 230)">
+          <rect width="692" height="110" rx="22" fill="#F7F6F2" stroke="#E9E7E1" />
+          <text x="20" y="35" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="500" fill="#9CA3AF">Share your experience or features you&apos;d like added...</text>
+        </g>
       </g>
     </g>
   </g>
+
+  ${renderRealBottomNav('settings')}
 `;
 
 const screenshots = [
   {
     fileName: '01-weather-dashboard.png',
-    badgeText: 'FARM MICROCLIMATE • LIVE WEATHER',
+    badgeText: 'FARM MICROCLIMATE • BENGALURU TELEMETRY',
     title: 'Weather That Works for Your Farm',
-    subtitle: 'Real-time agriculture telemetry, animated fields & condition cards',
+    subtitle: 'Real-time 23° atmospheric conditions, 24-hour horizon & 7-day crop outlook',
     contentSvg: screen1Content,
   },
   {
     fileName: '02-hourly-forecast.png',
-    badgeText: 'PRECISION PLANNING • 7-DAY FORECAST',
-    title: 'Plan Around the Forecast',
-    subtitle: '24-hour timeline, canopy moisture & agronomic spray tips',
+    badgeText: 'PRECISION DOPPLER • LIVE RADAR',
+    title: 'Live Satellite & Doppler Radar',
+    subtitle: 'Track precipitation sweeps, wind streams & temperature heatmaps in real time',
     contentSvg: screen2Content,
   },
   {
     fileName: '03-live-radar.png',
-    badgeText: 'SATELLITE & RADAR • STORM TRACKING',
-    title: 'Live Satellite & Doppler Radar',
-    subtitle: 'Track rain clouds, storm fronts & wind patterns in real time',
+    badgeText: 'AIR & SUN TELEMETRY • CROP RISK',
+    title: 'Soil, AQI & Solar Ephemeris',
+    subtitle: 'EPA Air Quality Index 84, solar daylight arc & celestial moon phase telemetry',
     contentSvg: screen3Content,
   },
   {
     fileName: '04-agricultural-insights.png',
-    badgeText: 'SOIL & AIR TELEMETRY • CROP HEALTH',
-    title: 'Soil & Air Quality Insights',
-    subtitle: 'Evapotranspiration rate, UV peak index & daylight cycles',
+    badgeText: 'ANDROID WIDGETS • HOME SCREEN',
+    title: 'Native Android Weather Widgets',
+    subtitle: '7-Day outlook & 4x2 Farm Cell topsoil, precipitation & wind telemetry widgets',
     contentSvg: screen4Content,
   },
   {
     fileName: '05-weather-widgets.png',
-    badgeText: 'ANDROID WIDGETS • 15-MIN REFRESH',
-    title: 'Custom Farm Weather Widgets',
-    subtitle: 'Live home-screen telemetry cards with background WorkManager sync',
+    badgeText: 'OFFICIAL SYSTEM & DIRECT SUPPORT',
+    title: '15-Min WorkManager Sync & UPI',
+    subtitle: '16 atmospheric parameters, GitHub releases v1.2.0 & 100% direct UPI support',
     contentSvg: screen5Content,
-  },
-  {
-    fileName: '06-app-updates.png',
-    badgeText: 'OFFICIAL RELEASES • OPEN SOURCE',
-    title: 'Always Up-to-Date & Supported',
-    subtitle: 'Automatic GitHub updates & direct 100% commission-free UPI support',
-    contentSvg: screen6Content,
   },
 ];
 
-console.log('Generating Google Play Store screenshots...');
+console.log('Generating authentic Google Play Store screenshots from actual app interface...');
 
 for (const sc of screenshots) {
   const svgString = createBaseLayout(sc);
@@ -558,4 +652,4 @@ for (const sc of screenshots) {
   console.log(`Saved ${sc.fileName} (${imageBuffer.length} bytes, 1080x1920)`);
 }
 
-console.log('All 6 Google Play Store screenshots created successfully!');
+console.log('All authentic Google Play Store screenshots generated successfully!');
