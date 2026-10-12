@@ -61,6 +61,43 @@ async function startServer() {
     }
   });
 
+  // Backend API route for checking GitHub app updates safely (bypasses browser CORS & User-Agent limits)
+  app.get('/api/updates', async (req, res) => {
+    try {
+      const owner = (req.query.owner as string) || 'mahesh2008here-star';
+      const repo = (req.query.repo as string) || 'Wheather-pro';
+
+      const headers = {
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'FarmWeatherApp/1.2.0 (Android Update Service)'
+      };
+
+      // 1. Try fetching latest release
+      let ghRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/latest?_t=${Date.now()}`, { headers });
+      
+      if (!ghRes.ok && ghRes.status === 404) {
+        // 2. Fallback to list releases if no "latest" release tag is set
+        ghRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases?_t=${Date.now()}`, { headers });
+      }
+
+      if (ghRes.ok) {
+        const data = await ghRes.json();
+        return res.json({ success: true, data });
+      }
+
+      // 3. Fallback to repo contents search if releases returned 404
+      const contentsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents?_t=${Date.now()}`, { headers });
+      if (contentsRes.ok) {
+        const contentsData = await contentsRes.json();
+        return res.json({ success: true, isContents: true, data: contentsData });
+      }
+
+      return res.status(ghRes.status).json({ success: false, error: `GitHub API returned HTTP ${ghRes.status}` });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, error: err?.message || 'Server update proxy failed' });
+    }
+  });
+
   // Create Vite dev server middleware attached to the HTTP server for WebSocket support
   const isHmrDisabled = process.env.DISABLE_HMR === 'true';
   const vite = await createViteServer({
