@@ -12,20 +12,21 @@ import {
   Sprout, 
   Droplets, 
   CloudSun, 
-  ExternalLink,
-  Edit2,
   CheckCircle2,
-  HelpCircle,
-  Coins
+  Coins,
+  AlertCircle,
+  Info
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { 
-  getUpiConfig, 
-  setCustomUpiId, 
+  LOCKED_UPI_ID,
+  LOCKED_PAYEE_NAME,
+  DEFAULT_NOTE,
   DONATION_PRESETS, 
   buildUpiUrl, 
   getUpiQrCodeUrl, 
   UPI_APP_OPTIONS, 
+  UpiAppOption,
   copyToClipboard 
 } from '../../services/upiService';
 
@@ -37,19 +38,19 @@ interface UpiDonationModalProps {
 export const UpiDonationModal: React.FC<UpiDonationModalProps> = ({ isOpen, onClose }) => {
   const { customAccentColor, accentSurface, accentBorder } = useTheme();
 
-  const [upiConfig, setUpiConfig] = useState(getUpiConfig());
   const [selectedPresetId, setSelectedPresetId] = useState<string>('fertilizer');
   const [customAmount, setCustomAmount] = useState<string>('250');
-  const [note, setNote] = useState<string>('Support Farm Weather App');
+  const [note] = useState<string>(DEFAULT_NOTE);
   
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [copiedUri, setCopiedUri] = useState(false);
-  const [showEditUpi, setShowEditUpi] = useState(false);
-  const [upiInput, setUpiInput] = useState(upiConfig.upiId);
   
   const [showGratitudeNotice, setShowGratitudeNotice] = useState(false);
   const [utrNumber, setUtrNumber] = useState('');
   const [hasSubmittedUtr, setHasSubmittedUtr] = useState(false);
+
+  const [paymentStatusMessage, setPaymentStatusMessage] = useState<string | null>(null);
+  const [launchNotice, setLaunchNotice] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -57,8 +58,8 @@ export const UpiDonationModal: React.FC<UpiDonationModalProps> = ({ isOpen, onCl
   const selectedPreset = DONATION_PRESETS.find(p => p.id === selectedPresetId);
   const currentAmount = selectedPreset ? selectedPreset.amount : (parseFloat(customAmount) || 0);
 
-  // Generate UPI URI
-  const upiUrl = buildUpiUrl(upiConfig.upiId, upiConfig.payeeName, currentAmount, note);
+  // Generate Locked UPI URI & QR Code
+  const upiUrl = buildUpiUrl(currentAmount, note);
   const qrCodeUrl = getUpiQrCodeUrl(upiUrl, 300);
 
   const handlePresetSelect = (presetId: string) => {
@@ -76,7 +77,7 @@ export const UpiDonationModal: React.FC<UpiDonationModalProps> = ({ isOpen, onCl
   };
 
   const handleCopyUpiId = async () => {
-    const ok = await copyToClipboard(upiConfig.upiId);
+    const ok = await copyToClipboard(LOCKED_UPI_ID);
     if (ok) {
       setCopiedUpi(true);
       setTimeout(() => setCopiedUpi(false), 2000);
@@ -91,12 +92,21 @@ export const UpiDonationModal: React.FC<UpiDonationModalProps> = ({ isOpen, onCl
     }
   };
 
-  const handleSaveUpi = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (upiInput.trim() && upiInput.includes('@')) {
-      setCustomUpiId(upiInput.trim());
-      setUpiConfig(getUpiConfig());
-      setShowEditUpi(false);
+  const handleLaunchUpiApp = (app: UpiAppOption) => {
+    setPaymentStatusMessage(`Redirecting to ${app.name}... Please complete the transaction inside your UPI app.`);
+    setLaunchNotice(null);
+
+    const intentUrl = app.getAppIntentUrl(currentAmount, note);
+    const fallbackUrl = buildUpiUrl(currentAmount, note);
+
+    try {
+      window.location.href = intentUrl;
+      setTimeout(() => {
+        setLaunchNotice(`If ${app.name} is not installed on your device, select "Pay with Any UPI App" below or scan the QR code.`);
+      }, 2000);
+    } catch (err) {
+      console.warn('[UPI] Intent launch note:', err);
+      window.location.href = fallbackUrl;
     }
   };
 
@@ -233,7 +243,7 @@ export const UpiDonationModal: React.FC<UpiDonationModalProps> = ({ isOpen, onCl
                 ₹{currentAmount || 0}
               </span>
               <span className="text-[11px] text-[#737873] font-medium block">
-                Payee: {upiConfig.payeeName}
+                Payee: {LOCKED_PAYEE_NAME}
               </span>
             </div>
 
@@ -244,7 +254,7 @@ export const UpiDonationModal: React.FC<UpiDonationModalProps> = ({ isOpen, onCl
                   Direct VPA / UPI ID
                 </span>
                 <span className="text-xs font-black font-mono text-[#171717] truncate block">
-                  {upiConfig.upiId}
+                  {LOCKED_UPI_ID}
                 </span>
               </div>
 
@@ -280,27 +290,36 @@ export const UpiDonationModal: React.FC<UpiDonationModalProps> = ({ isOpen, onCl
               Open Directly in UPI App
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {UPI_APP_OPTIONS.map((app) => {
-                const appUrl = app.getSchemeUrl(upiUrl);
-                return (
-                  <a
-                    key={app.id}
-                    href={appUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2.5 rounded-2xl border border-[#E9E7E1] bg-white hover:bg-[#F7F6F2] flex items-center space-x-2 text-xs font-bold text-[#171717] transition-colors shadow-xs cursor-pointer snappy-touch"
+              {UPI_APP_OPTIONS.map((app) => (
+                <button
+                  key={app.id}
+                  onClick={() => handleLaunchUpiApp(app)}
+                  className="p-2.5 rounded-2xl border border-[#E9E7E1] bg-white hover:bg-[#F7F6F2] flex items-center space-x-2 text-xs font-bold text-[#171717] transition-colors shadow-xs cursor-pointer snappy-touch"
+                >
+                  <span 
+                    className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0"
+                    style={{ backgroundColor: app.iconBg, color: app.textColor }}
                   >
-                    <span 
-                      className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0"
-                      style={{ backgroundColor: app.iconBg, color: app.textColor }}
-                    >
-                      {app.name.substring(0, 2).toUpperCase()}
-                    </span>
-                    <span className="truncate">{app.name}</span>
-                  </a>
-                );
-              })}
+                    {app.name.substring(0, 2).toUpperCase()}
+                  </span>
+                  <span className="truncate">{app.name}</span>
+                </button>
+              ))}
             </div>
+
+            {paymentStatusMessage && (
+              <div className="mt-2 p-2.5 rounded-xl bg-[#E5F5EC] border border-[#CEEFDB] text-[#065F46] text-[11px] font-semibold flex items-center space-x-1.5 animate-fade-in">
+                <Info size={14} className="shrink-0 text-[#10B981]" />
+                <span>{paymentStatusMessage}</span>
+              </div>
+            )}
+
+            {launchNotice && (
+              <div className="mt-2 p-2.5 rounded-xl bg-[#FFF4ED] border border-[#FFE1CB] text-[#9A3412] text-[11px] font-medium flex items-start space-x-1.5 animate-fade-in">
+                <AlertCircle size={14} className="shrink-0 text-[#EA580C] mt-0.5" />
+                <span>{launchNotice}</span>
+              </div>
+            )}
           </div>
 
           {/* GRATITUDE / UTR VERIFICATION FEEDBACK SECTION */}
@@ -353,40 +372,6 @@ export const UpiDonationModal: React.FC<UpiDonationModalProps> = ({ isOpen, onCl
                   </>
                 )}
               </div>
-            )}
-          </div>
-
-          {/* EDIT UPI ID FOR DEVELOPERS / FORKS */}
-          <div className="pt-2 border-t border-[#E9E7E1]">
-            <button
-              onClick={() => setShowEditUpi(!showEditUpi)}
-              className="flex items-center space-x-1.5 text-[11px] font-bold text-[#737873] hover:text-[#171717] cursor-pointer"
-            >
-              <Edit2 size={12} />
-              <span>Developer Settings: Customize Target UPI ID</span>
-            </button>
-
-            {showEditUpi && (
-              <form onSubmit={handleSaveUpi} className="mt-2.5 p-3 rounded-2xl bg-[#F7F6F2] border border-[#E9E7E1] space-y-2">
-                <label className="text-[11px] font-bold text-[#171717] block">
-                  Target UPI VPA Address
-                </label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    value={upiInput}
-                    onChange={(e) => setUpiInput(e.target.value)}
-                    placeholder="mahesh.2008here@okaxis"
-                    className="flex-1 px-3 py-1.5 rounded-xl text-xs border border-[#E9E7E1] bg-white font-mono text-[#171717] outline-none"
-                  />
-                  <button
-                    type="submit"
-                    className="px-3 py-1.5 rounded-xl bg-[#171717] text-white text-xs font-bold cursor-pointer"
-                  >
-                    Save UPI
-                  </button>
-                </div>
-              </form>
             )}
           </div>
         </div>

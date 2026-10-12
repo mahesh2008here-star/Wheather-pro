@@ -12,21 +12,22 @@ import {
   Sprout, 
   Droplets, 
   CloudSun, 
-  ExternalLink,
-  Edit2,
   CheckCircle2,
   Coins,
-  HelpCircle,
-  Share2
+  AlertCircle,
+  Share2,
+  Info
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { 
-  getUpiConfig, 
-  setCustomUpiId, 
+  LOCKED_UPI_ID,
+  LOCKED_PAYEE_NAME,
+  DEFAULT_NOTE,
   DONATION_PRESETS, 
   buildUpiUrl, 
   getUpiQrCodeUrl, 
   UPI_APP_OPTIONS, 
+  UpiAppOption,
   copyToClipboard 
 } from '../../services/upiService';
 
@@ -35,23 +36,23 @@ interface UpiDonationPageProps {
 }
 
 export const UpiDonationPage: React.FC<UpiDonationPageProps> = ({ onBack }) => {
-  const { customAccentColor, accentSurface, accentBorder } = useTheme();
+  const { customAccentColor } = useTheme();
 
-  const [upiConfig, setUpiConfig] = useState(getUpiConfig());
   const [selectedPresetId, setSelectedPresetId] = useState<string>('fertilizer');
   const [customAmount, setCustomAmount] = useState<string>('250');
-  const [note, setNote] = useState<string>('Support Farm Weather App');
+  const [note] = useState<string>(DEFAULT_NOTE);
   
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [copiedUri, setCopiedUri] = useState(false);
-  const [showEditUpi, setShowEditUpi] = useState(false);
-  const [upiInput, setUpiInput] = useState(upiConfig.upiId);
   
   const [utrNumber, setUtrNumber] = useState('');
   const [hasSubmittedUtr, setHasSubmittedUtr] = useState(false);
+  
+  const [paymentStatusMessage, setPaymentStatusMessage] = useState<string | null>(null);
+  const [launchNotice, setLaunchNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    // Scroll to top when page loads
+    // Scroll to top when page mounts
     window.scrollTo(0, 0);
   }, []);
 
@@ -59,8 +60,8 @@ export const UpiDonationPage: React.FC<UpiDonationPageProps> = ({ onBack }) => {
   const selectedPreset = DONATION_PRESETS.find(p => p.id === selectedPresetId);
   const currentAmount = selectedPreset ? selectedPreset.amount : (parseFloat(customAmount) || 0);
 
-  // Generate UPI URI
-  const upiUrl = buildUpiUrl(upiConfig.upiId, upiConfig.payeeName, currentAmount, note);
+  // Generate Locked UPI URI & QR Code
+  const upiUrl = buildUpiUrl(currentAmount, note);
   const qrCodeUrl = getUpiQrCodeUrl(upiUrl, 320);
 
   const handlePresetSelect = (presetId: string) => {
@@ -78,7 +79,7 @@ export const UpiDonationPage: React.FC<UpiDonationPageProps> = ({ onBack }) => {
   };
 
   const handleCopyUpiId = async () => {
-    const ok = await copyToClipboard(upiConfig.upiId);
+    const ok = await copyToClipboard(LOCKED_UPI_ID);
     if (ok) {
       setCopiedUpi(true);
       setTimeout(() => setCopiedUpi(false), 2000);
@@ -93,20 +94,25 @@ export const UpiDonationPage: React.FC<UpiDonationPageProps> = ({ onBack }) => {
     }
   };
 
-  const handleSaveUpi = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (upiInput.trim() && upiInput.includes('@')) {
-      setCustomUpiId(upiInput.trim());
-      setUpiConfig(getUpiConfig());
-      setShowEditUpi(false);
-    }
-  };
+  const handleLaunchUpiApp = (app: UpiAppOption) => {
+    setPaymentStatusMessage(`Redirecting to ${app.name}... Please complete the transaction inside your UPI app.`);
+    setLaunchNotice(null);
 
-  const handleResetUpi = () => {
-    setCustomUpiId('');
-    setUpiConfig(getUpiConfig());
-    setUpiInput(getUpiConfig().upiId);
-    setShowEditUpi(false);
+    const intentUrl = app.getAppIntentUrl(currentAmount, note);
+    const fallbackUrl = buildUpiUrl(currentAmount, note);
+
+    try {
+      // Attempt Android package intent / scheme trigger
+      window.location.href = intentUrl;
+
+      // Fallback timer if app isn't installed
+      setTimeout(() => {
+        setLaunchNotice(`If ${app.name} is not installed on your device, tap "Pay with Any UPI App" below or scan the QR code.`);
+      }, 2000);
+    } catch (err) {
+      console.warn('[UPI] Intent launch note:', err);
+      window.location.href = fallbackUrl;
+    }
   };
 
   const handleUtrSubmit = (e: React.FormEvent) => {
@@ -129,12 +135,12 @@ export const UpiDonationPage: React.FC<UpiDonationPageProps> = ({ onBack }) => {
 
   return (
     <div className="w-full min-h-[100dvh] bg-[#F7F6F2] text-[#171717] flex flex-col font-sans relative overflow-x-hidden">
-      {/* 1. TOP HEADER BAR */}
+      {/* 1. TOP HEADER BAR WITH CAMERA PUNCH-HOLE SAFE AREA INSET */}
       <header 
         className="w-full bg-white border-b border-[#E9E7E1] sticky top-0 z-40 shadow-xs"
-        style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+        style={{ paddingTop: 'max(0.875rem, env(safe-area-inset-top, 24px))' }}
       >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <button
               onClick={onBack}
@@ -207,7 +213,7 @@ export const UpiDonationPage: React.FC<UpiDonationPageProps> = ({ onBack }) => {
           </div>
         </div>
 
-        {/* CONFIGURED UPI ID & PAYEE CARD */}
+        {/* LOCKED DONATION RECIPIENT CARD */}
         <div className="p-6 rounded-[28px] bg-white border border-[#E9E7E1] shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E9E7E1] pb-4">
             <div>
@@ -216,7 +222,7 @@ export const UpiDonationPage: React.FC<UpiDonationPageProps> = ({ onBack }) => {
               </span>
               <div className="flex items-center space-x-2 mt-0.5">
                 <span className="text-base sm:text-lg font-black font-mono text-[#171717]">
-                  {upiConfig.upiId}
+                  {LOCKED_UPI_ID}
                 </span>
                 <button
                   onClick={handleCopyUpiId}
@@ -227,53 +233,17 @@ export const UpiDonationPage: React.FC<UpiDonationPageProps> = ({ onBack }) => {
                 </button>
               </div>
               <span className="text-xs text-[#737873] font-medium block mt-0.5">
-                Payee Name: <strong className="text-[#171717]">{upiConfig.payeeName}</strong>
+                Payee Name: <strong className="text-[#171717]">{LOCKED_PAYEE_NAME}</strong>
               </span>
             </div>
 
             <div className="flex items-center space-x-2 self-start sm:self-auto">
-              <button
-                onClick={() => setShowEditUpi(!showEditUpi)}
-                className="px-3 py-1.5 rounded-xl border border-[#E9E7E1] bg-[#F7F6F2] text-xs font-bold text-[#737873] hover:text-[#171717] flex items-center space-x-1 cursor-pointer"
-              >
-                <Edit2 size={13} />
-                <span>{showEditUpi ? 'Close Config' : 'Configure UPI ID'}</span>
-              </button>
+              <span className="px-3 py-1.5 rounded-xl border border-[#CEEFDB] bg-[#E5F5EC] text-xs font-black text-[#10B981] flex items-center space-x-1.5 shadow-2xs">
+                <ShieldCheck size={14} />
+                <span>Verified Fixed Recipient</span>
+              </span>
             </div>
           </div>
-
-          {/* EDIT UPI ID FORM COLLAPSIBLE */}
-          {showEditUpi && (
-            <form onSubmit={handleSaveUpi} className="p-4 rounded-2xl bg-[#F7F6F2] border border-[#E9E7E1] space-y-3">
-              <label className="text-xs font-bold text-[#171717] block">
-                Custom Payee UPI VPA Identifier (e.g. username@upi or phone@paytm)
-              </label>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <input
-                  type="text"
-                  value={upiInput}
-                  onChange={(e) => setUpiInput(e.target.value)}
-                  placeholder="mahesh.2008here@okicici"
-                  className="flex-1 px-3.5 py-2 rounded-xl text-xs border border-[#E9E7E1] bg-white font-mono text-[#171717] outline-none"
-                />
-                <div className="flex items-center space-x-2">
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded-xl bg-[#171717] text-white text-xs font-bold cursor-pointer"
-                  >
-                    Save UPI
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleResetUpi}
-                    className="px-3 py-2 rounded-xl border border-[#E9E7E1] bg-white text-xs font-bold text-[#737873] cursor-pointer"
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
-            </form>
-          )}
 
           {/* STEP 1: CHOOSE AMOUNT */}
           <div className="space-y-3">
@@ -341,9 +311,9 @@ export const UpiDonationPage: React.FC<UpiDonationPageProps> = ({ onBack }) => {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
               {UPI_APP_OPTIONS.map((app) => (
-                <a
+                <button
                   key={app.id}
-                  href={app.getSchemeUrl(upiUrl)}
+                  onClick={() => handleLaunchUpiApp(app)}
                   className="p-3 rounded-2xl border border-[#E9E7E1] bg-white hover:bg-[#F7F6F2] flex flex-col items-center justify-center text-center space-y-1.5 shadow-2xs cursor-pointer snappy-touch transition-all active:scale-95"
                 >
                   <div 
@@ -353,9 +323,24 @@ export const UpiDonationPage: React.FC<UpiDonationPageProps> = ({ onBack }) => {
                     <Smartphone size={18} />
                   </div>
                   <span className="text-xs font-bold text-[#171717]">{app.name}</span>
-                </a>
+                </button>
               ))}
             </div>
+
+            {/* PAYMENT STATUS OR LAUNCH NOTICE */}
+            {paymentStatusMessage && (
+              <div className="p-3 rounded-2xl bg-[#E5F5EC] border border-[#CEEFDB] text-[#065F46] text-xs font-semibold flex items-center space-x-2 animate-fade-in">
+                <Info size={16} className="shrink-0 text-[#10B981]" />
+                <span>{paymentStatusMessage}</span>
+              </div>
+            )}
+
+            {launchNotice && (
+              <div className="p-3 rounded-2xl bg-[#FFF4ED] border border-[#FFE1CB] text-[#9A3412] text-xs font-medium flex items-start space-x-2 animate-fade-in">
+                <AlertCircle size={16} className="shrink-0 text-[#EA580C] mt-0.5" />
+                <span>{launchNotice}</span>
+              </div>
+            )}
           </div>
 
           {/* STEP 3: DYNAMIC QR CODE DISPLAY */}
@@ -375,7 +360,7 @@ export const UpiDonationPage: React.FC<UpiDonationPageProps> = ({ onBack }) => {
               <div className="p-3 rounded-xl bg-white border border-[#E9E7E1] space-y-1 text-xs font-mono">
                 <div className="flex justify-between text-[11px] text-[#737873]">
                   <span>Target Payee:</span>
-                  <span className="font-bold text-[#171717]">{upiConfig.upiId}</span>
+                  <span className="font-bold text-[#171717]">{LOCKED_UPI_ID}</span>
                 </div>
                 <div className="flex justify-between text-[11px] text-[#737873]">
                   <span>Calculated Amount:</span>
@@ -448,8 +433,11 @@ export const UpiDonationPage: React.FC<UpiDonationPageProps> = ({ onBack }) => {
         </div>
       </main>
 
-      {/* 3. PAGE FOOTER */}
-      <footer className="w-full bg-white border-t border-[#E9E7E1] py-4 mt-8">
+      {/* 3. PAGE FOOTER WITH SAFE AREA INSET FOR NAVIGATION BAR */}
+      <footer 
+        className="w-full bg-white border-t border-[#E9E7E1] py-4 mt-8"
+        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 16px))' }}
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#737873]">
           <span>Farm Weather Open-Source Agriculture Weather</span>
           <button

@@ -13,35 +13,19 @@ export interface PresetAmount {
   isPopular?: boolean;
 }
 
+// CENTRAL LOCKED DONATION RECIPIENT
+export const LOCKED_UPI_ID = 'mahesh.2008here@okicici';
+export const LOCKED_PAYEE_NAME = 'Farm Weather Developer';
+export const DEFAULT_NOTE = 'Support Farm Weather';
+
 export const DEFAULT_UPI_CONFIG: UpiConfig = {
-  upiId: 'mahesh.2008here@okicici',
-  payeeName: 'Mahesh (Farm Weather Developer)',
-  defaultNote: 'Support Farm Weather Open Source',
+  upiId: LOCKED_UPI_ID,
+  payeeName: LOCKED_PAYEE_NAME,
+  defaultNote: DEFAULT_NOTE,
 };
 
-const STORAGE_KEY_CUSTOM_UPI_ID = 'farmweather_custom_upi_id';
-
 export function getUpiConfig(): UpiConfig {
-  try {
-    const savedUpi = localStorage.getItem(STORAGE_KEY_CUSTOM_UPI_ID);
-    if (savedUpi && savedUpi.includes('@')) {
-      return {
-        ...DEFAULT_UPI_CONFIG,
-        upiId: savedUpi.trim(),
-      };
-    }
-  } catch {}
   return DEFAULT_UPI_CONFIG;
-}
-
-export function setCustomUpiId(upiId: string): void {
-  try {
-    if (upiId && upiId.includes('@')) {
-      localStorage.setItem(STORAGE_KEY_CUSTOM_UPI_ID, upiId.trim());
-    } else {
-      localStorage.removeItem(STORAGE_KEY_CUSTOM_UPI_ID);
-    }
-  } catch {}
 }
 
 export const DONATION_PRESETS: PresetAmount[] = [
@@ -83,18 +67,20 @@ export const DONATION_PRESETS: PresetAmount[] = [
   },
 ];
 
-export function buildUpiUrl(upiId: string, payeeName: string, amount: number | string, note: string): string {
-  const cleanUpi = upiId.trim();
-  const cleanName = encodeURIComponent(payeeName.trim());
-  const cleanNote = encodeURIComponent(note.trim() || 'Farm Weather Support');
+/**
+ * Construct properly encoded UPI Payment URI using the central locked recipient
+ */
+export function buildUpiUrl(amount: number | string = '', note: string = DEFAULT_NOTE): string {
+  const pa = LOCKED_UPI_ID;
+  const pn = encodeURIComponent(LOCKED_PAYEE_NAME);
+  const cu = 'INR';
+  const cleanNote = encodeURIComponent((note || DEFAULT_NOTE).trim());
   const numAmount = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
-  
-  // Format amount to 2 decimal places if present
-  const formattedAmount = numAmount > 0 ? numAmount.toFixed(2) : '';
+  const am = numAmount > 0 ? numAmount.toFixed(2) : '';
 
-  let upiString = `upi://pay?pa=${cleanUpi}&pn=${cleanName}&cu=INR&tn=${cleanNote}`;
-  if (formattedAmount) {
-    upiString += `&am=${formattedAmount}`;
+  let upiString = `upi://pay?pa=${pa}&pn=${pn}&cu=${cu}&tn=${cleanNote}`;
+  if (am) {
+    upiString += `&am=${am}`;
   }
 
   return upiString;
@@ -108,46 +94,69 @@ export function getUpiQrCodeUrl(upiUrl: string, size: number = 280): string {
 export interface UpiAppOption {
   id: string;
   name: string;
+  packageName?: string;
   iconBg: string;
   textColor: string;
-  getSchemeUrl: (upiUrl: string) => string;
+  getAppIntentUrl: (amount: number | string, note?: string) => string;
+  getSchemeUrl: (amount: number | string, note?: string) => string;
 }
 
 export const UPI_APP_OPTIONS: UpiAppOption[] = [
   {
     id: 'gpay',
     name: 'Google Pay',
+    packageName: 'com.google.android.apps.nbu.paisa.user',
     iconBg: '#4285F4',
     textColor: '#FFFFFF',
-    getSchemeUrl: (upiUrl) => upiUrl.replace(/^upi:\/\//i, 'gpay://'),
+    getAppIntentUrl: (amount, note) => {
+      const rawUrl = buildUpiUrl(amount, note);
+      return rawUrl.replace(/^upi:\/\//i, 'intent://') + `#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
+    },
+    getSchemeUrl: (amount, note) => buildUpiUrl(amount, note).replace(/^upi:\/\//i, 'gpay://'),
   },
   {
     id: 'phonepe',
     name: 'PhonePe',
+    packageName: 'com.phonepe.app',
     iconBg: '#5F259F',
     textColor: '#FFFFFF',
-    getSchemeUrl: (upiUrl) => upiUrl.replace(/^upi:\/\//i, 'phonepe://'),
+    getAppIntentUrl: (amount, note) => {
+      const rawUrl = buildUpiUrl(amount, note);
+      return rawUrl.replace(/^upi:\/\//i, 'intent://') + `#Intent;scheme=upi;package=com.phonepe.app;end`;
+    },
+    getSchemeUrl: (amount, note) => buildUpiUrl(amount, note).replace(/^upi:\/\//i, 'phonepe://'),
   },
   {
     id: 'paytm',
     name: 'Paytm',
+    packageName: 'net.one97.paytm',
     iconBg: '#00BAF2',
     textColor: '#FFFFFF',
-    getSchemeUrl: (upiUrl) => upiUrl.replace(/^upi:\/\//i, 'paytm://'),
+    getAppIntentUrl: (amount, note) => {
+      const rawUrl = buildUpiUrl(amount, note);
+      return rawUrl.replace(/^upi:\/\//i, 'intent://') + `#Intent;scheme=upi;package=net.one97.paytm;end`;
+    },
+    getSchemeUrl: (amount, note) => buildUpiUrl(amount, note).replace(/^upi:\/\//i, 'paytm://'),
   },
   {
     id: 'bhim',
     name: 'BHIM UPI',
+    packageName: 'in.org.npci.upiapp',
     iconBg: '#004792',
     textColor: '#FFFFFF',
-    getSchemeUrl: (upiUrl) => upiUrl,
+    getAppIntentUrl: (amount, note) => {
+      const rawUrl = buildUpiUrl(amount, note);
+      return rawUrl.replace(/^upi:\/\//i, 'intent://') + `#Intent;scheme=upi;package=in.org.npci.upiapp;end`;
+    },
+    getSchemeUrl: (amount, note) => buildUpiUrl(amount, note),
   },
   {
     id: 'any_upi',
-    name: 'Any UPI App',
+    name: 'Pay with Any UPI App',
     iconBg: '#10B981',
     textColor: '#FFFFFF',
-    getSchemeUrl: (upiUrl) => upiUrl,
+    getAppIntentUrl: (amount, note) => buildUpiUrl(amount, note),
+    getSchemeUrl: (amount, note) => buildUpiUrl(amount, note),
   },
 ];
 
