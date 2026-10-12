@@ -26,6 +26,8 @@ import { STORAGE_KEYS } from '../config/env';
 interface WeatherContextType {
   activeTab: number;
   setActiveTab: (tab: number) => void;
+  currentView: 'main' | 'updates' | 'donation';
+  navigateToView: (view: 'main' | 'updates' | 'donation') => void;
   activeLocation: LocationInfo;
   savedLocations: LocationInfo[];
   metrics: CurrentWeatherMetrics;
@@ -62,6 +64,41 @@ const WeatherContext = createContext<WeatherContextType | undefined>(undefined);
 
 export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [activeTab, setActiveTab] = useState<number>(0);
+  const [currentView, setCurrentView] = useState<'main' | 'updates' | 'donation'>('main');
+
+  const navigateToView = useCallback((view: 'main' | 'updates' | 'donation') => {
+    setCurrentView(view);
+    if (view === 'updates') {
+      window.history.pushState({ view: 'updates' }, '', '#updates');
+    } else if (view === 'donation') {
+      window.history.pushState({ view: 'donation' }, '', '#donation');
+    } else {
+      window.history.pushState({ view: 'main' }, '', '#main');
+    }
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const hash = window.location.hash;
+      if (hash === '#updates') {
+        setCurrentView('updates');
+      } else if (hash === '#donation') {
+        setCurrentView('donation');
+      } else {
+        setCurrentView('main');
+      }
+    };
+
+    if (window.location.hash === '#updates') {
+      setCurrentView('updates');
+    } else if (window.location.hash === '#donation') {
+      setCurrentView('donation');
+    }
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const [previewScene, setPreviewScene] = useState<WeatherSceneState | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isLocating, setIsLocating] = useState<boolean>(false);
@@ -372,6 +409,8 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
       value={{
         activeTab,
         setActiveTab,
+        currentView,
+        navigateToView,
         activeLocation,
         savedLocations,
         metrics,

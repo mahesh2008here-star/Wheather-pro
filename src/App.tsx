@@ -13,12 +13,16 @@ import { LiveRadarScreen } from './components/LiveRadarScreen';
 import { AirAndSunScreen } from './components/AirAndSunScreen';
 import { WeatherWidgetsScreen } from './components/WeatherWidgetsScreen';
 import { SettingsScreen } from './components/SettingsScreen';
+import { AppUpdatesPage } from './components/updates/AppUpdatesPage';
+import { UpiDonationPage } from './components/donation/UpiDonationPage';
 import { Navigation, AlertCircle, Search } from 'lucide-react';
 
 function MainAppContent() {
   const { 
     activeTab, 
     setActiveTab,
+    currentView,
+    navigateToView,
     locationStatus, 
     clearLocationStatus,
     locationError,
@@ -50,6 +54,16 @@ function MainAppContent() {
     window.addEventListener('switchTab', handleSwitchTab);
     return () => window.removeEventListener('switchTab', handleSwitchTab);
   }, [setActiveTab]);
+
+  // Render Full-Screen App Updates Page
+  if (currentView === 'updates') {
+    return <AppUpdatesPage onBack={() => navigateToView('main')} />;
+  }
+
+  // Render Full-Screen Support Farm Weather / UPI Donation Page
+  if (currentView === 'donation') {
+    return <UpiDonationPage onBack={() => navigateToView('main')} />;
+  }
 
   return (
     <PhoneSimulator>

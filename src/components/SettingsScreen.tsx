@@ -19,12 +19,18 @@ import {
   RefreshCw,
   ShieldCheck,
   CheckCircle2,
+  Heart,
+  Download,
+  QrCode,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useWeather } from '../context/WeatherContext';
 import { LocationInfo } from '../types/weather';
 import { searchLocations } from '../services/weatherApi';
 import { RatingFeedbackSection } from './RatingFeedbackSection';
+import { AppUpdateModal } from './updates/AppUpdateModal';
+import { UpiDonationModal } from './donation/UpiDonationModal';
+import { CURRENT_APP_VERSION } from '../services/updateService';
 
 interface SettingsScreenProps {
   locations: LocationInfo[];
@@ -66,7 +72,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     provider, 
     dataQuality, 
     refreshWeather, 
-    isLoading 
+    isLoading,
+    navigateToView
   } = useWeather();
 
   const [hexInput, setHexInput] = useState(customAccentColor);
@@ -98,6 +105,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [searchResults, setSearchResults] = useState<LocationInfo[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+
+  // App Updates & Direct UPI Donation Modal States
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
 
   useEffect(() => {
     setHexInput(customAccentColor);
@@ -625,12 +636,88 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         </div>
       </div>
 
-      {/* 5. COMMUNITY FEEDBACK SECTION */}
+      {/* 5. APP UPDATES & DIRECT UPI DONATIONS CARDS */}
+      <div className="mb-4 space-y-2.5">
+        <span 
+          className="text-[10px] font-black uppercase tracking-wider block px-1 transition-colors"
+          style={{ color: customAccentColor }}
+        >
+          App System & Support
+        </span>
+
+        {/* Entry 1: App Updates */}
+        <div 
+          onClick={() => navigateToView('updates')}
+          className="p-4 rounded-[28px] border border-[#E9E7E1] bg-white hover:bg-[#F7F6F2] flex items-center justify-between cursor-pointer snappy-touch transition-all shadow-xs"
+        >
+          <div className="flex items-center space-x-3 min-w-0">
+            <div 
+              className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border border-[#E9E7E1]"
+              style={{ backgroundColor: accentSurface, color: customAccentColor }}
+            >
+              <Download size={20} />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-black text-[#171717] block">App Updates</span>
+                <span className="text-[10px] font-black font-mono-numbers px-2 py-0.5 rounded-full bg-[#F7F6F2] border border-[#E9E7E1] text-[#171717]">
+                  v{CURRENT_APP_VERSION}
+                </span>
+              </div>
+              <span className="text-[10px] text-[#737873] font-medium block truncate">
+                Check GitHub releases, changelogs & download APK updates
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-1 shrink-0 pl-2">
+            <span 
+              className="text-[10px] font-bold px-2.5 py-1 rounded-xl bg-white border shadow-2xs"
+              style={{ color: customAccentColor, borderColor: accentBorder }}
+            >
+              Check
+            </span>
+            <ChevronRight size={16} className="text-[#737873]" />
+          </div>
+        </div>
+
+        {/* Entry 2: Support Farm Weather */}
+        <div 
+          onClick={() => navigateToView('donation')}
+          className="p-4 rounded-[28px] border border-[#E9E7E1] bg-white hover:bg-[#F7F6F2] flex items-center justify-between cursor-pointer snappy-touch transition-all shadow-xs"
+        >
+          <div className="flex items-center space-x-3 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-[#E5F5EC] text-[#10B981] flex items-center justify-center shrink-0 border border-[#CEEFDB]">
+              <Heart size={20} className="fill-current" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center space-x-1.5">
+                <span className="text-xs font-black text-[#171717] block">Support Farm Weather</span>
+                <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-[#E5F5EC] text-[#10B981] border border-[#CEEFDB]">
+                  Direct UPI
+                </span>
+              </div>
+              <span className="text-[10px] text-[#737873] font-medium block truncate">
+                100% commission-free UPI support for open-source weather
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-1 shrink-0 pl-2">
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-xl bg-[#E5F5EC] text-[#10B981] border border-[#CEEFDB] shadow-2xs">
+              Donate
+            </span>
+            <ChevronRight size={16} className="text-[#737873]" />
+          </div>
+        </div>
+      </div>
+
+      {/* 6. COMMUNITY FEEDBACK SECTION */}
       <div className="mb-4">
         <RatingFeedbackSection location={activeLocation} />
       </div>
 
-      {/* 6. GITHUB REPOSITORY & ATTRIBUTION */}
+      {/* 7. GITHUB REPOSITORY & ATTRIBUTION */}
       <div className="space-y-2">
         <a 
           href="https://github.com/mahesh2008here-star/Wheather-pro"
