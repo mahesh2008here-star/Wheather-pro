@@ -1,8 +1,10 @@
+import http from 'http';
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
 
 async function startServer() {
   const app = express();
+  const server = http.createServer(app);
   const PORT = process.env.PORT || 3000;
 
   app.use(express.json());
@@ -59,15 +61,19 @@ async function startServer() {
     }
   });
 
-  // Create Vite dev server middleware
+  // Create Vite dev server middleware attached to the HTTP server for WebSocket support
+  const isHmrDisabled = process.env.DISABLE_HMR === 'true';
   const vite = await createViteServer({
-    server: { middlewareMode: true },
+    server: { 
+      middlewareMode: true,
+      hmr: isHmrDisabled ? false : { server }
+    },
     appType: 'spa'
   });
 
   app.use(vite.middlewares);
 
-  app.listen(Number(PORT), '0.0.0.0', () => {
+  server.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`Server running at http://0.0.0.0:${PORT}`);
   });
 }

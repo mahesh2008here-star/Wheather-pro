@@ -465,32 +465,68 @@ export async function fetchLiveWeather(
  * Reverse geocode latitude/longitude coordinates
  */
 export async function reverseGeocode(lat: number, lon: number): Promise<LocationInfo> {
+  // Tier 1: BigDataCloud Reverse Geocoding Client
   try {
     const url = `${ENV.REVERSE_GEOCODE_API_URL}?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
     const res = await fetch(url);
     if (res.ok) {
       const data = await res.json();
-      const name = data.city || data.locality || data.principalSubdivision || 'Current Location';
-      const region = data.principalSubdivision || data.locality || '';
+      const city = data.city || data.locality || data.principalSubdivision;
+      const region = data.principalSubdivision || data.countryName || '';
       const country = data.countryName || '';
-      return {
-        id: `gps_loc_${Date.now()}`,
-        name,
-        region,
-        country,
-        latitude: lat,
-        longitude: lon,
-        isCurrent: true,
-      };
+      if (city) {
+        return {
+          id: `gps_loc_${Date.now()}`,
+          name: city,
+          region,
+          country,
+          latitude: lat,
+          longitude: lon,
+          isCurrent: true,
+        };
+      }
     }
   } catch (e) {
-    console.warn('Reverse geocode fallback:', e);
+    console.debug('BigDataCloud reverse geocode note:', e);
   }
+
+  // Tier 2: OpenStreetMap Nominatim reverse geocode fallback
+  try {
+    const osmUrl = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+    const osmRes = await fetch(osmUrl, {
+      headers: { 'Accept-Language': 'en' }
+    });
+    if (osmRes.ok) {
+      const osmData = await osmRes.json();
+      const addr = osmData.address || {};
+      const cityName = addr.city || addr.town || addr.village || addr.suburb || addr.municipality || addr.county;
+      const stateName = addr.state || addr.region || '';
+      const countryName = addr.country || '';
+      if (cityName) {
+        return {
+          id: `gps_loc_${Date.now()}`,
+          name: cityName,
+          region: stateName,
+          country: countryName,
+          latitude: lat,
+          longitude: lon,
+          isCurrent: true,
+        };
+      }
+    }
+  } catch (osmErr) {
+    console.debug('OSM reverse geocode note:', osmErr);
+  }
+
+  // Fallback: Real GPS coordinate label, never a fake city
+  const latStr = lat >= 0 ? `${lat.toFixed(2)}°N` : `${Math.abs(lat).toFixed(2)}°S`;
+  const lonStr = lon >= 0 ? `${lon.toFixed(2)}°E` : `${Math.abs(lon).toFixed(2)}°W`;
+
   return {
     id: `gps_loc_${Date.now()}`,
-    name: 'Current Location',
-    region: `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`,
-    country: 'GPS Detected',
+    name: `${latStr}, ${lonStr}`,
+    region: 'GPS Fix',
+    country: 'Device Location',
     latitude: lat,
     longitude: lon,
     isCurrent: true,

@@ -89,7 +89,7 @@ export const HomeScreen: React.FC = () => {
         windSpeed={metrics.windSpeed}
         windDirectionCardinal={metrics.windDirectionCardinal}
         humidity={metrics.humidity}
-        lastUpdated={metrics.lastUpdated}
+        airQuality={metrics.airQuality}
         weatherCode={metrics.weatherCode}
         isDaytime={metrics.isDaytime}
         onRefresh={refreshWeather}

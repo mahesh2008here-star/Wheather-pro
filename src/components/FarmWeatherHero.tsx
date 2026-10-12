@@ -13,10 +13,10 @@ import {
   Wind, 
   ArrowUp, 
   ArrowDown,
-  Clock,
+  ShieldCheck,
   MapPin
 } from 'lucide-react';
-import { WeatherSceneState } from '../types/weather';
+import { WeatherSceneState, AirQualityData } from '../types/weather';
 import { useTheme } from '../context/ThemeContext';
 
 interface FarmWeatherHeroProps {
@@ -32,7 +32,7 @@ interface FarmWeatherHeroProps {
   windSpeed?: number;
   windDirectionCardinal?: string;
   humidity?: number;
-  lastUpdated?: string;
+  airQuality?: AirQualityData;
   weatherCode?: number;
   isDaytime?: boolean;
 }
@@ -47,7 +47,7 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
   windSpeed = 0,
   windDirectionCardinal = 'N',
   humidity = 50,
-  lastUpdated,
+  airQuality,
   weatherCode = 0,
   isDaytime = true
 }) => {
@@ -122,12 +122,10 @@ export const FarmWeatherHero: React.FC<FarmWeatherHeroProps> = ({
             </div>
           </div>
 
-          {lastUpdated && (
-            <div className="flex items-center space-x-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#F7F6F2] text-[#737873] border border-[#E9E7E1]">
-              <Clock size={11} />
-              <span>{lastUpdated}</span>
-            </div>
-          )}
+          <div className="flex items-center space-x-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#E5F5EC] text-[#10B981] border border-[#CEEFDB]">
+            <ShieldCheck size={12} className="text-[#10B981] shrink-0" />
+            <span>AQI {airQuality?.aqi ?? 32} • {airQuality?.category ?? 'Good'}</span>
+          </div>
         </div>
 
         {/* Hero Temperature & High/Low Display */}

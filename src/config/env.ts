@@ -17,6 +17,8 @@ export const STORAGE_KEYS = {
   SAVED_LOCATIONS: 'weatherapp_saved_locations',
   ACTIVE_LOCATION: 'weatherapp_active_location',
   THEME_PREFERENCES: 'weatherapp_theme_prefs',
+  LOCATION_SELECTION_MODE: 'weatherapp_location_mode',
+  LOCATION_EXPLAINED: 'weatherapp_location_explained',
 } as const;
 
 export const DEFAULT_LOCATIONS: LocationInfo[] = [

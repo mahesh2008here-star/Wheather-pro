@@ -89,7 +89,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenLocationPicker, onOp
       {/* Quick Action Icons */}
       <div className="flex items-center space-x-1 shrink-0">
         <button
-          onClick={detectGpsLocation}
+          onClick={() => detectGpsLocation()}
           disabled={isLocating}
           aria-label="Use current GPS location"
           className={`p-2 rounded-xl transition-all cursor-pointer snappy-touch ${

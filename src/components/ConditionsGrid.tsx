@@ -31,7 +31,7 @@ export const ConditionsGrid: React.FC<ConditionsGridProps> = ({ metrics }) => {
             <span>Atmospheric Observations</span>
           </h3>
           <span className={`text-[10px] font-bold ${isDarkMode ? 'text-[#89998F]' : 'text-[#5D6861]'}`}>
-            Updated {metrics.lastUpdated || 'Just now'}
+            Air Quality: AQI {metrics.airQuality?.aqi ?? 32} ({metrics.airQuality?.category ?? 'Good'})
           </span>
         </div>
 

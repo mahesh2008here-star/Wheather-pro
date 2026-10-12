@@ -22,6 +22,8 @@ public class MainActivity extends BridgeActivity {
             if (getBridge() != null && getBridge().getWebView() != null) {
                 getBridge().getWebView().addJavascriptInterface(new AndroidWidgetBridge(this), "AndroidWidgetBridge");
             }
+            // Schedule reliable 15-minute background weather refresh via Android WorkManager
+            WeatherSyncWorker.schedulePeriodicSync(this);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -89,6 +91,8 @@ public class MainActivity extends BridgeActivity {
                 SharedPreferences.Editor editor = prefs.edit();
 
                 String location = json.optString("location", "Farm Weather");
+                double latitude = json.optDouble("latitude", 0.0);
+                double longitude = json.optDouble("longitude", 0.0);
                 int temp = json.optInt("temp", 24);
                 int apparentTemp = json.optInt("apparentTemp", temp);
                 int tempMin = json.optInt("tempMin", temp - 5);
@@ -109,6 +113,10 @@ public class MainActivity extends BridgeActivity {
                 String lastUpdated = json.optString("lastUpdated", "10:42 AM");
 
                 editor.putString("location", location);
+                if (latitude != 0.0 || longitude != 0.0) {
+                    editor.putFloat("latitude", (float) latitude);
+                    editor.putFloat("longitude", (float) longitude);
+                }
                 editor.putString("temp", temp + "°");
                 editor.putString("condition", condition);
                 editor.putString("details", "H:" + tempMax + "° L:" + tempMin + "° • Feels " + apparentTemp + "°");

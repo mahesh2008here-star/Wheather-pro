@@ -15,7 +15,8 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({ isOpen
     savedLocations, 
     selectLocation, 
     addLocation, 
-    detectGpsLocation 
+    detectGpsLocation,
+    isLocating 
   } = useWeather();
 
   const [query, setQuery] = useState('');
@@ -60,10 +61,13 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({ isOpen
             detectGpsLocation();
             onClose();
           }}
-          className="w-full mb-3 py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center space-x-2 cursor-pointer snappy-touch border border-[#FFE1CB] bg-[#FFF0E4] hover:bg-[#FFE0CB] text-[#FF7900] transition-all shadow-xs"
+          disabled={isLocating}
+          className={`w-full mb-3 py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center space-x-2 cursor-pointer snappy-touch border border-[#FFE1CB] bg-[#FFF0E4] hover:bg-[#FFE0CB] text-[#FF7900] transition-all shadow-xs ${
+            isLocating ? 'opacity-75 cursor-not-allowed' : ''
+          }`}
         >
-          <Crosshair size={14} />
-          <span>Use Live GPS Location</span>
+          <Crosshair size={14} className={isLocating ? 'animate-spin' : ''} />
+          <span>{isLocating ? 'Acquiring GPS Location...' : 'Fetch Current Location via GPS'}</span>
         </button>
 
         {/* Quick Search Input */}

@@ -15,8 +15,13 @@ import {
   Check,
   RotateCcw,
   Sparkles,
+  Bell,
+  RefreshCw,
+  ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useWeather } from '../context/WeatherContext';
 import { LocationInfo } from '../types/weather';
 import { searchLocations } from '../services/weatherApi';
 import { RatingFeedbackSection } from './RatingFeedbackSection';
@@ -54,7 +59,41 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     resetAccentColor,
   } = useTheme();
 
+  const { 
+    dataState, 
+    isStale, 
+    lastUpdatedLabel, 
+    provider, 
+    dataQuality, 
+    refreshWeather, 
+    isLoading 
+  } = useWeather();
+
   const [hexInput, setHexInput] = useState(customAccentColor);
+
+  // Agricultural Alerts Config State
+  const [alertSettings, setAlertSettings] = useState({
+    rainAlert: true,
+    heatAlert: true,
+    frostAlert: true,
+    windAlert: true,
+  });
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('farmweather_alert_settings');
+      if (saved) setAlertSettings(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  const toggleAlertSetting = (key: keyof typeof alertSettings) => {
+    setAlertSettings(prev => {
+      const next = { ...prev, [key]: !prev[key] };
+      try { localStorage.setItem('farmweather_alert_settings', JSON.stringify(next)); } catch {}
+      return next;
+    });
+    try { navigator.vibrate?.(10); } catch {}
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<LocationInfo[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -456,12 +495,142 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         </div>
       </div>
 
-      {/* 3. COMMUNITY FEEDBACK SECTION */}
+      {/* 3. CONFIGURABLE AGRICULTURAL ALERTS */}
+      <div className="mb-4">
+        <span 
+          className="text-[10px] font-black uppercase tracking-wider block mb-1.5 px-1 transition-colors"
+          style={{ color: customAccentColor }}
+        >
+          Configurable Weather Alerts
+        </span>
+
+        <div className="rounded-[28px] border border-[#E9E7E1] bg-white shadow-xs divide-y divide-[#E9E7E1] overflow-hidden">
+          {/* Rain Alert */}
+          <div className="p-3.5 flex items-center justify-between">
+            <div className="flex items-center space-x-2.5">
+              <Bell size={16} className="text-[#0284C7]" />
+              <div>
+                <span className="text-xs font-bold text-[#171717] block">Rain & Irrigation Risk Warning</span>
+                <span className="text-[10px] text-[#737873]">Notify when rain probability exceeds 35%</span>
+              </div>
+            </div>
+            <button
+              onClick={() => toggleAlertSetting('rainAlert')}
+              className={`w-11 h-6 rounded-full transition-colors cursor-pointer p-0.5 relative ${
+                alertSettings.rainAlert ? 'bg-[#10B981]' : 'bg-[#E9E7E1]'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-full bg-white shadow-xs transition-transform ${
+                alertSettings.rainAlert ? 'translate-x-5' : 'translate-x-0'
+              }`} />
+            </button>
+          </div>
+
+          {/* Frost Alert */}
+          <div className="p-3.5 flex items-center justify-between">
+            <div className="flex items-center space-x-2.5">
+              <Bell size={16} className="text-[#0284C7]" />
+              <div>
+                <span className="text-xs font-bold text-[#171717] block">Frost & Freeze Hazard Warning</span>
+                <span className="text-[10px] text-[#737873]">Alert when field temperature drops below 3°C</span>
+              </div>
+            </div>
+            <button
+              onClick={() => toggleAlertSetting('frostAlert')}
+              className={`w-11 h-6 rounded-full transition-colors cursor-pointer p-0.5 relative ${
+                alertSettings.frostAlert ? 'bg-[#10B981]' : 'bg-[#E9E7E1]'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-full bg-white shadow-xs transition-transform ${
+                alertSettings.frostAlert ? 'translate-x-5' : 'translate-x-0'
+              }`} />
+            </button>
+          </div>
+
+          {/* Wind Alert */}
+          <div className="p-3.5 flex items-center justify-between">
+            <div className="flex items-center space-x-2.5">
+              <Bell size={16} className="text-[#FF7900]" />
+              <div>
+                <span className="text-xs font-bold text-[#171717] block">High Wind & Spray Drift Alert</span>
+                <span className="text-[10px] text-[#737873]">Alert when wind exceeds 20 km/h threshold</span>
+              </div>
+            </div>
+            <button
+              onClick={() => toggleAlertSetting('windAlert')}
+              className={`w-11 h-6 rounded-full transition-colors cursor-pointer p-0.5 relative ${
+                alertSettings.windAlert ? 'bg-[#10B981]' : 'bg-[#E9E7E1]'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-full bg-white shadow-xs transition-transform ${
+                alertSettings.windAlert ? 'translate-x-5' : 'translate-x-0'
+              }`} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. DATA PROVIDER & 15-MINUTE BACKGROUND REFRESH STATUS */}
+      <div className="mb-4">
+        <span 
+          className="text-[10px] font-black uppercase tracking-wider block mb-1.5 px-1 transition-colors"
+          style={{ color: customAccentColor }}
+        >
+          Weather Data Source & Refresh Status
+        </span>
+
+        <div className="p-4 rounded-[28px] border border-[#E9E7E1] bg-white shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <ShieldCheck size={18} className="text-[#10B981]" />
+              <div>
+                <span className="text-xs font-black text-[#171717] block">{provider}</span>
+                <span className="text-[10px] font-medium text-[#737873]">{dataQuality}</span>
+              </div>
+            </div>
+
+            <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
+              isStale 
+                ? 'bg-amber-50 text-amber-700 border-amber-200' 
+                : 'bg-[#E5F5EC] text-[#10B981] border-[#CEEFDB]'
+            }`}>
+              {isStale ? 'Stale Data' : 'Live Sync'}
+            </span>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-[#F7F6F2] border border-[#E9E7E1] text-xs space-y-1 text-[#444746]">
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-[#737873]">Refresh Schedule:</span>
+              <span className="font-bold text-[#171717]">Every 15 minutes (Periodic Work)</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-[#737873]">Last Successful Fetch:</span>
+              <span className="font-bold text-[#171717]">{lastUpdatedLabel}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-[#737873]">Attribution:</span>
+              <span className="font-bold text-[#171717]">Open-Meteo CC BY 4.0</span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => refreshWeather()}
+            disabled={isLoading}
+            className="w-full py-2.5 px-4 rounded-2xl text-xs font-black flex items-center justify-center space-x-2 text-white cursor-pointer snappy-touch shadow-xs"
+            style={{ backgroundColor: customAccentColor }}
+          >
+            <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
+            <span>{isLoading ? 'Syncing Weather Telemetry...' : 'Sync Telemetry Now'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 5. COMMUNITY FEEDBACK SECTION */}
       <div className="mb-4">
         <RatingFeedbackSection location={activeLocation} />
       </div>
 
-      {/* 4. GITHUB REPOSITORY & TELEMETRY ATTRIBUTION */}
+      {/* 6. GITHUB REPOSITORY & ATTRIBUTION */}
       <div className="space-y-2">
         <a 
           href="https://github.com/mahesh2008here-star/Wheather-pro"

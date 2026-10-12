@@ -8,7 +8,7 @@ import {
   Snowflake, 
   CloudFog,
   MapPin,
-  Clock
+  ShieldCheck
 } from 'lucide-react';
 import { CurrentWeatherMetrics, LocationInfo } from '../../types/weather';
 
@@ -77,11 +77,11 @@ export const CompactWeatherWidget: React.FC<CompactWeatherWidgetProps> = ({
         </div>
       </div>
 
-      {/* Bottom Footer: Auto-sync timestamp */}
+      {/* Bottom Footer: Live Air Quality */}
       <div className="mt-2.5 pt-2 border-t border-[#CDE3FC]/80 flex items-center justify-between text-[10px] text-[#737873]">
-        <span className="font-bold flex items-center space-x-1">
-          <Clock size={10} className="text-[#1687C9]" />
-          <span>{metrics.lastUpdated || 'Updated'}</span>
+        <span className="font-bold flex items-center space-x-1 text-[#10B981]">
+          <ShieldCheck size={11} className="text-[#10B981]" />
+          <span>AQI {metrics.airQuality?.aqi ?? 32} • {metrics.airQuality?.category ?? 'Good'}</span>
         </span>
         <span className="font-bold text-[#1687C9]">● Live</span>
       </div>

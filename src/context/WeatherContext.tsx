@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { 
   CurrentWeatherMetrics, 
   DailyForecastItem, 
@@ -9,11 +9,18 @@ import {
 } from '../types/weather';
 import { 
   DEFAULT_LOCATIONS, 
-  fetchLiveWeather, 
-  detectSevereWeatherAlerts, 
-  reverseGeocode 
 } from '../services/weatherApi';
-import { detectUserLocation } from '../services/locationService';
+import { 
+  detectUserLocation, 
+  checkLocationPermission, 
+  requestLocationPermission,
+  LocationServiceError 
+} from '../services/locationService';
+import { 
+  weatherRefreshService, 
+  UnifiedWeatherStore, 
+  WeatherDataState 
+} from '../services/weatherRefreshService';
 import { STORAGE_KEYS } from '../config/env';
 
 interface WeatherContextType {
@@ -28,15 +35,27 @@ interface WeatherContextType {
   isLoading: boolean;
   isLocating: boolean;
   locationStatus: string | null;
+  locationError: string | null;
+  isPermissionPermanentlyDenied: boolean;
+  showFirstLaunchLocationModal: boolean;
   error: string | null;
+  dataState: WeatherDataState;
+  isStale: boolean;
+  ageMinutes: number;
+  lastUpdatedLabel: string;
+  provider: string;
+  dataQuality: string;
   previewScene: WeatherSceneState | null;
   setPreviewScene: (scene: WeatherSceneState | null) => void;
   selectLocation: (loc: LocationInfo) => void;
   addLocation: (loc: LocationInfo) => void;
   deleteLocation: (id: string) => void;
   refreshWeather: () => Promise<void>;
-  detectGpsLocation: () => void;
+  detectGpsLocation: (isInitialAutoRefresh?: boolean) => Promise<void>;
   clearLocationStatus: () => void;
+  clearLocationError: () => void;
+  acceptFirstLaunchLocationPrompt: () => Promise<void>;
+  dismissFirstLaunchLocationPrompt: () => void;
 }
 
 const WeatherContext = createContext<WeatherContextType | undefined>(undefined);
@@ -47,7 +66,18 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [locationStatus, setLocationStatus] = useState<string | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [isPermissionPermanentlyDenied, setIsPermissionPermanentlyDenied] = useState<boolean>(false);
+  const [showFirstLaunchLocationModal, setShowFirstLaunchLocationModal] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Data Quality & Freshness State (Single Source of Truth)
+  const [dataState, setDataState] = useState<WeatherDataState>('fresh');
+  const [isStale, setIsStale] = useState<boolean>(false);
+  const [ageMinutes, setAgeMinutes] = useState<number>(0);
+  const [lastUpdatedLabel, setLastUpdatedLabel] = useState<string>('Updated 12:00 PM');
+  const [provider, setProvider] = useState<string>('Open-Meteo ECMWF / GFS IFS');
+  const [dataQuality, setDataQuality] = useState<string>('Verified schema • 16 parameters');
 
   // Saved Locations State
   const [savedLocations, setSavedLocations] = useState<LocationInfo[]>(() => {
@@ -76,6 +106,9 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
     return DEFAULT_LOCATIONS[0];
   });
+
+  const activeLocationRef = useRef(activeLocation);
+  activeLocationRef.current = activeLocation;
 
   // Save locations to localStorage
   useEffect(() => {
@@ -109,194 +142,218 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
     pressure: 1016,
     pressureTendency: 'steady',
     visibility: 10,
-    cloudCover: 35,
-    uvIndex: 6,
-    uvLevel: 'High',
-    rainChance: 20,
+    cloudCover: 25,
+    uvIndex: 5,
+    uvLevel: 'Moderate',
+    rainChance: 12,
     precipitationAmount: 0.0,
     precipitationRate: 0.0,
-    weatherCode: 2,
-    conditionTitle: 'Partly Cloudy',
-    conditionDescription: 'Gentle breeze with scattered sunny intervals',
-    sceneState: 'clouds_rolling_in',
+    weatherCode: 1,
+    conditionTitle: 'Mainly Clear',
+    conditionDescription: 'Ideal dry field conditions for spraying and harvesting operations',
+    sceneState: 'sunny',
     isDaytime: true,
-    lastUpdated: 'Just now',
-    isLive: true,
+    lastUpdated: '12:00 PM',
+    isLive: false,
+    soilTemperature: 20,
+    soilMoisture: 45,
+    evapotranspiration: 3.2,
     airQuality: {
       aqi: 32,
       category: 'Good',
-      pm25: 9,
-      pm10: 16,
-      ozone: 36,
-      no2: 12,
-      healthAdvice: 'Air quality is satisfactory and poses little to no risk.',
       primaryPollutant: 'PM2.5',
+      pm25: 7.8,
+      pm10: 14.2,
+      ozone: 42.1,
+      no2: 8.5,
+      healthAdvice: 'Ideal conditions for crop spraying and field operations.',
       treePollen: 'Low',
       grassPollen: 'Low',
-      weedPollen: 'Low',
+      weedPollen: 'Low'
     },
     astronomy: {
-      sunrise: '6:18 AM',
-      sunset: '6:42 PM',
-      solarNoon: '12:30 PM',
-      dayLength: '12h 24m',
-      goldenHour: '6:02 PM',
+      sunrise: '6:24 AM',
+      sunset: '7:48 PM',
+      solarNoon: '1:06 PM',
+      dayLength: '13h 24m',
+      goldenHour: '7:15 PM',
       isDaytime: true,
-      moonPhase: 'Waxing Crescent',
-      moonIllumination: 28,
-      moonrise: '8:45 PM',
-      moonset: '7:12 AM',
+      moonPhase: 'Waxing Gibbous',
+      moonIllumination: 78,
+      moonrise: '5:40 PM',
+      moonset: '6:12 AM'
     },
-    nextHourRain: [
-      { minute: 0, intensity: 0, label: 'No rain' },
-      { minute: 15, intensity: 0, label: 'No rain' },
-      { minute: 30, intensity: 0, label: 'No rain' },
-      { minute: 45, intensity: 0, label: 'No rain' },
-      { minute: 60, intensity: 0, label: 'No rain' },
-    ],
+    nextHourRain: []
   });
 
-  // Daily Forecast
-  const [dailyForecast, setDailyForecast] = useState<DailyForecastItem[]>([
-    { date: '2026-10-10', dayName: 'Today', weatherCode: 2, conditionDescription: 'Partly Cloudy', tempMin: 18, tempMax: 26, rainProbability: 20, precipitationSum: 0.0, uvIndexMax: 6, humidity: 68, windSpeedMax: 16, windDirectionCardinal: 'WSW', precipitationHours: 0 },
-    { date: '2026-10-11', dayName: 'Sunday', weatherCode: 0, conditionDescription: 'Clear Sky', tempMin: 17, tempMax: 27, rainProbability: 5, precipitationSum: 0.0, uvIndexMax: 7, humidity: 60, windSpeedMax: 12, windDirectionCardinal: 'SW', precipitationHours: 0 },
-    { date: '2026-10-12', dayName: 'Monday', weatherCode: 61, conditionDescription: 'Showers', tempMin: 16, tempMax: 22, rainProbability: 75, precipitationSum: 5.4, uvIndexMax: 4, humidity: 85, windSpeedMax: 24, windDirectionCardinal: 'WNW', precipitationHours: 4 },
-    { date: '2026-10-13', dayName: 'Tuesday', weatherCode: 63, conditionDescription: 'Rain', tempMin: 15, tempMax: 20, rainProbability: 85, precipitationSum: 12.2, uvIndexMax: 3, humidity: 90, windSpeedMax: 30, windDirectionCardinal: 'NW', precipitationHours: 6 },
-    { date: '2026-10-14', dayName: 'Wednesday', weatherCode: 2, conditionDescription: 'Partly Sunny', tempMin: 16, tempMax: 24, rainProbability: 25, precipitationSum: 0.2, uvIndexMax: 5, humidity: 68, windSpeedMax: 15, windDirectionCardinal: 'NNW', precipitationHours: 0 },
-    { date: '2026-10-15', dayName: 'Thursday', weatherCode: 0, conditionDescription: 'Sunny', tempMin: 17, tempMax: 28, rainProbability: 5, precipitationSum: 0.0, uvIndexMax: 7, humidity: 55, windSpeedMax: 11, windDirectionCardinal: 'W', precipitationHours: 0 },
-    { date: '2026-10-16', dayName: 'Friday', weatherCode: 2, conditionDescription: 'Mainly Clear', tempMin: 18, tempMax: 28, rainProbability: 10, precipitationSum: 0.0, uvIndexMax: 6, humidity: 62, windSpeedMax: 14, windDirectionCardinal: 'SW', precipitationHours: 0 },
-  ]);
+  const [dailyForecast, setDailyForecast] = useState<DailyForecastItem[]>([]);
+  const [hourlyForecast, setHourlyForecast] = useState<HourlyForecastItem[]>([]);
+  const [alerts, setAlerts] = useState<WeatherAlert[]>([]);
 
-  // Hourly Forecast
-  const [hourlyForecast, setHourlyForecast] = useState<HourlyForecastItem[]>([
-    { time: '10:00', hour: 'Now', temperature: 24, weatherCode: 2, rainProbability: 15, isCurrent: true },
-    { time: '11:00', hour: '11 AM', temperature: 25, weatherCode: 1, rainProbability: 10 },
-    { time: '12:00', hour: '12 PM', temperature: 26, weatherCode: 0, rainProbability: 5 },
-    { time: '13:00', hour: '1 PM', temperature: 26, weatherCode: 0, rainProbability: 5 },
-    { time: '14:00', hour: '2 PM', temperature: 25, weatherCode: 1, rainProbability: 10 },
-    { time: '15:00', hour: '3 PM', temperature: 24, weatherCode: 2, rainProbability: 20 },
-    { time: '16:00', hour: '4 PM', temperature: 23, weatherCode: 2, rainProbability: 25 },
-    { time: '17:00', hour: '5 PM', temperature: 22, weatherCode: 3, rainProbability: 30 },
-  ]);
+  // Connect to weatherRefreshService Single Source of Truth
+  useEffect(() => {
+    const unsubscribe = weatherRefreshService.subscribe((store: UnifiedWeatherStore) => {
+      setMetrics(store.metrics);
+      setDailyForecast(store.dailyForecast);
+      setHourlyForecast(store.hourlyForecast);
+      setAlerts(store.alerts);
+      setDataState(store.dataState);
+      setIsStale(store.isStale);
+      setAgeMinutes(store.ageMinutes);
+      setLastUpdatedLabel(store.lastUpdatedLabel);
+      setProvider(store.provider);
+      setDataQuality(store.dataQuality);
+    });
 
-  // Calculate severe alerts
-  const alerts = detectSevereWeatherAlerts(metrics);
+    // Start 15-minute background refresh scheduler
+    weatherRefreshService.startScheduler(() => activeLocationRef.current);
 
-  const activeLocationRef = React.useRef(activeLocation);
-  activeLocationRef.current = activeLocation;
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
-  // Fetch Weather Callback
-  const handleFetchWeather = useCallback(async (loc?: LocationInfo, forceRefresh: boolean = false) => {
-    const targetLoc = loc || activeLocationRef.current;
+  // Fetch weather for a given target location
+  const handleFetchWeather = useCallback(async (loc: LocationInfo, forceRefresh = false) => {
     setIsLoading(true);
     setError(null);
-    setPreviewScene(null);
+
     try {
-      const data = await fetchLiveWeather(targetLoc.latitude, targetLoc.longitude, forceRefresh);
-      setMetrics(data.current);
-      if (data.daily.length > 0) setDailyForecast(data.daily);
-      if (data.hourly.length > 0) setHourlyForecast(data.hourly);
-
-      // Sync to Native Android Home Screen Widgets via Capacitor bridge
-      if (typeof window !== 'undefined' && (window as any).AndroidWidgetBridge) {
-        try {
-          const bridge = (window as any).AndroidWidgetBridge;
-          // Legacy string call for backwards compatibility
-          bridge.updateWidgetData?.(
-            targetLoc.name,
-            `${data.current.temperature}°`,
-            data.current.conditionTitle,
-            `H:${data.current.tempMaxToday}° L:${data.current.tempMinToday}° • Feels ${data.current.apparentTemperature}°`
-          );
-
-          // Structured payload for all Material 3 widgets
-          bridge.updateStructuredWidgetData?.(
-            JSON.stringify({
-              location: targetLoc.name,
-              temp: data.current.temperature,
-              apparentTemp: data.current.apparentTemperature,
-              tempMin: data.current.tempMinToday,
-              tempMax: data.current.tempMaxToday,
-              condition: data.current.conditionTitle,
-              humidity: data.current.humidity,
-              windSpeed: data.current.windSpeed,
-              windDirection: data.current.windDirectionCardinal,
-              rainChance: data.current.rainChance,
-              precipitation: data.current.precipitationAmount,
-              soilTemp: data.current.soilTemperature,
-              soilMoisture: data.current.soilMoisture,
-              et0: data.current.evapotranspiration,
-              uvIndex: data.current.uvIndex,
-              uvLevel: data.current.uvLevel,
-              aqi: data.current.airQuality.aqi,
-              aqiCategory: data.current.airQuality.category,
-              lastUpdated: data.current.lastUpdated || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              forecast: data.hourly.slice(0, 4).map(h => ({
-                time: h.time,
-                temp: h.temperature,
-                condition: h.conditionTitle || 'Clear',
-                rainChance: h.rainProbability
-              }))
-            })
-          );
-        } catch (bridgeErr) {
-          console.debug('Android widget sync note:', bridgeErr);
-        }
-      }
+      await weatherRefreshService.refresh(loc, forceRefresh);
     } catch (err: any) {
-      console.warn('Weather fetch fallback:', err);
-      setError(err?.message || 'Failed to sync live weather telemetry');
+      console.warn('Weather fetch error:', err);
+      setError(err?.message || 'Unable to load real-time weather. Please check network connection.');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Universal GPS & IP Live Location Detector
-  const detectGpsLocation = useCallback(async () => {
+  // Dedicated GPS Detector Action
+  const detectGpsLocation = useCallback(async (isInitialAutoRefresh = false) => {
+    // Prevent duplicate simultaneous location requests
+    if (isLocating) return;
+
     setIsLocating(true);
-    setLocationStatus('Detecting location telemetry...');
+    setLocationError(null);
+    setLocationStatus('Acquiring live GPS fix...');
 
     try {
-      const loc = await detectUserLocation();
+      const result = await detectUserLocation();
+      const loc = result.location;
+
+      // Remember selection mode as GPS
+      try {
+        localStorage.setItem(STORAGE_KEYS.LOCATION_SELECTION_MODE, 'gps');
+      } catch {}
+
       setActiveLocation(loc);
       setSavedLocations(prev => {
-        if (!prev.some(l => l.name === loc.name)) {
-          return [loc, ...prev];
-        }
-        return prev;
+        // Keep GPS location at top, preserve other custom cities
+        const withoutOldGps = prev.filter(l => !l.isCurrent && l.name !== loc.name);
+        return [loc, ...withoutOldGps];
       });
-      await handleFetchWeather(loc);
-      setLocationStatus(`Live Location Active: ${loc.name}`);
-    } catch (err) {
-      console.warn('Location detection note:', err);
-      setLocationStatus('Location loaded');
+
+      await handleFetchWeather(loc, true);
+
+      const accuracyNote = result.isApproximate ? ` (approx. ±${Math.round(result.accuracyMeters / 1000)}km)` : '';
+      setLocationStatus(`GPS Location: ${loc.name}${accuracyNote}`);
+      setIsPermissionPermanentlyDenied(false);
+    } catch (err: any) {
+      console.warn('GPS location retrieval failed:', err);
+      const isPermanent = err instanceof LocationServiceError ? err.isPermanentDenial : false;
+      setIsPermissionPermanentlyDenied(isPermanent);
+
+      const friendlyMessage = err?.message || 'Failed to detect GPS location. Please check device location settings.';
+      setLocationError(friendlyMessage);
+      setLocationStatus(null);
     } finally {
       setIsLocating(false);
-      setTimeout(() => setLocationStatus(null), 3500);
+      setTimeout(() => setLocationStatus(null), 4000);
     }
-  }, [handleFetchWeather]);
+  }, [isLocating, handleFetchWeather]);
 
-  // Initial Load
+  // First-launch & Startup initialization
   useEffect(() => {
-    const storedActive = localStorage.getItem(STORAGE_KEYS.ACTIVE_LOCATION);
-    if (!storedActive) {
-      detectGpsLocation();
-    } else {
-      handleFetchWeather(activeLocation);
-    }
+    let mounted = true;
+
+    const initLocationAndWeather = async () => {
+      const hasExplained = localStorage.getItem(STORAGE_KEYS.LOCATION_EXPLAINED);
+      const selectionMode = localStorage.getItem(STORAGE_KEYS.LOCATION_SELECTION_MODE);
+      const permStatus = await checkLocationPermission();
+
+      if (!mounted) return;
+
+      if (permStatus === 'granted') {
+        // Permission was previously granted through Android / browser
+        if (selectionMode === 'manual') {
+          // User deliberately picked a manual city previously: preserve their manual city!
+          handleFetchWeather(activeLocation);
+        } else {
+          // GPS mode: refresh current location on launch
+          detectGpsLocation(true);
+        }
+      } else if (permStatus === 'denied') {
+        setIsPermissionPermanentlyDenied(true);
+        handleFetchWeather(activeLocation);
+      } else {
+        // Status is 'prompt'
+        if (!hasExplained) {
+          // First launch: show educational permission dialog explaining need for weather
+          setShowFirstLaunchLocationModal(true);
+          handleFetchWeather(activeLocation);
+        } else {
+          // User already saw prompt and chose not to grant or didn't trigger: load active location quietly
+          handleFetchWeather(activeLocation);
+        }
+      }
+    };
+
+    initLocationAndWeather();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const selectLocation = (loc: LocationInfo) => {
-    setActiveLocation(loc);
-    handleFetchWeather(loc, true);
+  const acceptFirstLaunchLocationPrompt = async () => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.LOCATION_EXPLAINED, 'true');
+    } catch {}
+    setShowFirstLaunchLocationModal(false);
+    await requestLocationPermission();
+    await detectGpsLocation();
   };
 
+  const dismissFirstLaunchLocationPrompt = () => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.LOCATION_EXPLAINED, 'true');
+    } catch {}
+    setShowFirstLaunchLocationModal(false);
+  };
+
+  // User manually selects a city: preserve that selection
+  const selectLocation = (loc: LocationInfo) => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.LOCATION_SELECTION_MODE, 'manual');
+    } catch {}
+    const manualLoc = { ...loc, isCurrent: false };
+    setActiveLocation(manualLoc);
+    setLocationError(null);
+    handleFetchWeather(manualLoc, true);
+  };
+
+  // User manually adds a city: preserve manual selection
   const addLocation = (loc: LocationInfo) => {
-    if (!savedLocations.some(l => l.name === loc.name && l.country === loc.country)) {
-      setSavedLocations(prev => [loc, ...prev]);
+    try {
+      localStorage.setItem(STORAGE_KEYS.LOCATION_SELECTION_MODE, 'manual');
+    } catch {}
+    const manualLoc = { ...loc, isCurrent: false };
+    if (!savedLocations.some(l => l.name === manualLoc.name && l.country === manualLoc.country)) {
+      setSavedLocations(prev => [manualLoc, ...prev]);
     }
-    setActiveLocation(loc);
-    handleFetchWeather(loc, true);
+    setActiveLocation(manualLoc);
+    setLocationError(null);
+    handleFetchWeather(manualLoc, true);
   };
 
   const deleteLocation = (id: string) => {
@@ -324,7 +381,16 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
         isLoading,
         isLocating,
         locationStatus,
+        locationError,
+        isPermissionPermanentlyDenied,
+        showFirstLaunchLocationModal,
         error,
+        dataState,
+        isStale,
+        ageMinutes,
+        lastUpdatedLabel,
+        provider,
+        dataQuality,
         previewScene,
         setPreviewScene,
         selectLocation,
@@ -333,6 +399,9 @@ export const WeatherProvider: React.FC<{ children: ReactNode }> = ({ children })
         refreshWeather: () => handleFetchWeather(activeLocation, true),
         detectGpsLocation,
         clearLocationStatus: () => setLocationStatus(null),
+        clearLocationError: () => setLocationError(null),
+        acceptFirstLaunchLocationPrompt,
+        dismissFirstLaunchLocationPrompt,
       }}
     >
       {children}
