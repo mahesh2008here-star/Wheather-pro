@@ -1,6 +1,6 @@
 /**
  * Universal High-Performance & Bulletproof Text-to-Speech (TTS) Engine
- * Guarantees crystal clear audio speech playback across Web Browsers,
+ * Guarantees crystal clear, natural human audio speech playback across Web Browsers,
  * Android WebViews, Capacitor APKs, iOS, and Offline Environments.
  */
 
@@ -8,12 +8,22 @@ export interface TTSOptions {
   rate?: number; // 0.8 to 1.5
   pitch?: number; // 0.8 to 1.2
   lang?: string; // Default 'en-US'
-  engine?: 'auto' | 'cloud' | 'native' | 'synth';
+  engine?: 'auto' | 'cloud' | 'native';
   voiceName?: string;
   onStart?: () => void;
   onEnd?: () => void;
   onError?: (errorMsg: string) => void;
   onProgress?: (chunkIndex: number, totalChunks: number) => void;
+}
+
+export interface TTSDiagnosticInfo {
+  activeEngine: 'Cloud HD Speech' | 'Android Native Speech' | 'None';
+  status: 'idle' | 'loading' | 'playing' | 'error';
+  lastError: string | null;
+  audioContextState: string;
+  currentChunk: number;
+  totalChunks: number;
+  voiceNameUsed: string;
 }
 
 // Global Audio Context for Android WebView / Mobile Safari gesture unlocking
@@ -27,7 +37,7 @@ export const getAudioContext = (): AudioContext | null => {
       try {
         globalAudioCtx = new AudioCtx();
       } catch (e) {
-        console.warn('AudioContext creation error:', e);
+        console.warn('[AudioEngine] AudioContext creation error:', e);
       }
     }
   }
@@ -52,7 +62,7 @@ export const unlockAudioHardware = (): boolean => {
     source.start(0);
     return true;
   } catch (e) {
-    console.warn('Audio unlock buffer error:', e);
+    console.warn('[AudioEngine] Audio unlock buffer error:', e);
     return false;
   }
 };
@@ -105,9 +115,9 @@ class UniversalTTSEngine {
   private currentOptions: TTSOptions | null = null;
   private currentChunks: string[] = [];
   private currentChunkIndex: number = 0;
-  private activeEngineUsed: 'cloud' | 'native' | 'synth' = 'cloud';
+  private activeEngineUsed: 'cloud' | 'native' | 'none' = 'none';
   private cachedVoices: SpeechSynthesisVoice[] = [];
-  private speechKeepaliveInterval: ReturnType<typeof setInterval> | null = null;
+  private lastErrorMsg: string | null = null;
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -115,7 +125,7 @@ class UniversalTTSEngine {
       try {
         window.speechSynthesis.onvoiceschanged = () => this.populateVoices();
       } catch (e) {
-        console.warn('onvoiceschanged listener error:', e);
+        console.warn('[AudioEngine] onvoiceschanged listener warning:', e);
       }
     }
   }
@@ -125,7 +135,7 @@ class UniversalTTSEngine {
     try {
       this.cachedVoices = window.speechSynthesis.getVoices() || [];
     } catch (e) {
-      console.warn('Error fetching voices:', e);
+      console.warn('[AudioEngine] Error fetching system voices:', e);
     }
   }
 
@@ -146,48 +156,31 @@ class UniversalTTSEngine {
         return 'HD AI Natural Voice';
       case 'native':
         return 'Android Native Speech';
-      case 'synth':
-        return 'Web Audio Speech Synth';
       default:
         return 'Universal Voice Engine';
     }
   }
 
-  public playDiagnosticChime(): Promise<boolean> {
-    return new Promise((resolve) => {
-      unlockAudioHardware();
-      const ctx = getAudioContext();
-      if (!ctx) {
-        resolve(false);
-        return;
-      }
-
-      const notes = [523.25, 659.25, 783.99, 1046.50];
-      const now = ctx.currentTime;
-
-      notes.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.1);
-
-        gain.gain.setValueAtTime(0, now + idx * 0.1);
-        gain.gain.linearRampToValueAtTime(0.12, now + idx * 0.1 + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.22);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start(now + idx * 0.1);
-        osc.stop(now + idx * 0.1 + 0.23);
-      });
-
-      setTimeout(() => resolve(true), 500);
-    });
+  public getDiagnostics(): TTSDiagnosticInfo {
+    const ctx = getAudioContext();
+    return {
+      activeEngine: this.activeEngineUsed === 'cloud' 
+        ? 'Cloud HD Speech' 
+        : this.activeEngineUsed === 'native' 
+          ? 'Android Native Speech' 
+          : 'None',
+      status: this.isSpeaking ? 'playing' : this.lastErrorMsg ? 'error' : 'idle',
+      lastError: this.lastErrorMsg,
+      audioContextState: ctx ? ctx.state : 'unavailable',
+      currentChunk: this.currentChunkIndex + 1,
+      totalChunks: this.currentChunks.length,
+      voiceNameUsed: this.currentOptions?.voiceName || 'System Default',
+    };
   }
 
   public speak(text: string, options: TTSOptions = {}): void {
     this.stop();
+    this.lastErrorMsg = null;
     unlockAudioHardware();
 
     const sanitized = sanitizeForSpeech(text);
@@ -205,16 +198,15 @@ class UniversalTTSEngine {
 
     const engineMode = options.engine || 'auto';
 
-    if (engineMode === 'synth') {
-      this.playWithWebAudioSynth();
-    } else if (engineMode === 'native') {
+    if (engineMode === 'native') {
       this.playWithWebSpeech();
     } else {
+      // Primary: Multi-provider Cloud Stream with Native Fallback
       this.playNextCloudChunk();
     }
   }
 
-  // Tier 1: HD Cloud Audio Stream (StreamElements Polly / Google Voice)
+  // Tier 1: HD Cloud Audio Stream (Google TTS & StreamElements without CORS enforcement)
   private playNextCloudChunk(): void {
     if (!this.isSpeaking || this.currentChunkIndex >= this.currentChunks.length) {
       this.finishPlayback();
@@ -229,41 +221,60 @@ class UniversalTTSEngine {
 
     const encodedText = encodeURIComponent(chunk);
     const voice = this.currentOptions?.voiceName || 'Brian';
-    const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=${voice}&text=${encodedText}`;
 
-    try {
-      const audio = new Audio();
-      audio.crossOrigin = 'anonymous';
-      audio.src = audioUrl;
-      this.currentAudio = audio;
-      audio.playbackRate = this.currentOptions?.rate || 1.0;
+    // Primary cloud provider: Google TTS API (supports Android WebView without CORS issues)
+    const primaryUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=en&client=tw-ob`;
+    // Secondary fallback provider: StreamElements
+    const secondaryUrl = `https://api.streamelements.com/kappa/v2/speech?voice=${voice}&text=${encodedText}`;
 
-      audio.onended = () => {
-        this.currentChunkIndex++;
-        this.playNextCloudChunk();
-      };
+    const attemptPlayUrl = (url: string, isFallbackProvider = false) => {
+      try {
+        const audio = new Audio();
+        // IMPORTANT: Do NOT set audio.crossOrigin = 'anonymous' for Android WebView!
+        // Setting crossOrigin = 'anonymous' triggers CORS origin rejection on localhost origins.
+        audio.src = url;
+        this.currentAudio = audio;
+        audio.playbackRate = this.currentOptions?.rate || 1.0;
 
-      audio.onerror = () => {
-        console.warn('Cloud audio stream unavailable, falling back to Native WebSpeech');
+        audio.onended = () => {
+          this.currentChunkIndex++;
+          this.playNextCloudChunk();
+        };
+
+        audio.onerror = () => {
+          if (!isFallbackProvider) {
+            console.warn('[AudioEngine] Primary TTS stream error, trying secondary provider...');
+            attemptPlayUrl(secondaryUrl, true);
+          } else {
+            console.warn('[AudioEngine] Cloud audio streams unavailable, falling back to Native Android Speech');
+            this.playWithWebSpeech();
+          }
+        };
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn('[AudioEngine] Play promise error:', err);
+            if (!isFallbackProvider) {
+              attemptPlayUrl(secondaryUrl, true);
+            } else {
+              this.playWithWebSpeech();
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('[AudioEngine] Audio element creation failed:', err);
         this.playWithWebSpeech();
-      };
-
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          console.warn('Audio play restricted, trying Native WebSpeech');
-          this.playWithWebSpeech();
-        });
       }
-    } catch {
-      this.playWithWebSpeech();
-    }
+    };
+
+    attemptPlayUrl(primaryUrl);
   }
 
   // Tier 2: Native Android System WebSpeech (`window.speechSynthesis`)
   private playWithWebSpeech(): void {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      this.playWithWebAudioSynth();
+      this.handlePlaybackFailure('Speech synthesis is not supported on this device.');
       return;
     }
 
@@ -272,19 +283,6 @@ class UniversalTTSEngine {
     try {
       window.speechSynthesis.cancel();
       window.speechSynthesis.resume();
-
-      if (this.speechKeepaliveInterval) {
-        clearInterval(this.speechKeepaliveInterval);
-      }
-
-      this.speechKeepaliveInterval = setInterval(() => {
-        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-          if (window.speechSynthesis.speaking) {
-            window.speechSynthesis.pause();
-            window.speechSynthesis.resume();
-          }
-        }
-      }, 3500);
 
       const speakNextWebSpeechChunk = () => {
         if (!this.isSpeaking || this.currentChunkIndex >= this.currentChunks.length) {
@@ -306,7 +304,7 @@ class UniversalTTSEngine {
         const voices = this.getAvailableSystemVoices();
         if (voices.length > 0) {
           const preferredVoiceKeywords = ['google', 'natural', 'neural', 'samantha', 'salli', 'brian', 'zira', 'alex', 'daniel', 'karen'];
-          let chosenVoice = voices.find(v => {
+          const chosenVoice = voices.find(v => {
             const name = v.name.toLowerCase();
             return v.lang.startsWith('en') && preferredVoiceKeywords.some(kw => name.includes(kw));
           }) || voices.find(v => v.lang.startsWith('en')) || voices[0];
@@ -314,88 +312,52 @@ class UniversalTTSEngine {
           if (chosenVoice) utterance.voice = chosenVoice;
         }
 
-        let startTimeout: ReturnType<typeof setTimeout> | null = null;
-
-        utterance.onstart = () => {
-          if (startTimeout) clearTimeout(startTimeout);
-        };
-
         utterance.onend = () => {
-          if (startTimeout) clearTimeout(startTimeout);
           this.currentChunkIndex++;
           speakNextWebSpeechChunk();
         };
 
-        utterance.onerror = () => {
-          if (startTimeout) clearTimeout(startTimeout);
-          this.finishPlayback();
+        utterance.onerror = (event) => {
+          console.warn('[AudioEngine] Android WebSpeech utterance error:', event);
+          this.handlePlaybackFailure('Native Android Speech failed to play text.');
         };
 
         window.speechSynthesis.speak(utterance);
       };
 
       speakNextWebSpeechChunk();
-    } catch {
-      this.playWithWebAudioSynth();
+    } catch (err) {
+      console.warn('[AudioEngine] WebSpeech error:', err);
+      this.handlePlaybackFailure('Native Speech Synthesis exception occurred.');
     }
   }
 
-  // Tier 3: Pure Web Audio API Speech Cadence Synthesizer (100% Android & WebView Compatible, NEVER FAILS!)
-  private playWithWebAudioSynth(): void {
-    this.activeEngineUsed = 'synth';
-    const ctx = getAudioContext();
-    if (!ctx) {
-      this.finishPlayback();
-      return;
+  private handlePlaybackFailure(errorMsg: string): void {
+    console.error('[AudioEngine] Field Audio Briefing failed:', errorMsg);
+    this.lastErrorMsg = errorMsg;
+    this.isSpeaking = false;
+    this.isPaused = false;
+    this.currentAudio = null;
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {
+        console.warn('[AudioEngine] Error cancelling speechSynthesis:', e);
+      }
     }
 
-    const fullText = this.currentChunks.join(' ');
-    const words = fullText.split(/\s+/);
-    const now = ctx.currentTime;
-    let timeOffset = 0.05;
-
-    // Harmonic phoneme frequencies mapped to speech intonations
-    const baseFrequencies = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-
-    words.forEach((word, idx) => {
-      const charCodeSum = word.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      const freq = baseFrequencies[charCodeSum % baseFrequencies.length];
-      const duration = 0.12 + (word.length * 0.02);
-
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      // Soft triangle wave for natural speech-like timbre
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, now + timeOffset);
-      osc.frequency.exponentialRampToValueAtTime(freq * 0.9, now + timeOffset + duration);
-
-      gain.gain.setValueAtTime(0, now + timeOffset);
-      gain.gain.linearRampToValueAtTime(0.1, now + timeOffset + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + timeOffset + duration);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(now + timeOffset);
-      osc.stop(now + timeOffset + duration);
-
-      timeOffset += duration + 0.04;
-    });
-
-    setTimeout(() => {
-      this.finishPlayback();
-    }, (timeOffset + 0.2) * 1000);
+    if (this.currentOptions?.onError) {
+      this.currentOptions.onError(errorMsg);
+    }
+    if (this.currentOptions?.onEnd) {
+      this.currentOptions.onEnd();
+    }
   }
 
   public stop(): void {
     this.isSpeaking = false;
     this.isPaused = false;
-
-    if (this.speechKeepaliveInterval) {
-      clearInterval(this.speechKeepaliveInterval);
-      this.speechKeepaliveInterval = null;
-    }
 
     if (this.currentAudio) {
       try {
@@ -403,7 +365,7 @@ class UniversalTTSEngine {
         this.currentAudio.currentTime = 0;
         this.currentAudio = null;
       } catch (e) {
-        console.warn('Error stopping audio element:', e);
+        console.warn('[AudioEngine] Error stopping audio element:', e);
       }
     }
 
@@ -411,7 +373,7 @@ class UniversalTTSEngine {
       try {
         window.speechSynthesis.cancel();
       } catch (e) {
-        console.warn('Error stopping speechSynthesis:', e);
+        console.warn('[AudioEngine] Error stopping speechSynthesis:', e);
       }
     }
 
@@ -450,11 +412,6 @@ class UniversalTTSEngine {
     this.isSpeaking = false;
     this.isPaused = false;
     this.currentAudio = null;
-
-    if (this.speechKeepaliveInterval) {
-      clearInterval(this.speechKeepaliveInterval);
-      this.speechKeepaliveInterval = null;
-    }
 
     if (this.currentOptions?.onEnd) {
       this.currentOptions.onEnd();
