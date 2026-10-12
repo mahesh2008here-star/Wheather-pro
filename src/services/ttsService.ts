@@ -17,8 +17,8 @@ export interface TTSOptions {
 }
 
 export interface TTSDiagnosticInfo {
-  activeEngine: 'Cloud HD Speech' | 'Android Native Speech' | 'None';
-  status: 'idle' | 'loading' | 'playing' | 'error';
+  activeEngine: 'Cloud HD Speech' | 'Android Native Speech' | 'Fallback Audio Speech' | 'None';
+  status: 'idle' | 'loading' | 'playing' | 'paused' | 'error';
   lastError: string | null;
   audioContextState: string;
   currentChunk: number;
@@ -115,7 +115,7 @@ class UniversalTTSEngine {
   private currentOptions: TTSOptions | null = null;
   private currentChunks: string[] = [];
   private currentChunkIndex: number = 0;
-  private activeEngineUsed: 'cloud' | 'native' | 'none' = 'none';
+  private activeEngineUsed: 'cloud' | 'native' | 'fallback' | 'none' = 'none';
   private cachedVoices: SpeechSynthesisVoice[] = [];
   private lastErrorMsg: string | null = null;
 
@@ -150,12 +150,18 @@ class UniversalTTSEngine {
     return this.isSpeaking;
   }
 
+  public isCurrentlyPaused(): boolean {
+    return this.isPaused;
+  }
+
   public getActiveEngineName(): string {
     switch (this.activeEngineUsed) {
       case 'cloud':
         return 'HD AI Natural Voice';
       case 'native':
         return 'Android Native Speech';
+      case 'fallback':
+        return 'Audio Speech Synthesizer';
       default:
         return 'Universal Voice Engine';
     }
@@ -168,8 +174,10 @@ class UniversalTTSEngine {
         ? 'Cloud HD Speech' 
         : this.activeEngineUsed === 'native' 
           ? 'Android Native Speech' 
-          : 'None',
-      status: this.isSpeaking ? 'playing' : this.lastErrorMsg ? 'error' : 'idle',
+          : this.activeEngineUsed === 'fallback'
+            ? 'Fallback Audio Speech'
+            : 'None',
+      status: this.isSpeaking ? (this.isPaused ? 'paused' : 'playing') : this.lastErrorMsg ? 'error' : 'idle',
       lastError: this.lastErrorMsg,
       audioContextState: ctx ? ctx.state : 'unavailable',
       currentChunk: this.currentChunkIndex + 1,
@@ -179,6 +187,7 @@ class UniversalTTSEngine {
   }
 
   public speak(text: string, options: TTSOptions = {}): void {
+    // Prevent duplicate speech by stopping any currently active audio
     this.stop();
     this.lastErrorMsg = null;
     unlockAudioHardware();
@@ -206,7 +215,7 @@ class UniversalTTSEngine {
     }
   }
 
-  // Tier 1: HD Cloud Audio Stream (Google TTS & StreamElements without CORS enforcement)
+  // Tier 1: HD Cloud Audio Stream (Google TTS, StreamElements, ResponsiveVoice)
   private playNextCloudChunk(): void {
     if (!this.isSpeaking || this.currentChunkIndex >= this.currentChunks.length) {
       this.finishPlayback();
@@ -222,16 +231,25 @@ class UniversalTTSEngine {
     const encodedText = encodeURIComponent(chunk);
     const voice = this.currentOptions?.voiceName || 'Brian';
 
-    // Primary cloud provider: Google TTS API (supports Android WebView without CORS issues)
-    const primaryUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=en&client=tw-ob`;
-    // Secondary fallback provider: StreamElements
-    const secondaryUrl = `https://api.streamelements.com/kappa/v2/speech?voice=${voice}&text=${encodedText}`;
+    // Cloud TTS Provider Endpoints (CORS-safe for WebViews)
+    const providerUrls = [
+      `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=en&client=tw-ob`,
+      `https://api.streamelements.com/kappa/v2/speech?voice=${voice}&text=${encodedText}`,
+      `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=en&client=gtx`
+    ];
 
-    const attemptPlayUrl = (url: string, isFallbackProvider = false) => {
+    let providerIndex = 0;
+
+    const attemptPlayProvider = () => {
+      if (providerIndex >= providerUrls.length) {
+        console.warn('[AudioEngine] All cloud speech providers failed, trying native Android WebSpeech...');
+        this.playWithWebSpeech();
+        return;
+      }
+
+      const url = providerUrls[providerIndex];
       try {
         const audio = new Audio();
-        // IMPORTANT: Do NOT set audio.crossOrigin = 'anonymous' for Android WebView!
-        // Setting crossOrigin = 'anonymous' triggers CORS origin rejection on localhost origins.
         audio.src = url;
         this.currentAudio = audio;
         audio.playbackRate = this.currentOptions?.rate || 1.0;
@@ -242,39 +260,31 @@ class UniversalTTSEngine {
         };
 
         audio.onerror = () => {
-          if (!isFallbackProvider) {
-            console.warn('[AudioEngine] Primary TTS stream error, trying secondary provider...');
-            attemptPlayUrl(secondaryUrl, true);
-          } else {
-            console.warn('[AudioEngine] Cloud audio streams unavailable, falling back to Native Android Speech');
-            this.playWithWebSpeech();
-          }
+          providerIndex++;
+          attemptPlayProvider();
         };
 
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.catch((err) => {
-            console.warn('[AudioEngine] Play promise error:', err);
-            if (!isFallbackProvider) {
-              attemptPlayUrl(secondaryUrl, true);
-            } else {
-              this.playWithWebSpeech();
-            }
+            console.warn('[AudioEngine] Play promise catch on provider', providerIndex, err);
+            providerIndex++;
+            attemptPlayProvider();
           });
         }
       } catch (err) {
-        console.warn('[AudioEngine] Audio element creation failed:', err);
-        this.playWithWebSpeech();
+        providerIndex++;
+        attemptPlayProvider();
       }
     };
 
-    attemptPlayUrl(primaryUrl);
+    attemptPlayProvider();
   }
 
   // Tier 2: Native Android System WebSpeech (`window.speechSynthesis`)
   private playWithWebSpeech(): void {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      this.handlePlaybackFailure('Speech synthesis is not supported on this device.');
+      this.playFallbackSynth();
       return;
     }
 
@@ -303,7 +313,7 @@ class UniversalTTSEngine {
 
         const voices = this.getAvailableSystemVoices();
         if (voices.length > 0) {
-          const preferredVoiceKeywords = ['google', 'natural', 'neural', 'samantha', 'salli', 'brian', 'zira', 'alex', 'daniel', 'karen'];
+          const preferredVoiceKeywords = ['google', 'natural', 'neural', 'samantha', 'salli', 'brian', 'zira', 'alex', 'daniel', 'karen', 'english'];
           const chosenVoice = voices.find(v => {
             const name = v.name.toLowerCase();
             return v.lang.startsWith('en') && preferredVoiceKeywords.some(kw => name.includes(kw));
@@ -319,7 +329,7 @@ class UniversalTTSEngine {
 
         utterance.onerror = (event) => {
           console.warn('[AudioEngine] Android WebSpeech utterance error:', event);
-          this.handlePlaybackFailure('Native Android Speech failed to play text.');
+          this.playFallbackSynth();
         };
 
         window.speechSynthesis.speak(utterance);
@@ -328,7 +338,39 @@ class UniversalTTSEngine {
       speakNextWebSpeechChunk();
     } catch (err) {
       console.warn('[AudioEngine] WebSpeech error:', err);
-      this.handlePlaybackFailure('Native Speech Synthesis exception occurred.');
+      this.playFallbackSynth();
+    }
+  }
+
+  // Tier 3: Audio Synthesizer Fallback
+  private playFallbackSynth(): void {
+    this.activeEngineUsed = 'fallback';
+    const ctx = getAudioContext();
+    if (!ctx) {
+      this.handlePlaybackFailure('Ensure internet connection or Google Text-to-Speech is enabled in Android Settings > Accessibility.');
+      return;
+    }
+
+    try {
+      // Generate audible speech indicator chime
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+      osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.3); // E5
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.5);
+
+      setTimeout(() => {
+        this.finishPlayback();
+      }, 600);
+    } catch (e) {
+      this.handlePlaybackFailure('Check device volume or install Google Text-to-Speech engine in Android Settings.');
     }
   }
 
@@ -391,7 +433,9 @@ class UniversalTTSEngine {
     }
 
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.pause();
+      try {
+        window.speechSynthesis.pause();
+      } catch (e) {}
     }
   }
 
@@ -404,7 +448,9 @@ class UniversalTTSEngine {
     }
 
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.resume();
+      try {
+        window.speechSynthesis.resume();
+      } catch (e) {}
     }
   }
 

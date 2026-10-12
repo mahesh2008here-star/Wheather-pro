@@ -162,11 +162,11 @@ export const SmartWeatherBriefing: React.FC<SmartWeatherBriefingProps> = ({
 
         {/* Audio Error Alert */}
         {audioError && (
-          <div className="flex items-start space-x-2 my-2 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-semibold">
-            <AlertCircle size={14} className="shrink-0 mt-0.5 text-rose-600" />
+          <div className="flex items-start space-x-2 my-2 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold">
+            <AlertCircle size={14} className="shrink-0 mt-0.5 text-amber-600" />
             <div>
-              <span className="font-bold block">Audio Playback Issue:</span>
-              <span>{audioError} Please ensure your device volume is turned up.</span>
+              <span className="font-bold block text-amber-950">Audio Playback Note:</span>
+              <span>{audioError}</span>
             </div>
           </div>
         )}

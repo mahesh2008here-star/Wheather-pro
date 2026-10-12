@@ -21,7 +21,7 @@ export interface ReleaseInfo {
 }
 
 export const CURRENT_APP_VERSION = '1.2.0';
-export const CURRENT_VERSION_CODE = 120;
+export const CURRENT_VERSION_CODE = extractVersionCode(CURRENT_APP_VERSION); // 10200
 // Current app build release date threshold (UTC)
 export const CURRENT_APP_BUILD_TIME = new Date('2026-10-10T13:00:00Z').getTime();
 
@@ -294,20 +294,17 @@ function parseReleaseData(data: any): ReleaseInfo {
   const semverMatch = (tagName + ' ' + name + ' ' + body).match(/v?(\d+\.\d+(?:\.\d+)?)/i);
   const detectedVersion = semverMatch ? semverMatch[1] : (tagName.toLowerCase() !== 'latest' ? tagName : CURRENT_APP_VERSION);
 
-  let isNewer = false;
+  // Extract candidate versionCode from release text/metadata
+  const candidateVersionCode = extractVersionCode(detectedVersion) || extractVersionCode(tagName) || extractVersionCode(name);
 
-  if (tagName.toLowerCase() === 'latest') {
-    // For GitHub Actions rolling releases tagged "latest":
-    // 1. If an explicit higher semver version (e.g. 1.2.1) is found in body/name, compare semver
-    if (semverMatch && compareVersions(detectedVersion, CURRENT_APP_VERSION) > 0) {
-      isNewer = true;
-    } else if (apkAsset && releaseTime > CURRENT_APP_BUILD_TIME + 60000) {
-      // 2. Or if the attached APK asset timestamp is newer than the current build release timestamp
-      isNewer = true;
-    }
-  } else {
-    // For tagged releases (e.g. v1.2.1, v1.3.0)
-    isNewer = compareVersions(tagName, CURRENT_APP_VERSION) > 0;
+  // Compare candidate version against installed version
+  let isNewer = false;
+  if (candidateVersionCode > CURRENT_VERSION_CODE) {
+    isNewer = true;
+  } else if (compareVersions(detectedVersion, CURRENT_APP_VERSION) > 0) {
+    isNewer = true;
+  } else if (compareVersions(tagName, CURRENT_APP_VERSION) > 0) {
+    isNewer = true;
   }
 
   return {
