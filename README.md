@@ -1,31 +1,41 @@
 <div align="center">
-  <img src="public/assets/weather_app_logo.svg" alt="Weather Pro Logo" width="160" height="160" />
-  <h1>Weather Pro — Liquid Glass & Microclimate</h1>
-  <p><strong>Next-Generation Android Weather App with Material You Custom Palettes, Working Home Screen Widgets & Apple Liquid Glass Dock</strong></p>
+  <img src="public/assets/weather_app_logo.svg" alt="Farm Weather Logo" width="160" height="160" />
+  <h1>Farm Weather — Smart Agriculture & Microclimate</h1>
+  <p><strong>Premium Android Agriculture Weather Application with Material Colors, Live Satellite Radar, Home Screen Widgets & 15-Minute Sync</strong></p>
 </div>
 
 ---
 
-## 📸 High-Quality App Screenshots Showcase
+## 📸 Google Play Store Screenshots Showcase
 
 <div align="center">
   <table border="0">
     <tr>
-      <td align="center" width="25%">
-        <strong>🏡 Home & Microclimate Hero</strong><br/><br/>
-        <img src="public/assets/screenshot_home.svg" alt="Weather Pro Home Screen" width="230"/>
+      <td align="center" width="33%">
+        <strong>🌾 Weather That Works for Your Farm</strong><br/><br/>
+        <img src="store-assets/screenshots/01-weather-dashboard.png" alt="Weather Dashboard" width="260"/>
       </td>
-      <td align="center" width="25%">
-        <strong>📱 Home Screen Widgets</strong><br/><br/>
-        <img src="public/assets/screenshot_widgets.svg" alt="Home Screen Widgets" width="230"/>
+      <td align="center" width="33%">
+        <strong>📅 Plan Around the Forecast</strong><br/><br/>
+        <img src="store-assets/screenshots/02-hourly-forecast.png" alt="Hourly & Daily Forecast" width="260"/>
       </td>
-      <td align="center" width="25%">
-        <strong>🌧️ Live Radar & Doppler Map</strong><br/><br/>
-        <img src="public/assets/screenshot_radar.svg" alt="Live Weather Radar" width="230"/>
+      <td align="center" width="33%">
+        <strong>🛰️ Live Satellite & Doppler Radar</strong><br/><br/>
+        <img src="store-assets/screenshots/03-live-radar.png" alt="Live Weather Radar" width="260"/>
       </td>
-      <td align="center" width="25%">
-        <strong>⚙️ Settings & Customization</strong><br/><br/>
-        <img src="public/assets/screenshot_settings.svg" alt="App Settings" width="230"/>
+    </tr>
+    <tr>
+      <td align="center" width="33%">
+        <strong>🌱 Soil & Air Quality Telemetry</strong><br/><br/>
+        <img src="store-assets/screenshots/04-agricultural-insights.png" alt="Soil & Air Quality Insights" width="260"/>
+      </td>
+      <td align="center" width="33%">
+        <strong>📱 Native Home Screen Widgets</strong><br/><br/>
+        <img src="store-assets/screenshots/05-weather-widgets.png" alt="Weather Widgets" width="260"/>
+      </td>
+      <td align="center" width="33%">
+        <strong>🔄 App Updates & Direct Support</strong><br/><br/>
+        <img src="store-assets/screenshots/06-app-updates.png" alt="App Updates & Direct UPI" width="260"/>
       </td>
     </tr>
   </table>
@@ -35,38 +45,29 @@
 
 # Farm Weather - Smart Agricultural Microclimate App
 
-A high-fidelity recreation of the mobile farm weather and parcel monitoring application.
+Official production repository for **Farm Weather**, built for farmers, agronomists, and weather enthusiasts.
 
 ---
 
-## 🌟 Key Features Recreated from Video
+## 🌟 Core Features
 
-### 1. The Illustrated Animated Farm Microclimate Hero
-- **Weather Scene Engine**: Coordinated SVG vector landscapes responding to weather conditions:
-  - ☀️ **Sunny (28°C)**: Warm azure sky, golden radiant sun with pulsing aura, grazing Holstein cows.
-  - ⛅ **Clouds rolling in (25°C)**: Billowy cumulus clouds drifting in from the west.
-  - 💨 **Wind picking up (24°C)**: Darker slate atmosphere, wind streaks, rapid spinning wind turbine.
-  - 🌧️ **Rain shower (21°C)**: Diagonal falling rain streaks and saturated soil.
-  - 🌈 **Clearing up (26°C)**: Sunlight breaking through with a vibrant **7-color arc rainbow** over the red barn and fields.
-- **Microclimate Elements**:
-  - Classic red wood-paneled barn with white trim and weather vane.
-  - Silo with domed metal roof.
-  - Spinning wind turbine.
-  - Perspective furrowed tilled soil with sprout rows.
-  - Grazing dairy cows in pasture with fence.
-  - Telemetry badges (`🐄 12`, `🌱 88%`).
+### 1. Animated Farm Microclimate Engine
+- **Dynamic Microclimate Hero**: Responsive animated SVG field landscape reflecting real-time weather conditions (Sunny, Cloud cover, High Wind, Rain, Rainbow clearing).
+- **Farm Parcel Telemetry**:
+  - Classic red wood-paneled barn with weather vane and silo.
+  - Wind turbine speed synchronized with real-time wind metrics.
+  - Furrowed field soil, livestock indicators, and live canopy moisture badges.
 
-### 2. Today's Conditions Metric Cards (Grid)
-- **Temperature**: Gauge with feels-like temperature and min-max range bar.
-- **Humidity**: Volumetric percentage and dew point calculation (Magnus-Tetens).
-- **Wind**: Speed, gusts, direction angle, and dynamic wind bar.
-- **Rain Chance**: Precipitation probability and expected millimeter accumulation.
-- **Soil Moisture**: Saturation percentage and agronomic status ("Well watered", "Optimal").
-- **Water Tank**: Liquid volume in liters and percentage fill wave.
-- **UV Index**: 5-color spectrum bar from Low to Extreme.
+### 2. Comprehensive Agricultural Telemetry
+- **Temperature & Feels-Like**: High precision telemetry with dew point calculations.
+- **Humidity & Evapotranspiration**: Soil canopy moisture and blight/fungal risk index.
+- **Wind Speed & Direction**: Real-time wind gust ratings and pesticide spray advisories.
+- **Precipitation Probability & Accumulation**: Next-hour rain charts and volume estimates.
+- **Soil Moisture & Temperature**: Deep-layer soil saturation and root zone health.
+- **Solar Radiation & UV Index**: Direct PAR radiation and UV peak advisories.
 
 ### 3. Interactive Farm Parcel Map (7 Zones)
-- Direct reproduction of the isometric parcel map visible at `00:00 - 00:01` in the video:
+- Interactive isometric parcel map with zone telemetry:
   - **Farm House**: Homestead & telemetry station (1.2 ha).
   - **Tomato Field**: Roma & San Marzano with fruit ripening telemetry (2.8 ha).
   - **Vegetables**: Lettuce & carrot rows (3.1 ha).
